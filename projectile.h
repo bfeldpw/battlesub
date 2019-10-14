@@ -3,11 +3,11 @@
 
 #include "projectile_drawable.h"
 
-class Projectile : public PhysObj
+class Projectile : public GameObject
 {
     public:
         
-        Projectile(b2World& World) : PhysObj(World)
+        Projectile(b2World& World, Scene2D& Scene) : GameObject(World, Scene)
         {
             // This defines a triangle in CCW order.
             b2Vec2 Vertices[5];
@@ -24,7 +24,7 @@ class Projectile : public PhysObj
         void init(const b2BodyDef BodyDef)
         {
             std::cout << "Projectile::init" << std::endl;
-            PhysObj::init(BodyDef);
+            GameObject::init(BodyDef);
             Body_->SetBullet(true);
         }
                 

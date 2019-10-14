@@ -5,9 +5,7 @@
 #include <unordered_map>
 
 #include "common.h"
-#include "phys_obj_entity_map.h"
 #include "sub.h"
-#include "sub_vis.h"
 
 namespace BattleSub
 {
@@ -33,21 +31,17 @@ class BattleSub : public Platform::Application
 
         std::unordered_map<std::string, bool> KeyPressedMap;
         
-        PhysObjEntityMap PhysObjEntityMap_;
-        
-        GL::Mesh _mesh{NoCreate};
-        Shaders::Flat2D _shader{NoCreate};
+        GL::Mesh Mesh_{NoCreate};
+        Shaders::Flat2D Shader_{NoCreate};
 
-        Scene2D _scene;
-        Object2D* _cameraObject;
+        Scene2D Scene_;
+        Object2D* CameraObject_;
         SceneGraph::Camera2D* Camera_;
         SceneGraph::DrawableGroup2D Drawables_;
         
         Containers::Optional<b2World> World_;
         Containers::Optional<Sub> PlayerSub_;
         Containers::Optional<Sub> PlayerSub2_;
-        Containers::Optional<SubVis> PlayerSubVis_;
-        Containers::Optional<SubVis> PlayerSubVis2_;
 };
 
 }

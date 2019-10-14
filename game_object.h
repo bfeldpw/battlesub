@@ -1,16 +1,16 @@
-#ifndef PHYS_OBJ_H
-#define PHYS_OBJ_H
+#ifndef GAME_OBJECT_H
+#define GAME_OBJECT_H
 
 #include <Box2D/Box2D.h>
 
 #include "common.h"
 #include "entity.h"
 
-class PhysObj : public Entity
+class GameObject : public Entity
 {
     public:
         
-        PhysObj(b2World& World) : World_(&World)
+        GameObject(b2World& World, Scene2D& Scene) : World_(&World), Visuals_(&Scene)
         {
 //             b2BodyDef BodyDef;
 //             BodyDef.active = false;
@@ -21,12 +21,13 @@ class PhysObj : public Entity
         }
         
         const b2Body* const getBody() const {return Body_;}
+        Object2D&           getVisuals() {return Visuals_;}
 
         void init(const b2BodyDef& BodyDef)
         {
             std::cout << "PhysObj::init" << std::endl;
             Body_=World_->CreateBody(&BodyDef);
-            Body_->SetUserData(this);
+            Body_->SetUserData(&Visuals_);
             
             b2PolygonShape shape;
             shape.SetAsBox(1.0f, 1.0f);
@@ -42,7 +43,8 @@ class PhysObj : public Entity
         
         b2Body*  Body_;
         b2World* const World_;
+        Object2D Visuals_;
         
 };
 
-#endif // PHYS_OBJ_H
+#endif // GAME_OBJECT_H

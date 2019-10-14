@@ -1,20 +1,20 @@
 #ifndef SUB_H
 #define SUB_H
 
-#include "phys_obj.h"
+#include "game_object.h"
 #include "projectile.h"
 
-class Sub : public PhysObj
+class Sub : public GameObject
 {
     public:
         
-        Sub(b2World& World) : PhysObj(World)/*, Fire(World) */{}
+        Sub(b2World& World, Scene2D& Scene) : GameObject(World, Scene)/*, Fire(World) */{}
         
         void init(const b2BodyDef BodyDef)
         {
             std::cout << "Sub::init" << std::endl;
             
-            PhysObj::init(BodyDef);
+            GameObject::init(BodyDef);
 //             Fire.init(BodyDef);
         }
         

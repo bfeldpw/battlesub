@@ -20,6 +20,7 @@
 
 #include "battle_sub.h"
 #include "box_drawable.h"
+#include "sub_drawable.h"
 
 namespace BattleSub{
     
@@ -73,8 +74,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     }
 
     /* Configure camera */
-    _cameraObject = new Object2D{&_scene};
-    Camera_ = new SceneGraph::Camera2D{*_cameraObject};
+    CameraObject_ = new Object2D{&Scene_};
+    Camera_ = new SceneGraph::Camera2D{*CameraObject_};
     Camera_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
         .setProjectionMatrix(Matrix3::projection({20.0f, 20.0f}))
         .setViewport(GL::defaultFramebuffer.viewport().size());
@@ -83,14 +84,14 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     World_.emplace(b2Vec2{0.0f, 0.0f});
     
     /* Create Submarine */
-    PlayerSub_.emplace(*World_);
+    PlayerSub_.emplace(*World_, Scene_);
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     std::cout << "PlayerSub_->init" << std::endl;
     PlayerSub_->init(BodyDef);
     
-    PlayerSub2_.emplace(*World_);
+    PlayerSub2_.emplace(*World_, Scene_);
     b2BodyDef BodyDef2;
     BodyDef2.type = b2_dynamicBody;
     BodyDef2.active = true;
@@ -98,15 +99,12 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     std::cout << "PlayerSub2_->init" << std::endl;
     PlayerSub2_->init(BodyDef2);
     
-    PhysObjEntityMap_.PhysObjs[PlayerSub_->ID] = &(*PlayerSub_);
-    PhysObjEntityMap_.PhysObjs[PlayerSub2_->ID] = &(*PlayerSub2_);
-    
     /* Create the shader and the box mesh */
-    _shader = Shaders::Flat2D{};
-    _mesh = MeshTools::compile(Primitives::squareSolid());
-    
-    PlayerSubVis_.emplace(PlayerSub_->ID, PhysObjEntityMap_, _scene, 0x2f83cc_rgbf, _mesh, _shader, Drawables_);
-    PlayerSubVis2_.emplace(PlayerSub2_->ID, PhysObjEntityMap_, _scene, 0x2f800c_rgbf, _mesh, _shader, Drawables_);
+    Shader_ = Shaders::Flat2D{};
+    Mesh_ = MeshTools::compile(Primitives::squareSolid());
+
+    new SubDrawable(PlayerSub_->getVisuals(), Mesh_, Shader_, 0x2f83cc_rgbf, Drawables_);
+    new SubDrawable(PlayerSub2_->getVisuals(), Mesh_, Shader_, 0x2f83cc_rgbf, Drawables_);
 
     /* Create the ground */
 //     auto ground = new Object2D{&_scene};
@@ -202,16 +200,25 @@ void BattleSub::drawEvent()
     if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
     if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
     
+    // Update game objects
     PlayerSub_->update();
+    PlayerSub2_->update();
     
     // Update physics
     World_->Step(1.0f/60.0f, 80, 30);
-    
-    // Update object visuals
-    PlayerSubVis_->update();
-    PlayerSubVis2_->update();
 
-    // Finally, draw the scene
+    // Update object visuals    
+    for(b2Body* body = World_->GetBodyList(); body; body = body->GetNext())
+    {
+        if (body->IsActive())
+        {            
+            (*static_cast<Object2D*>(body->GetUserData()))
+                .setTranslation({body->GetPosition().x, body->GetPosition().y})
+                .setRotation(Complex::rotation(Rad(body->GetAngle())));
+        }
+    }
+    
+    // Draw the scene
     Camera_->draw(Drawables_);
 
     swapBuffers();
