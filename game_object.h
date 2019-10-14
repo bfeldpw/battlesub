@@ -10,7 +10,7 @@ class GameObject : public Entity
 {
     public:
         
-        GameObject(b2World& World, Scene2D& Scene) : World_(&World), Visuals_(&Scene)
+        GameObject(b2World& World, Scene2D& Scene) : World_(&World), Visuals_(&Scene), Scene_(Scene)
         {
 //             b2BodyDef BodyDef;
 //             BodyDef.active = false;
@@ -44,6 +44,7 @@ class GameObject : public Entity
         b2Body*  Body_;
         b2World* const World_;
         Object2D Visuals_;
+        Scene2D& Scene_;
         
 };
 

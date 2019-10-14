@@ -8,14 +8,18 @@ class Sub : public GameObject
 {
     public:
         
-        Sub(b2World& World, Scene2D& Scene) : GameObject(World, Scene)/*, Fire(World) */{}
+        Sub(b2World& World, Scene2D& Scene) : GameObject(World, Scene) {}
         
         void init(const b2BodyDef BodyDef)
         {
             std::cout << "Sub::init" << std::endl;
             
             GameObject::init(BodyDef);
-//             Fire.init(BodyDef);
+        }
+        
+        void fire()
+        {
+            Projectile Bullet(*World_, Scene_);
         }
         
         void rudderLeft()
@@ -47,7 +51,6 @@ class Sub : public GameObject
         
     private:
         
-//         Projectile  Fire;
         float Rudder_ = 0.0f;
         float Throttle_ = 0.0f;
         

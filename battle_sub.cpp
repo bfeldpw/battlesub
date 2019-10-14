@@ -23,54 +23,27 @@
 #include "sub_drawable.h"
 
 namespace BattleSub{
-    
-b2Body* BattleSub::createBody(Object2D& object, const Vector2& halfSize, const b2BodyType type, const DualComplex& transformation, const Float density)
-{
-    b2BodyDef bodyDefinition;
-    bodyDefinition.position.Set(transformation.translation().x(), transformation.translation().y());
-    bodyDefinition.angle = Float(transformation.rotation().angle());
-    bodyDefinition.type = type;
-    bodyDefinition.linearDamping = 0.01f;
-    bodyDefinition.angularDamping = 0.01f;
-    b2Body* body = World_->CreateBody(&bodyDefinition);
-
-    b2PolygonShape shape;
-    shape.SetAsBox(halfSize.x(), halfSize.y());
-
-    b2FixtureDef fixture;
-    fixture.friction = 0.8f;
-    fixture.density = density;
-    fixture.shape = &shape;
-    body->CreateFixture(&fixture);
-
-    body->SetUserData(&object);
-    object.setScaling(halfSize);
-
-    return body;
-}
 
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
-    /* Make it possible for the user to have some fun */
-    Utility::Arguments args;
-    args.addOption("transformation", "1 0 0 0").setHelp("transformation", "initial pyramid transformation")
-        .addSkippedPrefix("magnum", "engine-specific options")
-        .parse(arguments.argc, arguments.argv);
-        
-    const DualComplex globalTransformation = args.value<DualComplex>("transformation").normalized();
-
     /* Try 8x MSAA, fall back to zero samples if not possible. Enable only 2x
        MSAA if we have enough DPI. */
     {
         const Vector2 dpiScaling = this->dpiScaling({});
+        
         Configuration conf;
         conf.setSize({2000, 1000});
+        
         conf.setTitle("BattleSub")
             .setSize(conf.size(), dpiScaling);
-        GLConfiguration glConf;
+        
+            GLConfiguration glConf;
         glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
-        if(!tryCreate(conf, glConf))
+        
+        if (!tryCreate(conf, glConf))
+        {
             create(conf, glConf.setSampleCount(0));
+        }
     }
 
     /* Configure camera */
@@ -105,22 +78,6 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
 
     new SubDrawable(PlayerSub_->getVisuals(), Mesh_, Shader_, 0x2f83cc_rgbf, Drawables_);
     new SubDrawable(PlayerSub2_->getVisuals(), Mesh_, Shader_, 0x2f83cc_rgbf, Drawables_);
-
-    /* Create the ground */
-//     auto ground = new Object2D{&_scene};
-//     createBody(*ground, {11.0f, 0.5f}, b2_staticBody, DualComplex::translation(Vector2::yAxis(-8.0f)));
-//     new BoxDrawable{*ground, _mesh, _shader, 0xa5c9ea_rgbf, Drawables_};
-
-    /* Create a pyramid of boxes */
-//     for(std::size_t row = 0; row != 15; ++row) {
-//         for(std::size_t item = 0; item != 15 - row; ++item) {
-//             auto box = new Object2D{&_scene};
-//             const DualComplex transformation = globalTransformation*DualComplex::translation(
-//                 {Float(row)*0.6f + Float(item)*1.2f - 8.5f, Float(row)*1.0f - 6.0f});
-//             createBody(*box, {0.5f, 0.5f}, b2_dynamicBody, transformation);
-//             new BoxDrawable{*box, _mesh, _shader, 0x2f83cc_rgbf, Drawables_};
-//         }
-//     }
     
     if (!setSwapInterval(1)) std::cerr << "UUPPPS" << std::endl;
 //     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
@@ -136,10 +93,6 @@ void BattleSub::mousePressEvent(MouseEvent& event)
         /* Calculate mouse position in the Box2D world. Make it relative to window,
         with origin at center and then scale to world size with Y inverted. */
 //         const auto position = Camera_->projectionSize()*Vector2::yScale(-1.0f)*(Vector2{event.position()}/Vector2{windowSize()} - Vector2{0.5f});
-// 
-//         auto destroyer = new Object2D{&_scene};
-//         createBody(*destroyer, {0.5f, 0.5f}, b2_dynamicBody, DualComplex::translation(position), 2.0f);
-//         new BoxDrawable{*destroyer, _mesh, _shader, 0xffff66_rgbf, Drawables_};
     }
     else if (event.button() == MouseEvent::Button::Right)
     {
@@ -208,13 +161,13 @@ void BattleSub::drawEvent()
     World_->Step(1.0f/60.0f, 80, 30);
 
     // Update object visuals    
-    for(b2Body* body = World_->GetBodyList(); body; body = body->GetNext())
+    for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())
     {
-        if (body->IsActive())
+        if (Body->IsActive())
         {            
-            (*static_cast<Object2D*>(body->GetUserData()))
-                .setTranslation({body->GetPosition().x, body->GetPosition().y})
-                .setRotation(Complex::rotation(Rad(body->GetAngle())));
+            (*static_cast<Object2D*>(Body->GetUserData()))
+                .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
+                .setRotation(Complex::rotation(Rad(Body->GetAngle())));
         }
     }
     
