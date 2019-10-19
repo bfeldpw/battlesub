@@ -14,6 +14,11 @@ class ProjectileDrawable: public SceneGraph::Drawable2D
                                     const Color4& Color,
                                     SceneGraph::DrawableGroup2D& Drawables) : 
                                     SceneGraph::Drawable2D{Obj, &Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
+                                    
+        void setColor(const Color4 Color)
+        {
+            Color_ = Color;
+        }
 
     private:
         

@@ -20,8 +20,31 @@ find_package(Magnum REQUIRED
 
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
-add_executable(battle_sub battle_sub.cpp)
+set(HEADERS
+        battle_sub.h
+        common.h
+        entity.h
+        error_handler.h
+        game_object.h
+        memory_pool.h
+        message_handler.h
+        projectile.h
+        projectile_drawable.h
+        projectile_factory.h
+        sub.h
+        sub_drawable.h
+        submarine_factory.h
+)
 
+set(SOURCES
+        battle_sub.cpp
+        entity.cpp
+        sub.cpp
+)
+
+add_executable(battle_sub ${HEADERS} ${SOURCES})
+
+target_include_directories(battle_sub PRIVATE ${MAGNUM_INCLUDE_DIR}})
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install/include")
 
 target_link_libraries(battle_sub PRIVATE

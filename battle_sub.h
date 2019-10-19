@@ -32,6 +32,7 @@ class BattleSub : public Platform::Application
         std::unordered_map<std::string, bool> KeyPressedMap;
         
         GL::Mesh Mesh_{NoCreate};
+        GL::Mesh MeshProjectile_{NoCreate};
         Shaders::Flat2D Shader_{NoCreate};
 
         Scene2D Scene_;
@@ -40,8 +41,10 @@ class BattleSub : public Platform::Application
         SceneGraph::DrawableGroup2D Drawables_;
         
         Containers::Optional<b2World> World_;
-        Containers::Optional<Sub> PlayerSub_;
-        Containers::Optional<Sub> PlayerSub2_;
+        
+        Sub* PlayerSub_  = nullptr;
+        Sub* PlayerSub2_ = nullptr;
+
 };
 
 }

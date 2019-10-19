@@ -18,6 +18,4 @@ class Entity
         
 };
 
-EntityIDType Entity::s_IDMax = 1;
-
 #endif // ENTITY_H
