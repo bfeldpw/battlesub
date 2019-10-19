@@ -18,7 +18,7 @@ class MessageHandler
             DEBUG_5 = 5
         } ReportLevelType;
         
-        void report(std::string Message, const ReportLevelType Level = INFO)
+        void report(const std::string& Message, const ReportLevelType Level = INFO)
         {
             std::cout << "[  MSG  ] " << Message << std::endl;
         }
