@@ -5,7 +5,7 @@
 void Sub::fire(GL::Mesh& Mesh, Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
                float GunPos)
 {
-    Projectile* Bullet = GlobalProjectileFactory.createProjectile();
+    Projectile* Bullet = GlobalProjectileFactory.create();
     Bullet->create(World_, Scene_);
     
     b2BodyDef BodyDef;

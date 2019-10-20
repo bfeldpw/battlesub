@@ -53,35 +53,20 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     /* Create the Box2D world with the usual gravity vector */
     World_.emplace(b2Vec2{0.0f, 0.0f});
     
-    /* Create Submarine */
-//     PlayerSub_.emplace(&(*World_), &Scene_);
-//     PlayerSub_.emplace();
-//     PlayerSub_->create(&(*World_), &Scene_);
-//     b2BodyDef BodyDef;
-//     BodyDef.type = b2_dynamicBody;
-//     BodyDef.active = true;
-//     BodyDef.position.Set(0.0f, -20.0f);
-//     std::cout << "PlayerSub_->init" << std::endl;
-//     PlayerSub_->init(BodyDef);
-    
-    
-    
-    PlayerSub_ = GlobalSubmarineFactory.createSubmarine();
+    PlayerSub_ = GlobalSubmarineFactory.create();
     PlayerSub_->create(&(*World_), &Scene_);
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
-    std::cout << "PlayerSub_->init" << std::endl;
     PlayerSub_->init(BodyDef);
     
-    PlayerSub2_ = GlobalSubmarineFactory.createSubmarine();
+    PlayerSub2_ = GlobalSubmarineFactory.create();
     PlayerSub2_->create(&(*World_), &Scene_);
     b2BodyDef BodyDef2;
     BodyDef2.type = b2_dynamicBody;
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
-    std::cout << "PlayerSub2_->init" << std::endl;
     PlayerSub2_->init(BodyDef2);
     
     /* Create the shader and the box mesh */
@@ -116,12 +101,7 @@ void BattleSub::mousePressEvent(MouseEvent& event)
 {
     if(event.button() == MouseEvent::Button::Left)
     {
-        
-        
         PlayerSub_->fire(Mesh_, Shader_, Drawables_, -1.0f);
-        /* Calculate mouse position in the Box2D world. Make it relative to window,
-        with origin at center and then scale to world size with Y inverted. */
-//         const auto position = Camera_->projectionSize()*Vector2::yScale(-1.0f)*(Vector2{event.position()}/Vector2{windowSize()} - Vector2{0.5f});
     }
     else if (event.button() == MouseEvent::Button::Right)
     {
@@ -134,7 +114,7 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
     if (Event.key() == KeyEvent::Key::A)
     {
         KeyPressedMap["a"] = true;
-        GlobalSubmarineFactory.destroySubmarine(PlayerSub2_);
+        GlobalSubmarineFactory.destroy(PlayerSub2_);
     }
     else if (Event.key() == KeyEvent::Key::D)
     {
@@ -188,8 +168,10 @@ void BattleSub::drawEvent()
     if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
     
     // Update game objects
-    PlayerSub_->update(Drawables_);
-    PlayerSub2_->update(Drawables_);
+    for (auto Sub : GlobalSubmarineFactory.getEntities())
+    {
+        Sub.second->update(Drawables_);
+    }
     
     // Update physics
     World_->Step(1.0f/60.0f, 8, 3);

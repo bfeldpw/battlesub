@@ -32,6 +32,7 @@ set(HEADERS
         entity.h
         error_handler.h
         game_object.h
+        game_object_factory.h
         memory_pool.h
         message_handler.h
         projectile.h
