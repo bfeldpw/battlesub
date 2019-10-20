@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.1)
 
 project(BattleSub)
 
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+    add_compile_options(-std=c++14 -mtune=native -Wall -pedantic)
+else()
+    add_compile_options(-std=c++14 -mtune=native -Wall -Wextra -pedantic)
+endif()
+
 # Add module path in case this is project root
 if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../../modules/" ${CMAKE_MODULE_PATH})
@@ -17,7 +23,7 @@ find_package(Magnum REQUIRED
     Sdl2Application
     Shaders
     Trade)
-
+    
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
 set(HEADERS

@@ -30,9 +30,9 @@ class ProjectileDrawable: public SceneGraph::Drawable2D
             Mesh_.draw(Shader_);
         }
 
-        Color4              Color_;
         GL::Mesh&           Mesh_;
         Shaders::Flat2D&    Shader_;
+        Color4              Color_;
         
 };
 

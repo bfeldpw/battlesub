@@ -20,7 +20,10 @@ class MessageHandler
         
         void report(const std::string& Message, const ReportLevelType Level = INFO)
         {
-            std::cout << "[  MSG  ] " << Message << std::endl;
+            if (Level == INFO)
+            {
+                std::cout << "[  MSG  ] " << Message << std::endl;
+            }
         }
     
 };

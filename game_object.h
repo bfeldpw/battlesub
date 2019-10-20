@@ -30,7 +30,7 @@ class GameObject : public Entity
             Visuals_->setParent(Scene);
         }
         
-        b2Body* const   getBody() const {return Body_;}
+        b2Body*         getBody() const {return Body_;}
         Object2D&       getVisuals() {return *Visuals_;}
 
         void init(const b2BodyDef& BodyDef)
