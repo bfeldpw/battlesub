@@ -18,6 +18,7 @@ class ProjectileFactory
         
         void destroyProjectile(Projectile* P)
         {
+            P->destroy();
             ProjectilePool.free(P);
         }
         

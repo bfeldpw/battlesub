@@ -18,6 +18,7 @@ class SubmarineFactory
         
         void destroySubmarine(Sub* S)
         {
+            S->destroy();
             SubPool.free(S);
         }
         

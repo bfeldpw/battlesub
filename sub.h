@@ -10,8 +10,6 @@ class Sub : public GameObject
 {
     public:
         
-        void destroy();
-        
         void init(const b2BodyDef BodyDef)
         {
             std::cout << "Sub::init" << std::endl;
@@ -78,8 +76,6 @@ class Sub : public GameObject
         
         float Rudder_   = 0.0f;
         float Throttle_ = 0.0f;
-        
-//         
         
 };
 

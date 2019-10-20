@@ -12,22 +12,26 @@ class GameObject : public Entity
 {
     public:
         
-        GameObject() : Visuals_(new Object2D) {}
-//         GameObject(b2World* World, Scene2D* Scene) : World_(World), Visuals_(Scene), Scene_(Scene)
-//         {
-// //             b2BodyDef BodyDef;
-// //             BodyDef.active = false;
-// //             Body_ = World.CreateBody(&BodyDef);
-// //             Body_->SetUserData(this);
-//             std::cout << ID << std::endl;
-//         }
-        
         void create(b2World* World, Scene2D* Scene)
         {
             World_ = World;
             Scene_ = Scene;
             
-            Visuals_->setParent(Scene);
+            Visuals_ = new Object2D(Scene);
+        }
+        
+        void destroy()
+        {
+            // Destroy physics data, Box2D will handle everything from here
+            World_->DestroyBody(Body_);
+            
+            // Destroy graphics data, Magnum will handle everything from here
+            // (including drawables)
+            if (Visuals_ != nullptr)
+            {
+                delete Visuals_;
+                Visuals_ = nullptr;
+            }
         }
         
         b2Body*         getBody() const {return Body_;}
@@ -42,11 +46,11 @@ class GameObject : public Entity
         
     protected:
         
-        b2Body*  Body_  = nullptr;
-        b2World* World_ = nullptr;
+        b2Body*  Body_      = nullptr;
+        b2World* World_     = nullptr;
         
-        Object2D* Visuals_;
-        Scene2D* Scene_ = nullptr;
+        Object2D* Visuals_  = nullptr;
+        Scene2D* Scene_     = nullptr;
         
 };
 

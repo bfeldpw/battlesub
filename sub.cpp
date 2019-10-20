@@ -3,7 +3,7 @@
 #include "projectile_factory.h"
 
 void Sub::fire(GL::Mesh& Mesh, Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
-                float GunPos)
+               float GunPos)
 {
     Projectile* Bullet = GlobalProjectileFactory.createProjectile();
     Bullet->create(World_, Scene_);
