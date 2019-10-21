@@ -106,10 +106,10 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     new SubDrawable(PlayerSub_->getVisuals(), MeshProjectile_, Shader_, 0x2f83cc_rgbf, Drawables_);
     new SubDrawable(PlayerSub2_->getVisuals(), Mesh_, Shader_, 0x5f83cc_rgbf, Drawables_);
     
-    if (!setSwapInterval(1)) std::cerr << "UUPPPS" << std::endl;
-//     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
-    setMinimalLoopPeriod(100);
-//     #endif
+    if (!setSwapInterval(1))
+    #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
+        setMinimalLoopPeriod(1.0f/60.0f);
+    #endif
 }
 
 void BattleSub::mousePressEvent(MouseEvent& event)
