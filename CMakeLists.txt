@@ -31,6 +31,9 @@ set(HEADERS
         common.h
         entity.h
         error_handler.h
+        landscape.h
+        landscape_drawable.h
+        landscape_factory.h
         game_object.h
         game_object_factory.h
         memory_pool.h
