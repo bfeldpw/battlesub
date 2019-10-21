@@ -44,6 +44,10 @@ class BattleSub : public Platform::Application
         
         Sub* PlayerSub_  = nullptr;
         Sub* PlayerSub2_ = nullptr;
+        
+        float VPX_ = 100.0f;
+        float VPY_ = 100.0f;
+        float Zoom_ = 1.0f;
 
 };
 

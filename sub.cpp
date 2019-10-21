@@ -1,5 +1,6 @@
 #include "sub.h"
 
+#include "projectile_drawable.h"
 #include "projectile_factory.h"
 
 void Sub::fire(GL::Mesh& Mesh, Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,

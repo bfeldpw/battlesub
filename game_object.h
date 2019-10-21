@@ -39,7 +39,6 @@ class GameObject : public Entity
 
         void init(const b2BodyDef& BodyDef)
         {
-            std::cout << "PhysObj::init" << std::endl;
             Body_=World_->CreateBody(&BodyDef);
             Body_->SetUserData(Visuals_);
         }

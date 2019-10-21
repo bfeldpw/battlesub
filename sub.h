@@ -12,8 +12,6 @@ class Sub : public GameObject
         
         void init(const b2BodyDef BodyDef)
         {
-            std::cout << "Sub::init" << std::endl;
-            
             GameObject::init(BodyDef);
             
             // Submarine size: 4m x 16m

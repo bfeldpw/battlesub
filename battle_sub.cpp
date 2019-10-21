@@ -16,6 +16,8 @@
 #include "battle_sub.h"
 #include "box_drawable.h"
 #include "common.h"
+#include "landscape_factory.h"
+#include "landscape_drawable.h"
 #include "sub_drawable.h"
 #include "submarine_factory.h"
 
@@ -69,26 +71,39 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.position.Set(0.0f, 20.0f);
     PlayerSub2_->init(BodyDef2);
     
+    auto CanyonBoundary = GlobalLandscapeFactory.create();
+    CanyonBoundary->create(&(*World_), &Scene_);
+    b2BodyDef BodyDef3;
+    BodyDef3.type = b2_staticBody;
+    BodyDef3.active = true;
+    BodyDef3.position.Set(0.0f, 20.0f);
+    CanyonBoundary->init(BodyDef3);
+    
     /* Create the shader and the box mesh */
     Shader_ = Shaders::Flat2D{};
     Mesh_ = MeshTools::compile(Primitives::squareSolid());
     
-//     const struct {
-//         Vector2 pos;
-//     } data[]{{{-0.1f, 0.0f}},
-//             {{  0.1f, 0.0f}},
-//             {{  0.1f, 0.8f}},
-//             {{  0.0f, 1.0f}},
-//             {{ -0.1f, 0.8f}}};
-// 
-//     GL::Buffer buffer;
-//     buffer.setData(data);
-//     MeshProjectile_ = GL::Mesh{};
-//     MeshProjectile_.setCount(5)
-//         .addVertexBuffer(std::move(buffer), 0,
-//             Shaders::VertexColor2D::Position{});
+    const struct {
+        Vector2 pos;
+    } data[]{{{-0.1f, 0.0f}},
+            {{  0.1f, 0.0f}},
+            {{ -0.1f, 0.8f}},
+            {{ -0.1f, 0.8f}},
+            {{  0.1f, 0.0f}},
+            {{  0.1f, 0.8f}},
+            {{  0.1f, 0.8f}},
+            {{  0.0f, 1.0f}},
+            {{ -0.1f, 0.8f}}};
 
-    new SubDrawable(PlayerSub_->getVisuals(), Mesh_, Shader_, 0x2f83cc_rgbf, Drawables_);
+    GL::Mesh Mesh;
+    GL::Buffer buffer;
+    buffer.setData(data, GL::BufferUsage::StaticDraw);
+    MeshProjectile_ = GL::Mesh{};
+    MeshProjectile_.setCount(9)
+        .addVertexBuffer(std::move(buffer), 0,
+            Shaders::VertexColor2D::Position{});
+
+    new SubDrawable(PlayerSub_->getVisuals(), MeshProjectile_, Shader_, 0x2f83cc_rgbf, Drawables_);
     new SubDrawable(PlayerSub2_->getVisuals(), Mesh_, Shader_, 0x5f83cc_rgbf, Drawables_);
     
     if (!setSwapInterval(1)) std::cerr << "UUPPPS" << std::endl;
@@ -132,6 +147,14 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
     {
         KeyPressedMap["p"] = true;
     }
+    else if (Event.key() == KeyEvent::Key::F1)
+    {
+        KeyPressedMap["F1"] = true;
+    }
+    else if (Event.key() == KeyEvent::Key::F2)
+    {
+        KeyPressedMap["F2"] = true;
+    }
     else if (Event.key() == KeyEvent::Key::Esc)
     {
         Platform::Application::Sdl2Application::exit();
@@ -156,6 +179,14 @@ void BattleSub::keyReleaseEvent(KeyEvent& Event)
     {
         KeyPressedMap["w"] = false;
     }
+    else if (Event.key() == KeyEvent::Key::F1)
+    {
+        KeyPressedMap["F1"] = false;
+    }
+    else if (Event.key() == KeyEvent::Key::F2)
+    {
+        KeyPressedMap["F2"] = false;
+    }
 }
 
 void BattleSub::drawEvent()
@@ -166,6 +197,19 @@ void BattleSub::drawEvent()
     if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
     if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
     if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
+    if (KeyPressedMap["F1"] == true) 
+    {
+        Zoom_ *= 0.99f;
+        VPX_ = 100.0f * Zoom_;
+        VPY_ = 100.0f * Zoom_;
+    }
+    if (KeyPressedMap["F2"] == true) 
+    {
+        Zoom_ *= 1.01f;
+        VPX_ = 100.0f * Zoom_;
+        VPY_ = 100.0f * Zoom_;
+    }
+    Camera_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
     
     // Update game objects
     for (auto Sub : GlobalSubmarineFactory.getEntities())

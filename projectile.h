@@ -2,17 +2,13 @@
 #define PROJECTILE_H
 
 #include "game_object.h"
-#include "projectile_drawable.h"
 
 class Projectile : public GameObject
 {
     public:
         
-        Projectile() {}
-        
         void init(const b2BodyDef BodyDef)
         {
-            std::cout << "Projectile::init" << std::endl;
             GameObject::init(BodyDef);
             
             Body_->SetBullet(true);
