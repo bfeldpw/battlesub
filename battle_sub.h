@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "common.h"
+#include "landscape.h"
 #include "sub.h"
 
 namespace BattleSub
@@ -25,14 +26,15 @@ class BattleSub : public Platform::Application
         void drawEvent() override;
         void keyPressEvent(KeyEvent& Event) override;
         void keyReleaseEvent(KeyEvent& Event) override;
-        void mousePressEvent(MouseEvent& event) override;
+        void mouseMoveEvent(MouseMoveEvent& Event) override;
+        void mousePressEvent(MouseEvent& Event) override;
 
         b2Body* createBody(Object2D& object, const Vector2& size, b2BodyType type, const DualComplex& transformation, Float density = 1.0f);
 
         std::unordered_map<std::string, bool> KeyPressedMap;
+        Vector2i MouseDelta_;
         
         GL::Mesh Mesh_{NoCreate};
-        GL::Mesh MeshProjectile_{NoCreate};
         Shaders::Flat2D Shader_{NoCreate};
 
         Scene2D Scene_;
@@ -44,6 +46,7 @@ class BattleSub : public Platform::Application
         
         Sub* PlayerSub_  = nullptr;
         Sub* PlayerSub2_ = nullptr;
+        Landscape* CanyonBoundary = nullptr;
         
         float VPX_ = 100.0f;
         float VPY_ = 100.0f;

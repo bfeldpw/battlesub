@@ -13,49 +13,31 @@ class Projectile : public GameObject
             
             Body_->SetBullet(true);
             
-            // Projectile size: 10cm x 30cm
-            constexpr float SizeX = 0.05f;
-            constexpr float SizeY = 0.15f;
+            std::vector<b2Vec2> Verts;
+            Verts.push_back({-0.02f, 0.0f});
+            Verts.push_back({ 0.02f, 0.0f});
+            Verts.push_back({ 0.02f, 0.1f});
+            Verts.push_back({ 0.0f,  0.15f});
+            Verts.push_back({-0.02f, 0.1f});
+            Verts.push_back({-0.02f, 0.0f});
             
-            b2PolygonShape shape;
-            shape.SetAsBox(SizeX, SizeY);
+            b2PolygonShape Shape;
+            Shape.Set(Verts.data(), Verts.size());
             
             b2FixtureDef fixture;
             fixture.friction = 0.8f;
-            fixture.density = 20.0f;
-            fixture.shape = &shape;
+            fixture.shape = &Shape;
             Body_->CreateFixture(&fixture);
             
-            Visuals_->setScaling({SizeX, SizeY});
-            
-            // This defines a triangle in CCW order.
-//             b2Vec2 Vertices[5];
-//             Vertices[0].Set(-0.1f,  0.0f);
-//             Vertices[1].Set( 0.1f,  0.0f);
-//             Vertices[2].Set( 0.1f,  0.8f);
-//             Vertices[3].Set( 0.0f,  1.0f);
-//             Vertices[4].Set(-0.1f,  0.8f);
-//             int32 Count = 5;
-//             b2PolygonShape Polygon;
-//             Polygon.Set(Vertices, Count);
-//             
-//             b2FixtureDef fixture;
-//             fixture.friction = 0.8f;
-//             fixture.density = 1.0f;
-//             fixture.shape = &Polygon;
-//             Body_->CreateFixture(&fixture);
-            
-//             b2CircleShape circle;
-//             circle.m_p.Set(.0f, .0f);
-//             circle.m_radius = .1f;
-//             
-//             b2FixtureDef fixture;
-//             fixture.friction = 0.8f;
-//             fixture.density = 1.0f;
-//             fixture.shape = &circle;
-//             Body_->CreateFixture(&fixture);
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Verts), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Verts.size())
+                .setPrimitive(GL::MeshPrimitive::LineLoop)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Mesh_ = std::move(Mesh);
         }
-                
+        
     private:
         
 };

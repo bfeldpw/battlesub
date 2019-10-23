@@ -1,8 +1,10 @@
 #ifndef LANDSCAPE_H
 #define LANDSCAPE_H
 
+#include <vector>
+
 #include "game_object.h"
-// #include "landscape_drawable.h"
+#include "landscape_drawable.h"
 
 class Landscape : public GameObject
 {
@@ -12,28 +14,29 @@ class Landscape : public GameObject
         {
             GameObject::init(BodyDef);
             
-            // Projectile size: 10cm x 30cm
-            constexpr float SizeX = 0.05f;
-            constexpr float SizeY = 0.15f;
+            // Create physical shape and convert to graphics
+            std::vector<b2Vec2> Verts;
+            Verts.push_back({-500.0f,  300.0f});
+            Verts.push_back({ 500.0f,  300.0f});
+            Verts.push_back({ 500.0f, -300.0f});
+            Verts.push_back({-500.0f, -300.0f});
             
-            // This a chain shape with isolated vertices
-            b2Vec2 vs[4];
-            vs[0].Set(1.7f, 0.0f);
-            vs[1].Set(1.0f, 0.25f);
-            vs[2].Set(0.0f, 0.0f);
-            vs[3].Set(-1.7f, 0.4f);
             b2ChainShape Chain;
-            Chain.CreateChain(vs, 4);
+            Chain.CreateChain(Verts.data(), Verts.size());
             
             b2FixtureDef fixture;
             fixture.friction = 0.8f;
             fixture.shape = &Chain;
             Body_->CreateFixture(&fixture);
             
-//             Visuals_->setScaling({SizeX, SizeY});
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(convertGeometryPhysicsToGraphics(Verts), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Verts.size())
+                .setPrimitive(GL::MeshPrimitive::LineLoop)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Mesh_ = std::move(Mesh);
         }
-                
-    private:
         
 };
 

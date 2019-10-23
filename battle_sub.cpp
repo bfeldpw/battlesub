@@ -14,7 +14,6 @@
 #include <Magnum/Trade/MeshData2D.h>
 
 #include "battle_sub.h"
-#include "box_drawable.h"
 #include "common.h"
 #include "landscape_factory.h"
 #include "landscape_drawable.h"
@@ -71,40 +70,21 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.position.Set(0.0f, 20.0f);
     PlayerSub2_->init(BodyDef2);
     
-    auto CanyonBoundary = GlobalLandscapeFactory.create();
+    CanyonBoundary = GlobalLandscapeFactory.create();
     CanyonBoundary->create(&(*World_), &Scene_);
     b2BodyDef BodyDef3;
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
-    BodyDef3.position.Set(0.0f, 20.0f);
+    BodyDef3.position.Set(0.0f, 0.0f);
     CanyonBoundary->init(BodyDef3);
     
     /* Create the shader and the box mesh */
     Shader_ = Shaders::Flat2D{};
     Mesh_ = MeshTools::compile(Primitives::squareSolid());
     
-    const struct {
-        Vector2 pos;
-    } data[]{{{-0.1f, 0.0f}},
-            {{  0.1f, 0.0f}},
-            {{ -0.1f, 0.8f}},
-            {{ -0.1f, 0.8f}},
-            {{  0.1f, 0.0f}},
-            {{  0.1f, 0.8f}},
-            {{  0.1f, 0.8f}},
-            {{  0.0f, 1.0f}},
-            {{ -0.1f, 0.8f}}};
-
-    GL::Mesh Mesh;
-    GL::Buffer buffer;
-    buffer.setData(data, GL::BufferUsage::StaticDraw);
-    MeshProjectile_ = GL::Mesh{};
-    MeshProjectile_.setCount(9)
-        .addVertexBuffer(std::move(buffer), 0,
-            Shaders::VertexColor2D::Position{});
-
-    new SubDrawable(PlayerSub_->getVisuals(), MeshProjectile_, Shader_, 0x2f83cc_rgbf, Drawables_);
+    new SubDrawable(PlayerSub_->getVisuals(), Mesh_, Shader_, 0x2f83cc_rgbf, Drawables_);
     new SubDrawable(PlayerSub2_->getVisuals(), Mesh_, Shader_, 0x5f83cc_rgbf, Drawables_);
+    new LandscapeDrawable(CanyonBoundary->getVisuals(), CanyonBoundary->getMesh(), Shader_, 0xcccccc_rgbf, Drawables_);
     
     if (!setSwapInterval(1))
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
@@ -112,80 +92,73 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     #endif
 }
 
-void BattleSub::mousePressEvent(MouseEvent& event)
-{
-    if(event.button() == MouseEvent::Button::Left)
-    {
-        PlayerSub_->fire(Mesh_, Shader_, Drawables_, -1.0f);
-    }
-    else if (event.button() == MouseEvent::Button::Right)
-    {
-        PlayerSub_->fire(Mesh_, Shader_, Drawables_, 1.0f);
-    }
-}
-
 void BattleSub::keyPressEvent(KeyEvent& Event)
 {
-    if (Event.key() == KeyEvent::Key::A)
+    switch (Event.key())
     {
-        KeyPressedMap["a"] = true;
-        GlobalSubmarineFactory.destroy(PlayerSub2_);
-    }
-    else if (Event.key() == KeyEvent::Key::D)
-    {
-        KeyPressedMap["d"] = true;
-    }
-    else if (Event.key() == KeyEvent::Key::S)
-    {
-        KeyPressedMap["s"] = true;
-    }
-    else if (Event.key() == KeyEvent::Key::W)
-    {
-        KeyPressedMap["w"] = true;
-    }
-    else if (Event.key() == KeyEvent::Key::P)
-    {
-        KeyPressedMap["p"] = true;
-    }
-    else if (Event.key() == KeyEvent::Key::F1)
-    {
-        KeyPressedMap["F1"] = true;
-    }
-    else if (Event.key() == KeyEvent::Key::F2)
-    {
-        KeyPressedMap["F2"] = true;
-    }
-    else if (Event.key() == KeyEvent::Key::Esc)
-    {
-        Platform::Application::Sdl2Application::exit();
+        case KeyEvent::Key::A: KeyPressedMap["a"] = true; break;
+        case KeyEvent::Key::D: KeyPressedMap["d"] = true; break;
+        case KeyEvent::Key::S: KeyPressedMap["s"] = true; break;
+        case KeyEvent::Key::W: KeyPressedMap["w"] = true; break;
+        case KeyEvent::Key::LeftCtrl: KeyPressedMap["LCTRL"] = true; break;
+        case KeyEvent::Key::Esc: KeyPressedMap["Esc"] = true; break;
+        default: break;
     }
 }
 
 void BattleSub::keyReleaseEvent(KeyEvent& Event)
 {
-    if (Event.key() == KeyEvent::Key::A)
+    switch (Event.key())
     {
-        KeyPressedMap["a"] = false;
+        case KeyEvent::Key::A: KeyPressedMap["a"] = false; break;
+        case KeyEvent::Key::D: KeyPressedMap["d"] = false; break;
+        case KeyEvent::Key::S: KeyPressedMap["s"] = false; break;
+        case KeyEvent::Key::W: KeyPressedMap["w"] = false; break;
+        case KeyEvent::Key::LeftCtrl: KeyPressedMap["LCTRL"] = false; break;
+        case KeyEvent::Key::Esc: KeyPressedMap["Esc"] = false; break;
+        default: break;
     }
-    else if (Event.key() == KeyEvent::Key::D)
+}
+
+void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
+{
+    MouseDelta_.x() =  Event.relativePosition().x();
+    MouseDelta_.y() = -Event.relativePosition().y();
+    
+    if (Event.modifiers() & MouseMoveEvent::Modifier::Ctrl)
     {
-        KeyPressedMap["d"] = false;
+        if (Event.buttons() & MouseMoveEvent::Button::Left)
+        {
+            if (MouseDelta_.y() != 0) Zoom_ *= 1.0f-0.01f*MouseDelta_.y();
+            VPX_ = 100.0f * Zoom_;
+            VPY_ = 100.0f * Zoom_;
+        }
+        else 
+        {
+            Platform::Application::Sdl2Application::setMouseLocked(true);
+            CameraObject_->translate(0.05f*Zoom_*Vector2(MouseDelta_));
+            MouseDelta_ = Vector2i();
+        }
     }
-    else if (Event.key() == KeyEvent::Key::S)
+    else
     {
-        KeyPressedMap["s"] = false;
+        Platform::Application::Sdl2Application::setMouseLocked(false);
     }
-    else if (Event.key() == KeyEvent::Key::W)
+    
+}
+
+void BattleSub::mousePressEvent(MouseEvent& Event)
+{
+    if(Event.button() == MouseEvent::Button::Left)
     {
-        KeyPressedMap["w"] = false;
+        if (!(Event.modifiers() & MouseEvent::Modifier::Ctrl))
+        {
+            PlayerSub_->fire(Shader_, Drawables_, -1.0f);
+        }
     }
-    else if (Event.key() == KeyEvent::Key::F1)
+    else if (Event.button() == MouseEvent::Button::Right)
     {
-        KeyPressedMap["F1"] = false;
-    }
-    else if (Event.key() == KeyEvent::Key::F2)
-    {
-        KeyPressedMap["F2"] = false;
+        PlayerSub_->fire(Shader_, Drawables_, 1.0f);
     }
 }
 
@@ -197,19 +170,13 @@ void BattleSub::drawEvent()
     if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
     if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
     if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
-    if (KeyPressedMap["F1"] == true) 
+    if (KeyPressedMap["Esc"] == true)
     {
-        Zoom_ *= 0.99f;
-        VPX_ = 100.0f * Zoom_;
-        VPY_ = 100.0f * Zoom_;
+        Platform::Application::Sdl2Application::exit();
     }
-    if (KeyPressedMap["F2"] == true) 
-    {
-        Zoom_ *= 1.01f;
-        VPX_ = 100.0f * Zoom_;
-        VPY_ = 100.0f * Zoom_;
-    }
+    
     Camera_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
+    
     
     // Update game objects
     for (auto Sub : GlobalSubmarineFactory.getEntities())
@@ -218,7 +185,7 @@ void BattleSub::drawEvent()
     }
     
     // Update physics
-    World_->Step(1.0f/60.0f, 8, 3);
+    World_->Step(1.0f/60.0f, 80, 30);
 
     // Update object visuals    
     for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())

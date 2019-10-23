@@ -35,6 +35,7 @@ class GameObject : public Entity
         }
         
         b2Body*         getBody() const {return Body_;}
+        GL::Mesh&       getMesh() {return Mesh_;}
         Object2D&       getVisuals() {return *Visuals_;}
 
         void init(const b2BodyDef& BodyDef)
@@ -48,8 +49,22 @@ class GameObject : public Entity
         b2Body*  Body_      = nullptr;
         b2World* World_     = nullptr;
         
+        GL::Mesh Mesh_{NoCreate};
         Object2D* Visuals_  = nullptr;
         Scene2D* Scene_     = nullptr;
+     
+    public:
+        
+        static std::vector<Vector2> convertGeometryPhysicsToGraphics(const std::vector<b2Vec2> Verts)
+        {
+            std::vector<Vector2> Tmp;
+            
+            for (auto Vec : Verts)
+            {
+                Tmp.push_back({Vec.x, Vec.y});
+            }
+            return Tmp; // Note: No std::move needed, might even prevent copy elision
+        }
         
 };
 

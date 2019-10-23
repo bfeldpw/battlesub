@@ -13,14 +13,31 @@ class LandscapeDrawable: public SceneGraph::Drawable2D
                                    Shaders::Flat2D& Shader,
                                    const Color4& Color,
                                    SceneGraph::DrawableGroup2D& Drawables) : 
-                                   SceneGraph::Drawable2D{Obj, &Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
-                                    
-        void setColor(const Color4 Color)
+                                   SceneGraph::Drawable2D{Obj, &Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color}
         {
-            Color_ = Color;
+//             const struct
+//             {
+//                 Vector2 pos;
+//             } data[]{{{-0.1f, 0.0f}},
+//                     {{  0.1f, 0.0f}},
+//                     {{ -0.1f, 0.8f}},
+//                     {{ -0.1f, 0.8f}},
+//                     {{  0.1f, 0.0f}},
+//                     {{  0.1f, 0.8f}},
+//                     {{  0.1f, 0.8f}},
+//                     {{  0.0f, 1.0f}},
+//                     {{ -0.1f, 0.8f}}};
+// 
+// //             GL::Mesh Mesh;
+//             GL::Buffer buffer;
+//             buffer.setData(data, GL::BufferUsage::StaticDraw);
+//             MeshProjectile_ = GL::Mesh{};
+//             MeshProjectile_.setCount(9)
+//                 .addVertexBuffer(std::move(buffer), 0,
+//                     Shaders::VertexColor2D::Position{});
         }
 
-    private:
+private:
         
         void draw(const Matrix3& TransformationMatrix, SceneGraph::Camera2D& Camera) override
         {

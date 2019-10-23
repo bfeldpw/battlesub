@@ -30,7 +30,7 @@ class Sub : public GameObject
             Visuals_->setScaling({SizeX, SizeY});
         }
         
-        void fire(GL::Mesh& Mesh, Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
+        void fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
                   float GunPos);
         
         void rudderLeft()
