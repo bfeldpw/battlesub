@@ -17,6 +17,7 @@
 #include "common.h"
 #include "landscape_factory.h"
 #include "landscape_drawable.h"
+// #include "projectile_factory.h"
 #include "sub_drawable.h"
 #include "submarine_factory.h"
 
@@ -48,8 +49,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     CameraObject_ = new Object2D{&Scene_};
     Camera_ = new SceneGraph::Camera2D{*CameraObject_};
     Camera_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
-        .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
-        .setViewport(GL::defaultFramebuffer.viewport().size());
+            .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
+            .setViewport(GL::defaultFramebuffer.viewport().size());
 
     /* Create the Box2D world with the usual gravity vector */
     World_.emplace(b2Vec2{0.0f, 0.0f});

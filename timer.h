@@ -1,0 +1,19 @@
+#include <chrono>
+
+using namespace std::chrono;
+using HiResClock = high_resolution_clock;
+
+class Timer
+{
+    public:
+        Timer() {this->start();}
+        void    start()     {Start = HiResClock::now();}
+        void    stop()      {Stop = HiResClock::now();}
+        double  elapsed()   {return duration<double>(Stop-Start).count();}
+        double  split()     {return duration<double>(HiResClock::now() - Start).count();}
+    
+    private:
+        
+        HiResClock::time_point Start;
+        HiResClock::time_point Stop;
+};

@@ -44,6 +44,7 @@ set(HEADERS
         sub.h
         sub_drawable.h
         submarine_factory.h
+        timer.h
 )
 
 set(SOURCES

@@ -29,8 +29,6 @@ class BattleSub : public Platform::Application
         void mouseMoveEvent(MouseMoveEvent& Event) override;
         void mousePressEvent(MouseEvent& Event) override;
 
-        b2Body* createBody(Object2D& object, const Vector2& size, b2BodyType type, const DualComplex& transformation, Float density = 1.0f);
-
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;
         

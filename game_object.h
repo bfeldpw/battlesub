@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "entity.h"
+#include "timer.h"
 
 class GameObject : public Entity
 {
@@ -18,6 +19,9 @@ class GameObject : public Entity
             Scene_ = Scene;
             
             Visuals_ = new Object2D(Scene);
+            
+            Scale_  = 1.0f;
+            IsSunk_ = false;
         }
         
         void destroy()
@@ -37,6 +41,7 @@ class GameObject : public Entity
         b2Body*         getBody() const {return Body_;}
         GL::Mesh&       getMesh() {return Mesh_;}
         Object2D&       getVisuals() {return *Visuals_;}
+        bool            isSunk() const {return IsSunk_;}
 
         void init(const b2BodyDef& BodyDef)
         {
@@ -44,14 +49,30 @@ class GameObject : public Entity
             Body_->SetUserData(Visuals_);
         }
         
+        void sink()
+        {
+            // Just change the visuals
+            Scale_ *= 0.995f;
+            if (Scale_ <= 0.01f) IsSunk_ = true;
+            Visuals_->setScaling({Scale_, Scale_});
+            // Physics: filter collisions
+        }
+        
     protected:
         
+        // General data
+        Timer Age_;
+        
+        // Physics data
         b2Body*  Body_      = nullptr;
         b2World* World_     = nullptr;
         
-        GL::Mesh Mesh_{NoCreate};
+        // Graphics data
+        GL::Mesh  Mesh_{NoCreate};
         Object2D* Visuals_  = nullptr;
-        Scene2D* Scene_     = nullptr;
+        Scene2D*  Scene_    = nullptr;
+        float     Scale_    = 1.0f;
+        bool      IsSunk_   = false;
      
     public:
         

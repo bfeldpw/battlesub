@@ -50,25 +50,7 @@ class Sub : public GameObject
             Throttle_ = -20.0f;
         }
         
-        void update(SceneGraph::DrawableGroup2D& Drawables)
-        {
-            this->Body_->ApplyForce(this->Body_->GetWorldVector({Rudder_, 0.0f}),
-                                    this->Body_->GetWorldPoint({0.0f, 1.0f}), true);
-            this->Body_->ApplyForce(this->Body_->GetWorldVector({0.0f, Throttle_}),
-                                    this->Body_->GetWorldPoint({0.0f, 0.0f}), true);
-//             for (auto i=0; i<Projectiles_.size(); ++i)
-//             {
-//                 auto ColorRed = Projectiles_[i]->getBody()->GetLinearVelocity().Length();
-//                 ProjectileDrawables_[i]->setColor(Color3(ColorRed, 0.0, 0.0));
-//                 
-//                 if (ColorRed == 0.0)
-//                 {
-// //                     Drawables.remove(*ProjectileDrawables_[i]);
-// //                     World_->destroy(Projectiles_->getBody());
-//                 }
-//             }
-        }
-        
+        void update(SceneGraph::DrawableGroup2D& Drawables);
         
     private:
         

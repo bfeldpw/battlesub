@@ -25,7 +25,22 @@ void Sub::fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
     this->Body_->ApplyLinearImpulse(this->Body_->GetWorldVector({0.0f,-1.0f}),
                                     this->Body_->GetWorldPoint({GunPos, 8.0f}), true);
     
-//         Projectiles_.push_back(Bullet);
-//         ProjectileDrawables_.push_back(
     new ProjectileDrawable(Bullet->getVisuals(), Bullet->getMesh(), Shader, 0xdf0000_rgbf, Drawables);
+}
+
+void Sub::update(SceneGraph::DrawableGroup2D& Drawables)
+{
+    this->Body_->ApplyForce(this->Body_->GetWorldVector({Rudder_, 0.0f}),
+                            this->Body_->GetWorldPoint({0.0f, 1.0f}), true);
+    this->Body_->ApplyForce(this->Body_->GetWorldVector({0.0f, Throttle_}),
+                            this->Body_->GetWorldPoint({0.0f, 0.0f}), true);
+    for (auto Bullet : GlobalProjectileFactory.getEntities())
+    {
+        Bullet.second->update();
+        if (Bullet.second->isSunk())
+        {
+            GlobalProjectileFactory.destroy(Bullet.second);
+            break;
+        }
+    }
 }
