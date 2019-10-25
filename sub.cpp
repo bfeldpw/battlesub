@@ -7,7 +7,6 @@ void Sub::fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
                float GunPos)
 {
     Projectile* Bullet = GlobalProjectileFactory.create();
-    Bullet->create(World_, Scene_);
     
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
@@ -19,7 +18,7 @@ void Sub::fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
     BodyDef.angle = this->Body_->GetAngle();
     BodyDef.angularDamping = 10.0f;
     BodyDef.linearDamping = 2.0f;
-    Bullet->init(BodyDef);
+    Bullet->init(World_, Scene_, BodyDef);
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
                                           Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
     this->Body_->ApplyLinearImpulse(this->Body_->GetWorldVector({0.0f,-1.0f}),

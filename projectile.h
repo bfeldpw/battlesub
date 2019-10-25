@@ -7,9 +7,9 @@ class Projectile : public GameObject
 {
     public:
         
-        void init(const b2BodyDef BodyDef)
+        void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef)
         {
-            GameObject::init(BodyDef);
+            GameObject::init(World, Scene, BodyDef);
             
             Body_->SetBullet(true);
             

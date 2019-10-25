@@ -16,17 +16,6 @@ class GameObject : public Entity
 {
     public:
         
-        void create(b2World* World, Scene2D* Scene)
-        {
-            World_ = World;
-            Scene_ = Scene;
-            
-            Visuals_ = new Object2D(Scene);
-            
-            Scale_  = 1.0f;
-            IsSunk_ = false;
-        }
-        
         void destroy()
         {
             // Destroy physics data, Box2D will handle everything from here
@@ -46,10 +35,17 @@ class GameObject : public Entity
         Object2D&       getVisuals() {return *Visuals_;}
         bool            isSunk() const {return IsSunk_;}
 
-        void init(const b2BodyDef& BodyDef)
+        void init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef)
         {
+            World_ = World;
+            Scene_ = Scene;
+            Visuals_ = new Object2D(Scene);
+            
             Body_=World_->CreateBody(&BodyDef);
             Body_->SetUserData(Visuals_);
+            
+            Scale_  = 1.0f;
+            IsSunk_ = false;
         }
         
         void sink()

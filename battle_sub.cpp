@@ -56,28 +56,25 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     World_.emplace(b2Vec2{0.0f, 0.0f});
     
     PlayerSub_ = GlobalSubmarineFactory.create();
-    PlayerSub_->create(&(*World_), &Scene_);
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
-    PlayerSub_->init(BodyDef);
+    PlayerSub_->init(&(*World_), &Scene_, BodyDef);
     
     PlayerSub2_ = GlobalSubmarineFactory.create();
-    PlayerSub2_->create(&(*World_), &Scene_);
     b2BodyDef BodyDef2;
     BodyDef2.type = b2_dynamicBody;
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
-    PlayerSub2_->init(BodyDef2);
+    PlayerSub2_->init(&(*World_), &Scene_, BodyDef2);
     
     CanyonBoundary = GlobalLandscapeFactory.create();
-    CanyonBoundary->create(&(*World_), &Scene_);
     b2BodyDef BodyDef3;
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
     BodyDef3.position.Set(0.0f, 0.0f);
-    CanyonBoundary->init(BodyDef3);
+    CanyonBoundary->init(&(*World_), &Scene_, BodyDef3);
     
     /* Create the shader and the box mesh */
     Shader_ = Shaders::Flat2D{};
