@@ -17,7 +17,6 @@
 #include "common.h"
 #include "landscape_factory.h"
 #include "landscape_drawable.h"
-// #include "projectile_factory.h"
 #include "sub_drawable.h"
 #include "submarine_factory.h"
 
