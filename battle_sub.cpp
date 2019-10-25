@@ -51,6 +51,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
             .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
             .setViewport(GL::defaultFramebuffer.viewport().size());
 
+            
+    Resources_.emplace();
     /* Create the Box2D world with the usual gravity vector */
     World_.emplace(b2Vec2{0.0f, 0.0f});
     
@@ -59,29 +61,34 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
+    PlayerSub_->setMesh(Resources_->getMeshSub());
     PlayerSub_->init(&(*World_), &Scene_, BodyDef);
+    
     
     PlayerSub2_ = GlobalSubmarineFactory.create();
     b2BodyDef BodyDef2;
     BodyDef2.type = b2_dynamicBody;
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
+    PlayerSub_->setMesh(Resources_->getMeshSub());
     PlayerSub2_->init(&(*World_), &Scene_, BodyDef2);
+    
     
     CanyonBoundary = GlobalLandscapeFactory.create();
     b2BodyDef BodyDef3;
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
     BodyDef3.position.Set(0.0f, 0.0f);
+    PlayerSub_->setMesh(Resources_->getMeshLandscape());
     CanyonBoundary->init(&(*World_), &Scene_, BodyDef3);
+    
     
     /* Create the shader and the box mesh */
     Shader_ = Shaders::Flat2D{};
-    Mesh_ = MeshTools::compile(Primitives::squareSolid());
     
-    new SubDrawable(PlayerSub_->getVisuals(), Mesh_, Shader_, 0x2f83cc_rgbf, Drawables_);
-    new SubDrawable(PlayerSub2_->getVisuals(), Mesh_, Shader_, 0x5f83cc_rgbf, Drawables_);
-    new LandscapeDrawable(CanyonBoundary->getVisuals(), CanyonBoundary->getMesh(), Shader_, 0xcccccc_rgbf, Drawables_);
+    new SubDrawable(PlayerSub_->getVisuals(), Resources_->getMeshSub(), Shader_, 0x2f83cc_rgbf, Drawables_);
+    new SubDrawable(PlayerSub2_->getVisuals(), Resources_->getMeshSub(), Shader_, 0x5f83cc_rgbf, Drawables_);
+    new LandscapeDrawable(CanyonBoundary->getVisuals(), Resources_->getMeshLandscape(), Shader_, 0xcccccc_rgbf, Drawables_);
     
     if (!setSwapInterval(1))
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
@@ -150,12 +157,12 @@ void BattleSub::mousePressEvent(MouseEvent& Event)
     {
         if (!(Event.modifiers() & MouseEvent::Modifier::Ctrl))
         {
-            PlayerSub_->fire(Shader_, Drawables_, -1.0f);
+            PlayerSub_->fire(Shader_, Drawables_, -1.0f, &(*Resources_));
         }
     }
     else if (Event.button() == MouseEvent::Button::Right)
     {
-        PlayerSub_->fire(Shader_, Drawables_, 1.0f);
+        PlayerSub_->fire(Shader_, Drawables_, 1.0f, &(*Resources_));
     }
 }
 

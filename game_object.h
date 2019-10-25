@@ -17,13 +17,15 @@ class GameObject : public Entity
     public:
         
         b2Body*     getBody() const {return Body_;}
-        GL::Mesh&   getMesh() {return Mesh_;}
+        GL::Mesh*   getMesh() {return Mesh_;}
         Object2D&   getVisuals() {return *Visuals_;}
         bool        isSunk() const {return IsSunk_;}
 
         void destroy();
         void init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef);
         void sink();
+        
+        void setMesh(GL::Mesh* const Mesh) {Mesh_ = Mesh;}
         
     protected:
         
@@ -35,7 +37,7 @@ class GameObject : public Entity
         b2World* World_     = nullptr;
         
         // Graphics data
-        GL::Mesh  Mesh_{NoCreate};
+        GL::Mesh* Mesh_     = nullptr;
         Object2D* Visuals_  = nullptr;
         Scene2D*  Scene_    = nullptr;
         float     Scale_    = 1.0f;

@@ -41,6 +41,7 @@ set(HEADERS
         projectile.h
         projectile_drawable.h
         projectile_factory.h
+        resource_storage.h
         sub.h
         sub_drawable.h
         submarine_factory.h

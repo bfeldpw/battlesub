@@ -28,14 +28,6 @@ class Projectile : public GameObject
             fixture.friction = 0.8f;
             fixture.shape = &Shape;
             Body_->CreateFixture(&fixture);
-            
-            GL::Mesh Mesh;
-            GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Verts), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(Verts.size())
-                .setPrimitive(GL::MeshPrimitive::TriangleFan)
-                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Mesh_ = std::move(Mesh);
         }
         
         void update()

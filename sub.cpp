@@ -4,8 +4,11 @@
 #include "projectile_factory.h"
 
 void Sub::fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
-               float GunPos)
+               float GunPos, ResourceStorage* Resources)
 {
+    assert(Body_ != nullptr);
+    assert(Resources != nullptr);
+    
     Projectile* Bullet = GlobalProjectileFactory.create();
     
     b2BodyDef BodyDef;
@@ -24,11 +27,13 @@ void Sub::fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
     this->Body_->ApplyLinearImpulse(this->Body_->GetWorldVector({0.0f,-1.0f}),
                                     this->Body_->GetWorldPoint({GunPos, 8.0f}), true);
     
-    new ProjectileDrawable(Bullet->getVisuals(), Bullet->getMesh(), Shader, 0xdf0000_rgbf, Drawables);
+    new ProjectileDrawable(Bullet->getVisuals(), Resources->getMeshProjectile(), Shader, 0xdf0000_rgbf, Drawables);
 }
 
 void Sub::update(SceneGraph::DrawableGroup2D& Drawables)
 {
+    assert(Body_ != nullptr);
+    
     this->Body_->ApplyForce(this->Body_->GetWorldVector({Rudder_, 0.0f}),
                             this->Body_->GetWorldPoint({0.0f, 1.0f}), true);
     this->Body_->ApplyForce(this->Body_->GetWorldVector({0.0f, Throttle_}),
