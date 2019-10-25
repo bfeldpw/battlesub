@@ -9,6 +9,9 @@
 #include "entity.h"
 #include "timer.h"
 
+constexpr float SINKING_SCALE_FACTOR = 0.995f;
+constexpr float SINKING_SCALE_MIN    = 0.01f;
+
 class GameObject : public Entity
 {
     public:
@@ -52,10 +55,17 @@ class GameObject : public Entity
         void sink()
         {
             // Just change the visuals
-            Scale_ *= 0.995f;
-            if (Scale_ <= 0.01f) IsSunk_ = true;
+            Scale_ *= SINKING_SCALE_FACTOR;
+            if (Scale_ <= SINKING_SCALE_MIN) IsSunk_ = true;
             Visuals_->setScaling({Scale_, Scale_});
-            // Physics: filter collisions
+            
+            // Physics: Filter collisions to not collide with sinking objects
+            for (auto Fixture = Body_->GetFixtureList(); Fixture; Fixture = Fixture->GetNext())
+            {
+                b2Filter Filter;
+                Filter.maskBits = 0;
+                Fixture->SetFilterData(Filter);
+            }
         }
         
     protected:

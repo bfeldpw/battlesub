@@ -25,6 +25,7 @@ class Sub : public GameObject
             fixture.friction = 0.8f;
             fixture.density = 1.0f;
             fixture.shape = &shape;
+            
             Body_->CreateFixture(&fixture);
             
             Visuals_->setScaling({SizeX, SizeY});
