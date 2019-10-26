@@ -52,6 +52,7 @@ set(SOURCES
         battle_sub.cpp
         entity.cpp
         game_object.cpp
+        resource_storage.cpp
         sub.cpp
 )
 

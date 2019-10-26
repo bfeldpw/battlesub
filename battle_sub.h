@@ -6,7 +6,6 @@
 
 #include "common.h"
 #include "landscape.h"
-#include "resource_storage.h"
 #include "sub.h"
 
 namespace BattleSub
@@ -33,7 +32,6 @@ class BattleSub : public Platform::Application
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;
         
-//         GL::Mesh Mesh_{NoCreate};
         Shaders::Flat2D Shader_{NoCreate};
 
         Scene2D Scene_;
@@ -43,7 +41,6 @@ class BattleSub : public Platform::Application
         
         Containers::Optional<b2World> World_;
 
-        Containers::Optional<ResourceStorage> Resources_;
         Sub* PlayerSub_  = nullptr;
         Sub* PlayerSub2_ = nullptr;
         Landscape* CanyonBoundary = nullptr;

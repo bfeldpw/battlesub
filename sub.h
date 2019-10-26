@@ -2,7 +2,6 @@
 #define SUB_H
 
 #include "game_object.h"
-#include "resource_storage.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
@@ -33,7 +32,7 @@ class Sub : public GameObject
         }
         
         void fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
-                  float GunPos, ResourceStorage* Resources);
+                  float GunPos);
         
         void rudderLeft()
         {

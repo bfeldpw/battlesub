@@ -1,9 +1,7 @@
 #ifndef RESOURCE_STORAGE_H
 #define RESOURCE_STORAGE_H
 
-// #include <Magnum/GL/Mesh.h>#include <Magnum/Math/DualComplex.h>
 #include <Magnum/MeshTools/Compile.h>
-// #include <Magnum/Platform/Sdl2Application.h>
 #include <Magnum/Primitives/Square.h>
 #include <Magnum/Trade/MeshData2D.h>
 
@@ -13,7 +11,7 @@ class ResourceStorage
 {
     public:
         
-        ResourceStorage()
+        void init()
         {
             {
                 std::vector<b2Vec2> Verts;
@@ -48,17 +46,24 @@ class ResourceStorage
             }
             
             MeshSub_ = MeshTools::compile(Primitives::squareSolid());
+            
+            IsInitialised = true;
         }
         
-        GL::Mesh* getMeshLandscape() {return &MeshLandscape_;}
-        GL::Mesh* getMeshProjectile() {return &MeshProjectile_;}
-        GL::Mesh* getMeshSub() {return &MeshSub_;}
+        GL::Mesh* getMeshLandscape() {assert(IsInitialised == true); return &MeshLandscape_;}
+        GL::Mesh* getMeshProjectile() {assert(IsInitialised == true); return &MeshProjectile_;}
+        GL::Mesh* getMeshSub() {assert(IsInitialised == true); return &MeshSub_;}
 
     private:
-        
+
+        bool IsInitialised = false;
         GL::Mesh MeshLandscape_{NoCreate};
         GL::Mesh MeshProjectile_{NoCreate};
         GL::Mesh MeshSub_{NoCreate};
+        
+    public:
+        
+        static ResourceStorage Global;
         
 };
 
