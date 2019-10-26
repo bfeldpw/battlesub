@@ -2,10 +2,8 @@
 
 #include "projectile_drawable.h"
 #include "projectile_factory.h"
-#include "resource_storage.h"
 
-void Sub::fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
-               float GunPos)
+void Sub::fire(float GunPos)
 {
     assert(Body_ != nullptr);
     
@@ -21,13 +19,13 @@ void Sub::fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
     BodyDef.angle = this->Body_->GetAngle();
     BodyDef.angularDamping = 10.0f;
     BodyDef.linearDamping = 2.0f;
-    Bullet->init(World_, Scene_, BodyDef);
+    Bullet->setMesh(ResourceStorage::Global.getMeshProjectile());
+    Bullet->setShader(Shader_);
+    Bullet->init(World_, Scene_, BodyDef, DrawableGrp_);
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
                                           Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
     this->Body_->ApplyLinearImpulse(this->Body_->GetWorldVector({0.0f,-1.0f}),
                                     this->Body_->GetWorldPoint({GunPos, 8.0f}), true);
-    
-    new ProjectileDrawable(Bullet->getVisuals(), ResourceStorage::Global.getMeshProjectile(), Shader, 0xdf0000_rgbf, Drawables);
 }
 
 void Sub::update(SceneGraph::DrawableGroup2D& Drawables)

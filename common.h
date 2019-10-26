@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <Magnum/GL/Mesh.h>
+#include <Magnum/GL/Shader.h>
 #include <Magnum/SceneGraph/Camera.h>
 #include <Magnum/SceneGraph/Drawable.h>
 #include <Magnum/SceneGraph/TranslationRotationScalingTransformation2D.h>

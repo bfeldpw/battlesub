@@ -14,11 +14,12 @@ void GameObject::destroy()
     }
 }
 
-void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef)
+void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp)
 {
     World_ = World;
     Scene_ = Scene;
     Visuals_ = new Object2D(Scene);
+    DrawableGrp_ = DGrp;
     
     Body_=World_->CreateBody(&BodyDef);
     Body_->SetUserData(Visuals_);

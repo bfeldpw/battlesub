@@ -5,14 +5,18 @@
 
 #include "game_object.h"
 #include "landscape_drawable.h"
+#include "resource_storage.h"
+
+using namespace Magnum;
+using namespace Magnum::Math::Literals;
 
 class Landscape : public GameObject
 {
     public:
         
-        void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef)
+        void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef, SceneGraph::DrawableGroup2D* DGrp)
         {
-            GameObject::init(World, Scene, BodyDef);
+            GameObject::init(World, Scene, BodyDef, DGrp);
             
             // Create physical shape and convert to graphics
             std::vector<b2Vec2> Verts;
@@ -28,6 +32,8 @@ class Landscape : public GameObject
             fixture.friction = 0.8f;
             fixture.shape = &Chain;
             Body_->CreateFixture(&fixture);
+            
+            new LandscapeDrawable(*Visuals_, ResourceStorage::Global.getMeshLandscape(), Shader_, 0xcccccc_rgbf, *DrawableGrp_);
         }
         
 };

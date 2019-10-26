@@ -2,14 +2,15 @@
 #define PROJECTILE_H
 
 #include "game_object.h"
+#include "resource_storage.h"
 
 class Projectile : public GameObject
 {
     public:
         
-        void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef)
+        void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef, SceneGraph::DrawableGroup2D* DGrp)
         {
-            GameObject::init(World, Scene, BodyDef);
+            GameObject::init(World, Scene, BodyDef, DGrp);
             
             Body_->SetBullet(true);
             
@@ -28,11 +29,13 @@ class Projectile : public GameObject
             fixture.friction = 0.8f;
             fixture.shape = &Shape;
             Body_->CreateFixture(&fixture);
+            
+            new ProjectileDrawable(*Visuals_, Mesh_, Shader_, 0xdf0000_rgbf, *DrawableGrp_);
         }
         
         void update()
         {
-            // Body starts sinking if two slow
+            // Body starts sinking if too slow
             if (Body_->GetLinearVelocity().Length() < 0.01)
             {
                 this->sink();

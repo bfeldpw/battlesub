@@ -2,6 +2,8 @@
 #define SUB_H
 
 #include "game_object.h"
+#include "sub_drawable.h"
+#include "resource_storage.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
@@ -10,9 +12,9 @@ class Sub : public GameObject
 {
     public:
         
-        void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef)
+        void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef, SceneGraph::DrawableGroup2D* DGrp)
         {
-            GameObject::init(World, Scene, BodyDef);
+            GameObject::init(World, Scene, BodyDef, DGrp);
             
             // Submarine size: 4m x 16m
             constexpr float SizeX = 2.0f;
@@ -29,10 +31,11 @@ class Sub : public GameObject
             Body_->CreateFixture(&fixture);
             
             Visuals_->setScaling({SizeX, SizeY});
+            
+            new SubDrawable(*Visuals_, ResourceStorage::Global.getMeshSub(), Shader_, 0x2f83cc_rgbf, *DrawableGrp_);
         }
         
-        void fire(Shaders::Flat2D& Shader, SceneGraph::DrawableGroup2D& Drawables,
-                  float GunPos);
+        void fire(float GunPos);
         
         void rudderLeft()
         {
