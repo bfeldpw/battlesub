@@ -5,7 +5,6 @@
 
 #include "game_object.h"
 #include "landscape_drawable.h"
-#include "resource_storage.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
@@ -33,7 +32,7 @@ class Landscape : public GameObject
             fixture.shape = &Chain;
             Body_->CreateFixture(&fixture);
             
-            new LandscapeDrawable(*Visuals_, ResourceStorage::Global.getMeshLandscape(), Shader_, 0xcccccc_rgbf, *DrawableGrp_);
+            new LandscapeDrawable(*Visuals_, Mesh_, Shader_, 0xcccccc_rgbf, *DrawableGrp_);
         }
         
 };

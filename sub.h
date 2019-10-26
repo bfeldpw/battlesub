@@ -32,7 +32,7 @@ class Sub : public GameObject
             
             Visuals_->setScaling({SizeX, SizeY});
             
-            new SubDrawable(*Visuals_, ResourceStorage::Global.getMeshSub(), Shader_, 0x2f83cc_rgbf, *DrawableGrp_);
+            new SubDrawable(*Visuals_, Mesh_, Shader_, 0x2f83cc_rgbf, *DrawableGrp_);
         }
         
         void fire(float GunPos);

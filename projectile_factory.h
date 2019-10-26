@@ -8,6 +8,4 @@ constexpr int POOL_SIZE_PROJECTILES = 10000;
 
 typedef GameObjectFactory<Projectile, POOL_SIZE_PROJECTILES> ProjectileFactory;
 
-ProjectileFactory GlobalProjectileFactory;
-
 #endif // PROJECTILE_FACTORY_H

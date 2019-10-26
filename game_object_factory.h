@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 
+#include "entity.h"
 #include "memory_pool.h"
 
 template<class T, size_t S>

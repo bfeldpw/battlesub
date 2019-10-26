@@ -15,9 +15,8 @@
 
 #include "battle_sub.h"
 #include "common.h"
-#include "landscape_factory.h"
+#include "global_factories.h"
 #include "resource_storage.h"
-#include "submarine_factory.h"
 
 namespace BattleSub{
 
@@ -57,7 +56,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     
     Shader_ = Shaders::Flat2D{};
     
-    PlayerSub_ = GlobalSubmarineFactory.create();
+    PlayerSub_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
@@ -67,7 +66,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     PlayerSub_->init(&(*World_), &Scene_, BodyDef, &Drawables_);
     
     
-    PlayerSub2_ = GlobalSubmarineFactory.create();
+    PlayerSub2_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef2;
     BodyDef2.type = b2_dynamicBody;
     BodyDef2.active = true;
@@ -77,7 +76,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     PlayerSub2_->init(&(*World_), &Scene_, BodyDef2, &Drawables_);
     
     
-    CanyonBoundary = GlobalLandscapeFactory.create();
+    CanyonBoundary = GlobalFactories::Landscapes.create();
     b2BodyDef BodyDef3;
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
@@ -179,7 +178,16 @@ void BattleSub::drawEvent()
     
     
     // Update game objects
-    for (auto Sub : GlobalSubmarineFactory.getEntities())
+    for (auto Projectile : GlobalFactories::Projectiles.getEntities())
+    {
+        Projectile.second->update();
+        if (Projectile.second->isSunk())
+        {
+            GlobalFactories::Projectiles.destroy(Projectile.second);
+            break;
+        }
+    }
+    for (auto Sub : GlobalFactories::Submarines.getEntities())
     {
         Sub.second->update(Drawables_);
     }

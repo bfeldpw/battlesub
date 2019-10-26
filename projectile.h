@@ -2,7 +2,10 @@
 #define PROJECTILE_H
 
 #include "game_object.h"
-#include "resource_storage.h"
+#include "projectile_drawable.h"
+
+using namespace Magnum;
+using namespace Magnum::Math::Literals;
 
 class Projectile : public GameObject
 {

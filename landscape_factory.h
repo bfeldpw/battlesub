@@ -8,6 +8,4 @@ constexpr int POOL_SIZE_LANDSCAPES = 100;
 
 typedef GameObjectFactory<Landscape, POOL_SIZE_LANDSCAPES> LandscapeFactory;
 
-LandscapeFactory GlobalLandscapeFactory;
-
 #endif // LANDSCAPE_FACTORY_H

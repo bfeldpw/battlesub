@@ -8,6 +8,4 @@ constexpr int POOL_SIZE_SUBS = 5;
 
 typedef GameObjectFactory<Sub, POOL_SIZE_SUBS> SubmarineFactory;
 
-SubmarineFactory GlobalSubmarineFactory;
-
 #endif // SUBMARINE_FACTORY_H
