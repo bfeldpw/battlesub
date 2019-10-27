@@ -61,8 +61,9 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
-    PlayerSub_->setMesh(ResourceStorage::Global.getMeshSub());
+    PlayerSub_->setMesh(ResourceStorage::Global.getMeshSubmarine());
     PlayerSub_->setShader(&Shader_);
+    PlayerSub_->setGeometry(ResourceStorage::Global.getGeoSubmarine());
     PlayerSub_->init(&(*World_), &Scene_, BodyDef, &Drawables_);
     
     
@@ -71,8 +72,10 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.type = b2_dynamicBody;
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
-    PlayerSub2_->setMesh(ResourceStorage::Global.getMeshSub());
+    BodyDef2.angle = 3.14159f;
+    PlayerSub2_->setMesh(ResourceStorage::Global.getMeshSubmarine());
     PlayerSub2_->setShader(&Shader_);
+    PlayerSub2_->setGeometry(ResourceStorage::Global.getGeoSubmarine());
     PlayerSub2_->init(&(*World_), &Scene_, BodyDef2, &Drawables_);
     
     
@@ -81,6 +84,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
     BodyDef3.position.Set(0.0f, 0.0f);
+    CanyonBoundary->setGeometry(ResourceStorage::Global.getGeoLandscape());
     CanyonBoundary->setMesh(ResourceStorage::Global.getMeshLandscape());
     CanyonBoundary->setShader(&Shader_);
     CanyonBoundary->init(&(*World_), &Scene_, BodyDef3, &Drawables_);

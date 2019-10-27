@@ -17,15 +17,8 @@ class Landscape : public GameObject
         {
             GameObject::init(World, Scene, BodyDef, DGrp);
             
-            // Create physical shape and convert to graphics
-            std::vector<b2Vec2> Verts;
-            Verts.push_back({-500.0f,  300.0f});
-            Verts.push_back({ 500.0f,  300.0f});
-            Verts.push_back({ 500.0f, -300.0f});
-            Verts.push_back({-500.0f, -300.0f});
-            
             b2ChainShape Chain;
-            Chain.CreateChain(Verts.data(), Verts.size());
+            Chain.CreateChain(Geometry_->data(), Geometry_->size());
             
             b2FixtureDef fixture;
             fixture.friction = 0.8f;

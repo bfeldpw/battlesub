@@ -16,16 +16,9 @@ class Projectile : public GameObject
             GameObject::init(World, Scene, BodyDef, DGrp);
             
             Body_->SetBullet(true);
-            
-            std::vector<b2Vec2> Verts;
-            Verts.push_back({-0.02f, 0.0f});
-            Verts.push_back({ 0.02f, 0.0f});
-            Verts.push_back({ 0.02f, 0.1f});
-            Verts.push_back({ 0.0f,  0.15f});
-            Verts.push_back({-0.02f, 0.1f});
-            
+
             b2PolygonShape Shape;
-            Shape.Set(Verts.data(), Verts.size());
+            Shape.Set(Geometry_->data(), Geometry_->size());
             
             b2FixtureDef fixture;
             fixture.density = 10.0f;

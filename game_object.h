@@ -2,6 +2,7 @@
 #define GAME_OBJECT_H
 
 #include <iostream>
+#include <vector>
 
 #include <Box2D/Box2D.h>
 
@@ -11,6 +12,8 @@
 
 constexpr float SINKING_SCALE_FACTOR = 0.995f;
 constexpr float SINKING_SCALE_MIN    = 0.01f;
+
+typedef std::vector<b2Vec2> GeoType;
 
 class GameObject : public Entity
 {
@@ -25,6 +28,7 @@ class GameObject : public Entity
                   const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp);
         void sink();
         
+        void setGeometry(GeoType* const Geometry) {Geometry_ = Geometry;}
         void setMesh(GL::Mesh* const Mesh) {Mesh_ = Mesh;}
         void setShader(Shaders::Flat2D* const Shader) {Shader_ = Shader;}
         
@@ -36,6 +40,7 @@ class GameObject : public Entity
         // Physics data
         b2Body*  Body_      = nullptr;
         b2World* World_     = nullptr;
+        GeoType* Geometry_  = nullptr;
         
         // Graphics data
         GL::Mesh*                       Mesh_           = nullptr;

@@ -16,21 +16,15 @@ class Sub : public GameObject
         {
             GameObject::init(World, Scene, BodyDef, DGrp);
             
-            // Submarine size: 4m x 16m
-            constexpr float SizeX = 2.0f;
-            constexpr float SizeY = 8.0f;
-            
-            b2PolygonShape shape;
-            shape.SetAsBox(SizeX, SizeY);
+            b2PolygonShape Shape;
+            Shape.Set(Geometry_->data(), Geometry_->size());
             
             b2FixtureDef fixture;
             fixture.friction = 0.8f;
             fixture.density = 1.0f;
-            fixture.shape = &shape;
+            fixture.shape = &Shape;
             
             Body_->CreateFixture(&fixture);
-            
-            Visuals_->setScaling({SizeX, SizeY});
             
             new SubDrawable(*Visuals_, Mesh_, Shader_, 0x2f83cc_rgbf, *DrawableGrp_);
         }

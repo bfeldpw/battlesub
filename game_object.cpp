@@ -16,6 +16,8 @@ void GameObject::destroy()
 
 void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp)
 {
+    assert(Geometry_ != nullptr);
+    
     World_ = World;
     Scene_ = Scene;
     Visuals_ = new Object2D(Scene);

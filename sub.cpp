@@ -13,12 +13,13 @@ void Sub::fire(float GunPos)
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(this->Body_->GetPosition().x +
-                         this->Body_->GetWorldVector({GunPos, 8.01f}).x,
+                         this->Body_->GetWorldVector({GunPos, 8.0f}).x,
                          this->Body_->GetPosition().y + 
-                         this->Body_->GetWorldVector({GunPos, 8.01f}).y);
+                         this->Body_->GetWorldVector({GunPos, 8.0f}).y);
     BodyDef.angle = this->Body_->GetAngle();
     BodyDef.angularDamping = 10.0f;
     BodyDef.linearDamping = 2.0f;
+    Bullet->setGeometry(ResourceStorage::Global.getGeoProjectile());
     Bullet->setMesh(ResourceStorage::Global.getMeshProjectile());
     Bullet->setShader(Shader_);
     Bullet->init(World_, Scene_, BodyDef, DrawableGrp_);
