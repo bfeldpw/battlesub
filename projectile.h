@@ -17,14 +17,17 @@ class Projectile : public GameObject
             
             Body_->SetBullet(true);
 
-            b2PolygonShape Shape;
-            Shape.Set(Geometry_->data(), Geometry_->size());
+            for (auto Shape : *Shapes_)
+            {
+                b2PolygonShape Shp;
+                Shp.Set(Shape.data(), Shape.size());
             
-            b2FixtureDef fixture;
-            fixture.density = 10.0f;
-            fixture.friction = 0.8f;
-            fixture.shape = &Shape;
-            Body_->CreateFixture(&fixture);
+                b2FixtureDef fixture;
+                fixture.density = 10.0f;
+                fixture.friction = 0.8f;
+                fixture.shape = &Shp;
+                Body_->CreateFixture(&fixture);
+            }
             
             new ProjectileDrawable(*Visuals_, Mesh_, Shader_, 0xdf0000_rgbf, *DrawableGrp_);
         }

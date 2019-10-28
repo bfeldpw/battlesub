@@ -17,13 +17,16 @@ class Landscape : public GameObject
         {
             GameObject::init(World, Scene, BodyDef, DGrp);
             
-            b2ChainShape Chain;
-            Chain.CreateLoop(Geometry_->data(), Geometry_->size());
+            for (auto Shape : *Shapes_)
+            {
+                b2ChainShape Chain;
+                Chain.CreateLoop(Shape.data(), Shape.size());
             
-            b2FixtureDef fixture;
-            fixture.friction = 0.8f;
-            fixture.shape = &Chain;
-            Body_->CreateFixture(&fixture);
+                b2FixtureDef fixture;
+                fixture.friction = 0.8f;
+                fixture.shape = &Chain;
+                Body_->CreateFixture(&fixture);
+            }
             
             new LandscapeDrawable(*Visuals_, Mesh_, Shader_, 0xcccccc_rgbf, *DrawableGrp_);
         }

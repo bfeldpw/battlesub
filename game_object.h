@@ -13,7 +13,8 @@
 constexpr float SINKING_SCALE_FACTOR = 0.995f;
 constexpr float SINKING_SCALE_MIN    = 0.01f;
 
-typedef std::vector<b2Vec2> GeoType;
+typedef std::vector<b2Vec2>     ShapeType;
+typedef std::vector<ShapeType>  ShapesType;
 
 class GameObject : public Entity
 {
@@ -28,7 +29,7 @@ class GameObject : public Entity
                   const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp);
         void sink();
         
-        void setGeometry(GeoType* const Geometry) {Geometry_ = Geometry;}
+        void setShapes(ShapesType* const Shapes) {Shapes_ = Shapes;}
         void setMesh(GL::Mesh* const Mesh) {Mesh_ = Mesh;}
         void setShader(Shaders::Flat2D* const Shader) {Shader_ = Shader;}
         
@@ -38,9 +39,9 @@ class GameObject : public Entity
         Timer Age_;
         
         // Physics data
-        b2Body*  Body_      = nullptr;
-        b2World* World_     = nullptr;
-        GeoType* Geometry_  = nullptr;
+        b2Body*     Body_   = nullptr;
+        b2World*    World_  = nullptr;
+        ShapesType* Shapes_ = nullptr;
         
         // Graphics data
         GL::Mesh*                       Mesh_           = nullptr;

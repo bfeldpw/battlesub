@@ -13,9 +13,9 @@ class ResourceStorage
         
         void init();
         
-        GeoType*  getGeoLandscape() {assert(IsInitialised == true); return &GeoLandscape_;}
-        GeoType*  getGeoProjectile() {assert(IsInitialised == true); return &GeoProjectile_;}
-        GeoType*  getGeoSubmarine() {assert(IsInitialised == true); return &GeoSubmarine_;}
+        ShapesType*  getShapesLandscape() {assert(IsInitialised == true); return &ShapesLandscape_;}
+        ShapesType*  getShapesProjectile() {assert(IsInitialised == true); return &ShapesProjectile_;}
+        ShapesType*  getShapesSubmarine() {assert(IsInitialised == true); return &ShapesSubmarine_;}
         
         GL::Mesh* getMeshLandscape() {assert(IsInitialised == true); return &MeshLandscape_;}
         GL::Mesh* getMeshProjectile() {assert(IsInitialised == true); return &MeshProjectile_;}
@@ -24,12 +24,12 @@ class ResourceStorage
     private:
 
         bool IsInitialised = false;
-        GeoType  GeoLandscape_;
-        GeoType  GeoProjectile_;
-        GeoType  GeoSubmarine_;
-        GL::Mesh MeshLandscape_{NoCreate};
-        GL::Mesh MeshProjectile_{NoCreate};
-        GL::Mesh MeshSub_{NoCreate};
+        ShapesType  ShapesLandscape_;
+        ShapesType  ShapesProjectile_;
+        ShapesType  ShapesSubmarine_;
+        GL::Mesh    MeshLandscape_{NoCreate};
+        GL::Mesh    MeshProjectile_{NoCreate};
+        GL::Mesh    MeshSub_{NoCreate};
         
     public:
         

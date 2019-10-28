@@ -16,15 +16,18 @@ class Sub : public GameObject
         {
             GameObject::init(World, Scene, BodyDef, DGrp);
             
-            b2PolygonShape Shape;
-            Shape.Set(Geometry_->data(), Geometry_->size());
-            
-            b2FixtureDef fixture;
-            fixture.friction = 0.8f;
-            fixture.density = 1.0f;
-            fixture.shape = &Shape;
-            
-            Body_->CreateFixture(&fixture);
+            for (auto Shape : *Shapes_)
+            {
+                b2PolygonShape Shp;
+                Shp.Set(Shape.data(), Shape.size());
+                
+                b2FixtureDef fixture;
+                fixture.friction = 0.8f;
+                fixture.density = 1.0f;
+                fixture.shape = &Shp;
+                
+                Body_->CreateFixture(&fixture);
+            }
             
             new SubDrawable(*Visuals_, Mesh_, Shader_, 0x2f83cc_rgbf, *DrawableGrp_);
         }
