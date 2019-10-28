@@ -18,7 +18,7 @@ class Landscape : public GameObject
             GameObject::init(World, Scene, BodyDef, DGrp);
             
             b2ChainShape Chain;
-            Chain.CreateChain(Geometry_->data(), Geometry_->size());
+            Chain.CreateLoop(Geometry_->data(), Geometry_->size());
             
             b2FixtureDef fixture;
             fixture.friction = 0.8f;
