@@ -24,6 +24,18 @@ class MessageHandler
             {
                 std::cout << "[  MSG  ] " << Message << std::endl;
             }
+            else
+            {
+                std::cout << "[  DBG  ] " << Message << std::endl;
+            }
+        }
+        void reportDebug(const std::string& Message, const ReportLevelType Level = DEBUG)
+        {
+//             #ifdef DEBUG
+            {
+                std::cout << "[  DBG  ] " << Message << std::endl;
+            }
+//             #endif
         }
     
 };

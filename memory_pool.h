@@ -28,8 +28,8 @@ class MemoryPool
                 T* Item = FreeItems_.back();
                 FreeItems_.pop_back();
                 
-                GlobalMessageHandler.report("Item allocated from memory pool. Items: " +
-                                             std::to_string(FreeItems_.size()), MessageHandler::DEBUG_5);
+                GlobalMessageHandler.reportDebug("Item allocated from memory pool. Items: " +
+                                                  std::to_string(FreeItems_.size()), MessageHandler::DEBUG_5);
                 
                 return Item;
             }
@@ -45,8 +45,8 @@ class MemoryPool
             if (FreeItems_.size() < S)
             {
                 FreeItems_.push_back(Item);
-                GlobalMessageHandler.report("Item destroyed from memory pool. Items: " +
-                                                std::to_string(FreeItems_.size()), MessageHandler::DEBUG_5);
+                GlobalMessageHandler.reportDebug("Item destroyed from memory pool. Items: " +
+                                                  std::to_string(FreeItems_.size()), MessageHandler::DEBUG_5);
                 Item = nullptr;
             }
             else
