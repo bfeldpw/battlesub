@@ -8,10 +8,7 @@
 #include <Magnum/GL/Buffer.h>
 
 #include <Magnum/Math/DualComplex.h>
-#include <Magnum/MeshTools/Compile.h>
 #include <Magnum/Platform/Sdl2Application.h>
-#include <Magnum/Primitives/Square.h>
-#include <Magnum/Trade/MeshData2D.h>
 
 #include "battle_sub.h"
 #include "common.h"

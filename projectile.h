@@ -35,7 +35,7 @@ class Projectile : public GameObject
         void update()
         {
             // Body starts sinking if too slow
-            if (Body_->GetLinearVelocity().Length() < 0.01)
+            if (Body_->GetLinearVelocity().Length() < 0.01f)
             {
                 this->sink();
             }

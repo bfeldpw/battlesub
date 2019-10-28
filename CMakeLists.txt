@@ -26,6 +26,10 @@ find_package(Magnum REQUIRED
     
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
+set(LIB_NOISE_HEADERS
+        ${PROJECT_SOURCE_DIR}/3rdparty/libnoise2d/src/noise.h
+)
+
 set(HEADERS
         battle_sub.h
         common.h
@@ -49,6 +53,10 @@ set(HEADERS
         timer.h
 )
 
+set(LIB_NOISE_LIBRARY
+        ${PROJECT_SOURCE_DIR}/3rdparty/libnoise2d/build/src/libnoise2d.so
+)
+
 set(SOURCES
         battle_sub.cpp
         entity.cpp
@@ -58,20 +66,21 @@ set(SOURCES
         sub.cpp
 )
 
-add_executable(battle_sub ${HEADERS} ${SOURCES})
+add_executable(battle_sub ${LIB_NOISE_HEADERS} ${HEADERS} ${SOURCES})
 
 target_include_directories(battle_sub PRIVATE ${MAGNUM_INCLUDE_DIR}})
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install/include")
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/libnoise2d/src/")
 
 target_link_libraries(battle_sub PRIVATE
     Magnum::Application
     Magnum::GL
     Magnum::Magnum
-    Magnum::MeshTools
-    Magnum::Primitives
     Magnum::SceneGraph
     Magnum::Shaders
-    Magnum::Trade
-    ${BOX2D_LIBRARY_LOCAL})
+    ${BOX2D_LIBRARY_LOCAL}
+    ${LIB_NOISE_LIBRARY}
+)
 
 # install(TARGETS battle_sub DESTINATION ${MAGNUM_BINARY_INSTALL_DIR})
+

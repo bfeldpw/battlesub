@@ -18,7 +18,7 @@ void ResourceStorage::init()
         
         int OctaveCount = ceil(log2(1/0.005)/log2(1.9731));
         if (OctaveCount < 1) OctaveCount = 1;
-        GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_3);
+        GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
         
         Boundary.SetOctaveCount(OctaveCount);
         Boundary.SetSeed(7);
@@ -27,19 +27,19 @@ void ResourceStorage::init()
         
         for (auto i=-500.0f; i<=500.0f; i+=1.0f)
         {
-            Shape.push_back({i, 300.0f - 50.0f * Boundary.GetValue(i, 300.0)});
+            Shape.push_back({i, 300.0f - 50.0f * float(Boundary.GetValue(i, 300.0))});
         }
         for (auto i=Shape.back().y; i>=-300.0f; i-=1.0f)
         {
-            Shape.push_back({500.0f - 50.0f * Boundary.GetValue(500.0, i), i});
+            Shape.push_back({500.0f - 50.0f * float(Boundary.GetValue(500.0, i)), i});
         }
         for (auto i=Shape.back().x; i>=-500.0f; i-=1.0f)
         {
-            Shape.push_back({i, -300.0f - 50.0f * Boundary.GetValue(i, -300.0)});
+            Shape.push_back({i, -300.0f - 50.0f * float(Boundary.GetValue(i, -300.0))});
         }
         for (auto i=Shape.back().y; i<=300.0f; i+=1.0f)
         {
-            Shape.push_back({-500.0f - 50.0f * Boundary.GetValue(-500.0, i), i});
+            Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
         }
         
         ShapesLandscape_.push_back(std::move(Shape));
@@ -104,8 +104,6 @@ void ResourceStorage::init()
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
         MeshSub_ = std::move(Mesh);
     }
-    
-//     MeshSub_ = MeshTools::compile(Primitives::squareSolid());
     
     IsInitialised = true;
 }
