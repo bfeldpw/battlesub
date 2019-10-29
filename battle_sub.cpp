@@ -98,10 +98,18 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
     {
         case KeyEvent::Key::A: KeyPressedMap["a"] = true; break;
         case KeyEvent::Key::D: KeyPressedMap["d"] = true; break;
+        case KeyEvent::Key::P:
+            KeyPressedMap["p"] = true;
+            IsPaused_ ^= true;
+            break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = true; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = true; break;
         case KeyEvent::Key::LeftCtrl: KeyPressedMap["LCTRL"] = true; break;
         case KeyEvent::Key::Esc: KeyPressedMap["Esc"] = true; break;
+        case KeyEvent::Key::Space:
+            KeyPressedMap["Space"] = true;
+            if (IsPaused_) IsStepForward_ = true;
+            break;
         default: break;
     }
 }
@@ -112,10 +120,12 @@ void BattleSub::keyReleaseEvent(KeyEvent& Event)
     {
         case KeyEvent::Key::A: KeyPressedMap["a"] = false; break;
         case KeyEvent::Key::D: KeyPressedMap["d"] = false; break;
+        case KeyEvent::Key::P: KeyPressedMap["p"] = false; break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = false; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = false; break;
         case KeyEvent::Key::LeftCtrl: KeyPressedMap["LCTRL"] = false; break;
         case KeyEvent::Key::Esc: KeyPressedMap["Esc"] = false; break;
+        case KeyEvent::Key::Space: KeyPressedMap["Space"] = false; break;
         default: break;
     }
 }
@@ -177,35 +187,40 @@ void BattleSub::drawEvent()
     
     Camera_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
     
-    
-    // Update game objects
-    for (auto Projectile : GlobalFactories::Projectiles.getEntities())
+    if (!IsPaused_ || IsStepForward_)
     {
-        Projectile.second->update();
-        if (Projectile.second->isSunk())
+        // Update game objects
+        for (auto Projectile : GlobalFactories::Projectiles.getEntities())
         {
-            GlobalFactories::Projectiles.destroy(Projectile.second);
-            break;
+            Projectile.second->update();
+            if (Projectile.second->isSunk())
+            {
+                GlobalFactories::Projectiles.destroy(Projectile.second);
+                break;
+            }
         }
-    }
-    for (auto Sub : GlobalFactories::Submarines.getEntities())
-    {
-        Sub.second->update(Drawables_);
-    }
-    
-    // Update physics
-    World_->Step(1.0f/60.0f, 80, 30);
+        for (auto Sub : GlobalFactories::Submarines.getEntities())
+        {
+            Sub.second->update(Drawables_);
+        }
+        
+        // Update physics
+        World_->Step(1.0f/60.0f, 80, 30);
 
-    // Update object visuals    
-    for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())
-    {
-        if (Body->IsActive())
-        {            
-            (*static_cast<Object2D*>(Body->GetUserData()))
-                .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
-                .setRotation(Complex::rotation(Rad(Body->GetAngle())));
+        // Update object visuals    
+        for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())
+        {
+            if (Body->IsActive())
+            {            
+                (*static_cast<Object2D*>(Body->GetUserData()))
+                    .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
+                    .setRotation(Complex::rotation(Rad(Body->GetAngle())));
+            }
         }
-    }
+        
+        IsStepForward_ = false;
+        
+    } // if (!IsPaused_)
     
     if (GlobalErrorHandler.checkError() == true) Platform::Application::Sdl2Application::exit();
     
