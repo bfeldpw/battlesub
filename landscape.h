@@ -28,7 +28,10 @@ class Landscape : public GameObject
                 Body_->CreateFixture(&fixture);
             }
             
-            new LandscapeDrawable(*Visuals_, Mesh_, Shader_, 0xcccccc_rgbf, *DrawableGrp_);
+            for (auto i=0; i<Meshes_->size(); ++i)
+            {
+                new LandscapeDrawable(*Visuals_, &((*Meshes_)[i]), Shader_, 0xcccccc_rgbf, *DrawableGrp_);
+            }
         }
         
 };

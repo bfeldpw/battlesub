@@ -15,6 +15,7 @@ constexpr float SINKING_SCALE_MIN    = 0.01f;
 
 typedef std::vector<b2Vec2>     ShapeType;
 typedef std::vector<ShapeType>  ShapesType;
+typedef std::vector<GL::Mesh>   MeshesType;
 
 class GameObject : public Entity
 {
@@ -30,7 +31,7 @@ class GameObject : public Entity
         void sink();
         
         void setShapes(ShapesType* const Shapes) {Shapes_ = Shapes;}
-        void setMesh(GL::Mesh* const Mesh) {Mesh_ = Mesh;}
+        void setMeshes(MeshesType* const Meshes) {Meshes_ = Meshes;}
         void setShader(Shaders::Flat2D* const Shader) {Shader_ = Shader;}
         
     protected:
@@ -44,7 +45,7 @@ class GameObject : public Entity
         ShapesType* Shapes_ = nullptr;
         
         // Graphics data
-        GL::Mesh*                       Mesh_           = nullptr;
+        MeshesType*                     Meshes_         = nullptr;
         Shaders::Flat2D*                Shader_         = nullptr;
         Object2D*                       Visuals_        = nullptr;
         Scene2D*                        Scene_          = nullptr;

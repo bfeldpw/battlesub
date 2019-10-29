@@ -17,9 +17,9 @@ class ResourceStorage
         ShapesType*  getShapesProjectile() {assert(IsInitialised == true); return &ShapesProjectile_;}
         ShapesType*  getShapesSubmarine() {assert(IsInitialised == true); return &ShapesSubmarine_;}
         
-        GL::Mesh* getMeshLandscape() {assert(IsInitialised == true); return &MeshLandscape_;}
-        GL::Mesh* getMeshProjectile() {assert(IsInitialised == true); return &MeshProjectile_;}
-        GL::Mesh* getMeshSubmarine() {assert(IsInitialised == true); return &MeshSub_;}
+        MeshesType* getMeshesLandscape() {assert(IsInitialised == true); return &MeshesLandscape_;}
+        MeshesType* getMeshesProjectile() {assert(IsInitialised == true); return &MeshesProjectile_;}
+        MeshesType* getMeshesSubmarine() {assert(IsInitialised == true); return &MeshesSub_;}
 
     private:
 
@@ -27,9 +27,9 @@ class ResourceStorage
         ShapesType  ShapesLandscape_;
         ShapesType  ShapesProjectile_;
         ShapesType  ShapesSubmarine_;
-        GL::Mesh    MeshLandscape_{NoCreate};
-        GL::Mesh    MeshProjectile_{NoCreate};
-        GL::Mesh    MeshSub_{NoCreate};
+        MeshesType  MeshesLandscape_;
+        MeshesType  MeshesProjectile_;
+        MeshesType  MeshesSub_;
         
     public:
         

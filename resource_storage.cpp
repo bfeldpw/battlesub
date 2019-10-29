@@ -59,7 +59,7 @@ void ResourceStorage::init()
         Mesh.setCount(ShapesLandscape_.front().size())
             .setPrimitive(GL::MeshPrimitive::LineLoop)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-        MeshLandscape_ = std::move(Mesh);
+        MeshesLandscape_.push_back(std::move(Mesh));
     }
     // Initialise projectile
     {
@@ -79,7 +79,7 @@ void ResourceStorage::init()
         Mesh.setCount(ShapesProjectile_.front().size())
             .setPrimitive(GL::MeshPrimitive::TriangleFan)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-        MeshProjectile_ = std::move(Mesh);
+        MeshesProjectile_.push_back(std::move(Mesh));
     }
     // Initialise submarine
     {
@@ -102,7 +102,7 @@ void ResourceStorage::init()
         Mesh.setCount(ShapesSubmarine_.front().size())
             .setPrimitive(GL::MeshPrimitive::TriangleFan)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-        MeshSub_ = std::move(Mesh);
+        MeshesSub_.push_back(std::move(Mesh));
     }
     
     IsInitialised = true;

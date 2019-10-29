@@ -20,7 +20,7 @@ void Sub::fire(float GunPos)
     BodyDef.angularDamping = 10.0f;
     BodyDef.linearDamping = 2.0f;
     Bullet->setShapes(ResourceStorage::Global.getShapesProjectile());
-    Bullet->setMesh(ResourceStorage::Global.getMeshProjectile());
+    Bullet->setMeshes(ResourceStorage::Global.getMeshesProjectile());
     Bullet->setShader(Shader_);
     Bullet->init(World_, Scene_, BodyDef, DrawableGrp_);
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),

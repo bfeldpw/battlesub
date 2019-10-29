@@ -29,7 +29,10 @@ class Projectile : public GameObject
                 Body_->CreateFixture(&fixture);
             }
             
-            new ProjectileDrawable(*Visuals_, Mesh_, Shader_, 0xdf0000_rgbf, *DrawableGrp_);
+            for (auto i=0; i<Meshes_->size(); ++i)
+            {
+                new ProjectileDrawable(*Visuals_, &((*Meshes_)[i]), Shader_, 0xdf0000_rgbf, *DrawableGrp_);
+            }
         }
         
         void update()

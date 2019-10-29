@@ -29,7 +29,10 @@ class Sub : public GameObject
                 Body_->CreateFixture(&fixture);
             }
             
-            new SubDrawable(*Visuals_, Mesh_, Shader_, 0x2f83cc_rgbf, *DrawableGrp_);
+            for (auto i=0; i<Meshes_->size(); ++i)
+            {
+                new SubDrawable(*Visuals_, &((*Meshes_)[i]), Shader_, 0x2f83cc_rgbf, *DrawableGrp_);
+            }
         }
         
         void fire(float GunPos);
