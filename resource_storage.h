@@ -12,10 +12,11 @@ class ResourceStorage
     public:
         
         void init();
+        void release();
         
-        ShapesType*  getShapesLandscape() {assert(IsInitialised == true); return &ShapesLandscape_;}
-        ShapesType*  getShapesProjectile() {assert(IsInitialised == true); return &ShapesProjectile_;}
-        ShapesType*  getShapesSubmarine() {assert(IsInitialised == true); return &ShapesSubmarine_;}
+        ShapesType* getShapesLandscape() {assert(IsInitialised == true); return &ShapesLandscape_;}
+        ShapesType* getShapesProjectile() {assert(IsInitialised == true); return &ShapesProjectile_;}
+        ShapesType* getShapesSubmarine() {assert(IsInitialised == true); return &ShapesSubmarine_;}
         
         MeshesType* getMeshesLandscape() {assert(IsInitialised == true); return &MeshesLandscape_;}
         MeshesType* getMeshesProjectile() {assert(IsInitialised == true); return &MeshesProjectile_;}

@@ -23,43 +23,54 @@ void ResourceStorage::init()
         Boundary.SetOctaveCount(OctaveCount);
         Boundary.SetSeed(7);
         
-        ShapeType Shape;
-        
-        for (auto i=-500.0f; i<=500.0f; i+=1.0f)
         {
-            Shape.push_back({i, 300.0f - 50.0f * float(Boundary.GetValue(i, 300.0))});
+            ShapeType Shape;
+            
+            for (auto i=-500.0f; i<=500.0f; i+=1.0f)
+            {
+                Shape.push_back({i, 300.0f - 50.0f * float(Boundary.GetValue(i, 300.0))});
+            }
+            for (auto i=Shape.back().y; i>=-300.0f; i-=1.0f)
+            {
+                Shape.push_back({500.0f - 50.0f * float(Boundary.GetValue(500.0, i)), i});
+            }
+            for (auto i=Shape.back().x; i>=-500.0f; i-=1.0f)
+            {
+                Shape.push_back({i, -300.0f - 50.0f * float(Boundary.GetValue(i, -300.0))});
+            }
+            for (auto i=Shape.back().y; i<=300.0f; i+=1.0f)
+            {
+                Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
+            }
+            
+            ShapesLandscape_.push_back(std::move(Shape));
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesLandscape_.front()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(ShapesLandscape_.front().size())
+                .setPrimitive(GL::MeshPrimitive::LineLoop)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            MeshesLandscape_.push_back(std::move(Mesh));
         }
-        for (auto i=Shape.back().y; i>=-300.0f; i-=1.0f)
         {
-            Shape.push_back({500.0f - 50.0f * float(Boundary.GetValue(500.0, i)), i});
+            ShapeType Shape;
+            for (auto i=0.0f; i<2.0*b2_pi; i+=2.0*b2_pi/100.0)
+            {
+                auto Value = 5.0f * Boundary.GetValue(50.0f * std::cos(i), 50.0f * std::sin(i));
+                
+                Shape.push_back({(50.0f-Value)*std::cos(i), (50.0f-Value)*std::sin(i)+200.0f});
+            }
+            ShapesLandscape_.push_back(std::move(Shape));
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesLandscape_.back()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(ShapesLandscape_.back().size())
+                .setPrimitive(GL::MeshPrimitive::TriangleFan)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            MeshesLandscape_.push_back(std::move(Mesh));
         }
-        for (auto i=Shape.back().x; i>=-500.0f; i-=1.0f)
-        {
-            Shape.push_back({i, -300.0f - 50.0f * float(Boundary.GetValue(i, -300.0))});
-        }
-        for (auto i=Shape.back().y; i<=300.0f; i+=1.0f)
-        {
-            Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
-        }
-        
-        ShapesLandscape_.push_back(std::move(Shape));
-//         for (auto i=0.0f; i<2.0*b2_pi; i+=2.0*b2_pi/1000.0)
-//         {
-//             auto Value = 50.0f * Boundary.GetValue(500.0f * std::cos(i), 500.0f * std::sin(i));
-//             
-//             Shape.push_back({(500.0f-Value)*std::cos(i), (500.0f-Value)*std::sin(i)});
-//         }
-
-//         Shape.push_back({ 500.0f, -300.0f});
-//         Shape.push_back({-500.0f, -300.0f});
-        
-        GL::Mesh Mesh;
-        GL::Buffer Buffer;
-        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesLandscape_.front()), GL::BufferUsage::StaticDraw);
-        Mesh.setCount(ShapesLandscape_.front().size())
-            .setPrimitive(GL::MeshPrimitive::LineLoop)
-            .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-        MeshesLandscape_.push_back(std::move(Mesh));
     }
     // Initialise projectile
     {
@@ -106,4 +117,16 @@ void ResourceStorage::init()
     }
     
     IsInitialised = true;
+}
+
+void ResourceStorage::release()
+{
+    ShapesLandscape_.clear();
+    ShapesProjectile_.clear();
+    ShapesSubmarine_.clear();
+    MeshesLandscape_.clear();
+    MeshesProjectile_.clear();
+    MeshesSub_.clear();
+    
+    IsInitialised = false;
 }

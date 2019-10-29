@@ -180,7 +180,7 @@ void BattleSub::drawEvent()
     if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
     if (KeyPressedMap["Esc"] == true)
     {
-        Platform::Application::Sdl2Application::exit();
+        cleanupAndExit();
     }
     
     Camera_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
@@ -192,7 +192,7 @@ void BattleSub::drawEvent()
       
     if (GlobalErrorHandler.checkError() == true)
     {
-        Platform::Application::Sdl2Application::exit();
+        cleanupAndExit();
     }
     
     // Draw the scene
@@ -200,6 +200,12 @@ void BattleSub::drawEvent()
 
     swapBuffers();
     redraw();
+}
+
+void BattleSub::cleanupAndExit()
+{
+    ResourceStorage::Global.release();
+    Platform::Application::Sdl2Application::exit();
 }
 
 void BattleSub::updateGameObjects()

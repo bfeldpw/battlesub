@@ -30,7 +30,7 @@ class Landscape : public GameObject
             
             for (auto i=0; i<Meshes_->size(); ++i)
             {
-                new LandscapeDrawable(*Visuals_, &((*Meshes_)[i]), Shader_, 0xcccccc_rgbf, *DrawableGrp_);
+                new LandscapeDrawable(*Visuals_, &((*Meshes_)[i]), Shader_, 0x444455_rgbf, *DrawableGrp_);
             }
         }
         
