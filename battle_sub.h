@@ -28,6 +28,8 @@ class BattleSub : public Platform::Application
         void keyReleaseEvent(KeyEvent& Event) override;
         void mouseMoveEvent(MouseMoveEvent& Event) override;
         void mousePressEvent(MouseEvent& Event) override;
+        
+        void updateGameObjects();
 
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;

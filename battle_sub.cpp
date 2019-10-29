@@ -63,7 +63,6 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     PlayerSub_->setShapes(ResourceStorage::Global.getShapesSubmarine());
     PlayerSub_->init(&(*World_), &Scene_, BodyDef, &Drawables_);
     
-    
     PlayerSub2_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef2;
     BodyDef2.type = b2_dynamicBody;
@@ -74,7 +73,6 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     PlayerSub2_->setShader(&Shader_);
     PlayerSub2_->setShapes(ResourceStorage::Global.getShapesSubmarine());
     PlayerSub2_->init(&(*World_), &Scene_, BodyDef2, &Drawables_);
-    
     
     CanyonBoundary = GlobalFactories::Landscapes.create();
     b2BodyDef BodyDef3;
@@ -189,46 +187,52 @@ void BattleSub::drawEvent()
     
     if (!IsPaused_ || IsStepForward_)
     {
-        // Update game objects
-        for (auto Projectile : GlobalFactories::Projectiles.getEntities())
-        {
-            Projectile.second->update();
-            if (Projectile.second->isSunk())
-            {
-                GlobalFactories::Projectiles.destroy(Projectile.second);
-                break;
-            }
-        }
-        for (auto Sub : GlobalFactories::Submarines.getEntities())
-        {
-            Sub.second->update(Drawables_);
-        }
-        
-        // Update physics
-        World_->Step(1.0f/60.0f, 80, 30);
-
-        // Update object visuals    
-        for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())
-        {
-            if (Body->IsActive())
-            {            
-                (*static_cast<Object2D*>(Body->GetUserData()))
-                    .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
-                    .setRotation(Complex::rotation(Rad(Body->GetAngle())));
-            }
-        }
-        
-        IsStepForward_ = false;
-        
-    } // if (!IsPaused_)
-    
-    if (GlobalErrorHandler.checkError() == true) Platform::Application::Sdl2Application::exit();
+        updateGameObjects();
+    }
+      
+    if (GlobalErrorHandler.checkError() == true)
+    {
+        Platform::Application::Sdl2Application::exit();
+    }
     
     // Draw the scene
     Camera_->draw(Drawables_);
 
     swapBuffers();
     redraw();
+}
+
+void BattleSub::updateGameObjects()
+{
+    for (auto Projectile : GlobalFactories::Projectiles.getEntities())
+    {
+        Projectile.second->update();
+        if (Projectile.second->isSunk())
+        {
+            GlobalFactories::Projectiles.destroy(Projectile.second);
+            break;
+        }
+    }
+    for (auto Sub : GlobalFactories::Submarines.getEntities())
+    {
+        Sub.second->update(Drawables_);
+    }
+    
+    // Update physics
+    World_->Step(1.0f/60.0f, 80, 30);
+
+    // Update object visuals    
+    for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())
+    {
+        if (Body->IsActive())
+        {            
+            (*static_cast<Object2D*>(Body->GetUserData()))
+                .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
+                .setRotation(Complex::rotation(Rad(Body->GetAngle())));
+        }
+    }
+    
+    IsStepForward_ = false;
 }
 
 }
