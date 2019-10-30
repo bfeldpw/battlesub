@@ -36,6 +36,7 @@ set(HEADERS
         entity.h
         error_handler.h
         global_factories.h
+        global_resources.h
         landscape.h
         landscape_drawable.h
         landscape_factory.h
@@ -62,6 +63,7 @@ set(SOURCES
         entity.cpp
         game_object.cpp
         global_factories.cpp
+        global_resources.cpp
         resource_storage.cpp
         sub.cpp
 )

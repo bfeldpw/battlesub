@@ -1,7 +1,5 @@
 #include "resource_storage.h"
 
-ResourceStorage ResourceStorage::Global;
-
 #include "noise.h"
 
 void ResourceStorage::init()
@@ -57,9 +55,9 @@ void ResourceStorage::init()
             ShapeType Shape;
             for (auto i=0.0f; i<2.0*b2_pi; i+=2.0*b2_pi/100.0)
             {
-                auto Value = 5.0f * Boundary.GetValue(50.0f * std::cos(i), 50.0f * std::sin(i));
+                auto Value = 5.0f * Boundary.GetValue(100.0f * std::cos(i), 100.0f * std::sin(i));
                 
-                Shape.push_back({(50.0f-Value)*std::cos(i), (50.0f-Value)*std::sin(i)+200.0f});
+                Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+200.0f});
             }
             ShapesLandscape_.push_back(std::move(Shape));
             

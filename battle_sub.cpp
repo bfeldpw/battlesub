@@ -7,13 +7,12 @@
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Buffer.h>
 
-#include <Magnum/Math/DualComplex.h>
 #include <Magnum/Platform/Sdl2Application.h>
 
 #include "battle_sub.h"
 #include "common.h"
 #include "global_factories.h"
-#include "resource_storage.h"
+#include "global_resources.h"
 
 namespace BattleSub{
 
@@ -46,7 +45,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
             .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
             .setViewport(GL::defaultFramebuffer.viewport().size());
 
-    ResourceStorage::Global.init();
+    GlobalResources::Get.init();
             
     /* Create the Box2D world with the usual gravity vector */
     World_.emplace(b2Vec2{0.0f, 0.0f});
@@ -58,9 +57,9 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
-    PlayerSub_->setMeshes(ResourceStorage::Global.getMeshesSubmarine());
+    PlayerSub_->setMeshes(GlobalResources::Get.getMeshesSubmarine());
     PlayerSub_->setShader(&Shader_);
-    PlayerSub_->setShapes(ResourceStorage::Global.getShapesSubmarine());
+    PlayerSub_->setShapes(GlobalResources::Get.getShapesSubmarine());
     PlayerSub_->init(&(*World_), &Scene_, BodyDef, &Drawables_);
     
     PlayerSub2_ = GlobalFactories::Submarines.create();
@@ -69,9 +68,9 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
     BodyDef2.angle = 3.14159f;
-    PlayerSub2_->setMeshes(ResourceStorage::Global.getMeshesSubmarine());
+    PlayerSub2_->setMeshes(GlobalResources::Get.getMeshesSubmarine());
     PlayerSub2_->setShader(&Shader_);
-    PlayerSub2_->setShapes(ResourceStorage::Global.getShapesSubmarine());
+    PlayerSub2_->setShapes(GlobalResources::Get.getShapesSubmarine());
     PlayerSub2_->init(&(*World_), &Scene_, BodyDef2, &Drawables_);
     
     CanyonBoundary = GlobalFactories::Landscapes.create();
@@ -79,8 +78,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
     BodyDef3.position.Set(0.0f, 0.0f);
-    CanyonBoundary->setShapes(ResourceStorage::Global.getShapesLandscape());
-    CanyonBoundary->setMeshes(ResourceStorage::Global.getMeshesLandscape());
+    CanyonBoundary->setShapes(GlobalResources::Get.getShapesLandscape());
+    CanyonBoundary->setMeshes(GlobalResources::Get.getMeshesLandscape());
     CanyonBoundary->setShader(&Shader_);
     CanyonBoundary->init(&(*World_), &Scene_, BodyDef3, &Drawables_);
     
@@ -204,7 +203,7 @@ void BattleSub::drawEvent()
 
 void BattleSub::cleanupAndExit()
 {
-    ResourceStorage::Global.release();
+    GlobalResources::Get.release();
     Platform::Application::Sdl2Application::exit();
 }
 

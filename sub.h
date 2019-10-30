@@ -3,7 +3,6 @@
 
 #include "game_object.h"
 #include "sub_drawable.h"
-#include "resource_storage.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;

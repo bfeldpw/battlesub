@@ -32,10 +32,6 @@ class ResourceStorage
         MeshesType  MeshesProjectile_;
         MeshesType  MeshesSub_;
         
-    public:
-        
-        static ResourceStorage Global;
-        
 };
 
 #endif // RESOURCE_STORAGE_H

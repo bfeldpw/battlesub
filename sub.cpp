@@ -1,6 +1,7 @@
 #include "sub.h"
 
 #include "global_factories.h"
+#include "global_resources.h"
 #include "projectile_drawable.h"
 
 void Sub::fire(float GunPos)
@@ -19,8 +20,8 @@ void Sub::fire(float GunPos)
     BodyDef.angle = this->Body_->GetAngle();
     BodyDef.angularDamping = 10.0f;
     BodyDef.linearDamping = 2.0f;
-    Bullet->setShapes(ResourceStorage::Global.getShapesProjectile());
-    Bullet->setMeshes(ResourceStorage::Global.getMeshesProjectile());
+    Bullet->setShapes(GlobalResources::Get.getShapesProjectile());
+    Bullet->setMeshes(GlobalResources::Get.getMeshesProjectile());
     Bullet->setShader(Shader_);
     Bullet->init(World_, Scene_, BodyDef, DrawableGrp_);
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
