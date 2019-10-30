@@ -4,6 +4,13 @@
 #include <cassert>
 #include <string>
 
+// Only compile debug blocks in debug mode
+#ifdef NDEBUG
+    #define DBLK(x)
+#else
+    #define DBLK(x) x
+#endif
+
 class MessageHandler
 {
     
@@ -28,16 +35,15 @@ class MessageHandler
                 assert(Level == INFO);
             }
         }
-        void reportDebug(const std::string& Message, const ReportLevelType Level = DEBUG_L1)
-        {
-//             #ifdef DEBUG
-            if (Level == DEBUG_L1 || Level == DEBUG_L2 || Level == DEBUG_L3)
+        DBLK(
+            void reportDebug(const std::string& Message, const ReportLevelType Level = DEBUG_L1)
             {
-                std::cout << "[  DBG  ] " << Message << std::endl;
+                if (Level == DEBUG_L1 || Level == DEBUG_L2 || Level == DEBUG_L3)
+                {
+                    std::cout << "[  DBG  ] " << Message << std::endl;
+                }
             }
-//             #endif
-        }
-    
+        )
 };
 
 #endif // MESSAGE_HANDLER_H

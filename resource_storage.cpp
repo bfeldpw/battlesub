@@ -16,7 +16,7 @@ void ResourceStorage::init()
         
         int OctaveCount = ceil(log2(1/0.005)/log2(1.9731));
         if (OctaveCount < 1) OctaveCount = 1;
-        GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
+        DBLK(GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);)
         
         Boundary.SetOctaveCount(OctaveCount);
         Boundary.SetSeed(7);
