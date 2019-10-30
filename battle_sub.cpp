@@ -230,7 +230,7 @@ void BattleSub::updateGameObjects()
     // Update object visuals    
     for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())
     {
-        if (Body->IsActive())
+        if (Body->IsActive() && Body->GetType() != b2_staticBody)
         {            
             (*static_cast<Object2D*>(Body->GetUserData()))
                 .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
