@@ -8,12 +8,12 @@ class LandscapeDrawable: public SceneGraph::Drawable2D
 
     public:
         
-        explicit LandscapeDrawable(Object2D& Obj,
+        explicit LandscapeDrawable(Object2D* Obj,
                                    GL::Mesh* Mesh,
                                    Shaders::Flat2D* Shader,
                                    const Color4& Color,
-                                   SceneGraph::DrawableGroup2D& Drawables) : 
-                                   SceneGraph::Drawable2D{Obj, &Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color}
+                                   SceneGraph::DrawableGroup2D* Drawables) : 
+                                   SceneGraph::Drawable2D{*Obj, Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color}
         {
         }
 

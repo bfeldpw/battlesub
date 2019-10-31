@@ -34,15 +34,12 @@ class BattleSub : public Platform::Application
 
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;
+        bool IsExitTriggered_ = false;
         bool IsPaused_ = false;
         bool IsStepForward_ = false;
-        
-        Shaders::Flat2D Shader_{NoCreate};
-
-        Scene2D Scene_;
+                
         Object2D* CameraObject_;
         SceneGraph::Camera2D* Camera_;
-        SceneGraph::DrawableGroup2D Drawables_;
         
         Containers::Optional<b2World> World_;
 

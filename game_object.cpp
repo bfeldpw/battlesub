@@ -14,22 +14,6 @@ void GameObject::destroy()
     }
 }
 
-void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp)
-{
-    assert(Shapes_ != nullptr);
-    
-    World_ = World;
-    Scene_ = Scene;
-    Visuals_ = new Object2D(Scene);
-    DrawableGrp_ = DGrp;
-    
-    Body_=World_->CreateBody(&BodyDef);
-    Body_->SetUserData(Visuals_);
-    
-    Scale_  = 1.0f;
-    IsSunk_ = false;
-}
-
 void GameObject::sink()
 {
     // Just change the visuals
@@ -44,6 +28,20 @@ void GameObject::sink()
         Filter.maskBits = 0;
         Fixture->SetFilterData(Filter);
     }
+}
+
+void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp)
+{
+    World_ = World;
+    Scene_ = Scene;
+    Visuals_ = new Object2D(Scene);
+    DrawableGrp_ = DGrp;
+    
+    Body_=World_->CreateBody(&BodyDef);
+    Body_->SetUserData(Visuals_);
+    
+    Scale_  = 1.0f;
+    IsSunk_ = false;
 }
         
 std::vector<Vector2> GameObject::convertGeometryPhysicsToGraphics(const std::vector<b2Vec2> Verts)

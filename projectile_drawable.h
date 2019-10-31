@@ -8,12 +8,12 @@ class ProjectileDrawable: public SceneGraph::Drawable2D
 
     public:
         
-        explicit ProjectileDrawable(Object2D& Obj,
+        explicit ProjectileDrawable(Object2D* Obj,
                                     GL::Mesh* Mesh,
                                     Shaders::Flat2D* Shader,
                                     const Color4& Color,
-                                    SceneGraph::DrawableGroup2D& Drawables) : 
-                                    SceneGraph::Drawable2D{Obj, &Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
+                                    SceneGraph::DrawableGroup2D* Drawables) : 
+                                    SceneGraph::Drawable2D{*Obj, Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
                                     
         void setColor(const Color4 Color)
         {

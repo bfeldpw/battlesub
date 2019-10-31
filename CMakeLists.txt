@@ -35,13 +35,13 @@ set(HEADERS
         common.h
         entity.h
         error_handler.h
+        game_object.h
+        game_object_factory.h
         global_factories.h
         global_resources.h
         landscape.h
         landscape_drawable.h
         landscape_factory.h
-        game_object.h
-        game_object_factory.h
         memory_pool.h
         message_handler.h
         projectile.h
@@ -51,6 +51,7 @@ set(HEADERS
         sub.h
         sub_drawable.h
         submarine_factory.h
+        submarine_hull.h
         timer.h
 )
 

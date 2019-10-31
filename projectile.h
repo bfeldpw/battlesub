@@ -15,6 +15,10 @@ class Projectile : public GameObject
         {
             GameObject::init(World, Scene, BodyDef, DGrp);
             
+            assert(Visuals_ != nullptr);
+            assert(Meshes_ != nullptr);
+            assert(Shader_ != nullptr);
+            
             Body_->SetBullet(true);
 
             for (auto Shape : *Shapes_)
@@ -31,7 +35,7 @@ class Projectile : public GameObject
             
             for (auto i=0; i<Meshes_->size(); ++i)
             {
-                new ProjectileDrawable(*Visuals_, &((*Meshes_)[i]), Shader_, 0xdf0000_rgbf, *DrawableGrp_);
+                new ProjectileDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0xdf0000_rgbf, DrawableGrp_);
             }
         }
         

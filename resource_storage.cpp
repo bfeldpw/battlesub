@@ -16,30 +16,35 @@ void ResourceStorage::init()
         
         int OctaveCount = ceil(log2(1/0.005)/log2(1.9731));
         if (OctaveCount < 1) OctaveCount = 1;
-        DBLK(GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);)
         
         Boundary.SetOctaveCount(OctaveCount);
         Boundary.SetSeed(7);
         
         {
             ShapeType Shape;
+            constexpr float w = 500.0f; // Half width
+            constexpr float h = 350.0f; // Half height
             
-            for (auto i=-500.0f; i<=500.0f; i+=1.0f)
+            Shape.push_back({-w, h});
+            for (auto i=-w; i<=w; i+=1.0f)
             {
-                Shape.push_back({i, 300.0f - 50.0f * float(Boundary.GetValue(i, 300.0))});
+                Shape.push_back({i, h-50.0f - 50.0f * float(Boundary.GetValue(i, h-50.0f))});
             }
-            for (auto i=Shape.back().y; i>=-300.0f; i-=1.0f)
-            {
-                Shape.push_back({500.0f - 50.0f * float(Boundary.GetValue(500.0, i)), i});
-            }
-            for (auto i=Shape.back().x; i>=-500.0f; i-=1.0f)
-            {
-                Shape.push_back({i, -300.0f - 50.0f * float(Boundary.GetValue(i, -300.0))});
-            }
-            for (auto i=Shape.back().y; i<=300.0f; i+=1.0f)
-            {
-                Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
-            }
+            Shape.push_back({w, h});
+            
+//             for (auto i=Shape.back().y; i>=-300.0f; i-=1.0f)
+//             for (auto i=w; i>=-300.0f; i-=1.0f)
+//             {
+//                 Shape.push_back({500.0f - 50.0f * float(Boundary.GetValue(500.0, i)), i});
+//             }
+//             for (auto i=Shape.back().x; i>=-500.0f; i-=1.0f)
+//             {
+//                 Shape.push_back({i, -300.0f - 50.0f * float(Boundary.GetValue(i, -300.0))});
+//             }
+//             for (auto i=Shape.back().y; i<=300.0f; i+=1.0f)
+//             {
+//                 Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
+//             }
             
             ShapesLandscape_.push_back(std::move(Shape));
             
@@ -50,6 +55,11 @@ void ResourceStorage::init()
                 .setPrimitive(GL::MeshPrimitive::LineLoop)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             MeshesLandscape_.push_back(std::move(Mesh));
+            
+            DBLK(
+                GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
+                GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(ShapesLandscape_.front().size()), MessageHandler::DEBUG_L1);
+            )
         }
         {
             ShapeType Shape;
@@ -114,6 +124,8 @@ void ResourceStorage::init()
         MeshesSub_.push_back(std::move(Mesh));
     }
     
+    Shader_ = new Shaders::Flat2D{};
+    
     IsInitialised = true;
 }
 
@@ -125,6 +137,22 @@ void ResourceStorage::release()
     MeshesLandscape_.clear();
     MeshesProjectile_.clear();
     MeshesSub_.clear();
+
+    if (Drawables_ != nullptr)
+    {
+        delete Drawables_;
+        Drawables_ = nullptr;
+    }
+    if (Scene_ != nullptr)
+    {
+        delete Scene_;
+        Scene_ = nullptr;
+    }
+    if (Shader_ != nullptr)
+    {
+        delete Shader_;
+        Shader_ = nullptr;
+    }
     
     IsInitialised = false;
 }

@@ -37,30 +37,28 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
             create(conf, glConf.setSampleCount(0));
         }
     }
+    
+    GlobalResources::Get.init();
 
     /* Configure camera */
-    CameraObject_ = new Object2D{&Scene_};
+    CameraObject_ = new Object2D{GlobalResources::Get.getScene()};
     Camera_ = new SceneGraph::Camera2D{*CameraObject_};
     Camera_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
             .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
             .setViewport(GL::defaultFramebuffer.viewport().size());
 
-    GlobalResources::Get.init();
-            
     /* Create the Box2D world with the usual gravity vector */
     World_.emplace(b2Vec2{0.0f, 0.0f});
-    
-    Shader_ = Shaders::Flat2D{};
     
     PlayerSub_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
-    PlayerSub_->setMeshes(GlobalResources::Get.getMeshesSubmarine());
-    PlayerSub_->setShader(&Shader_);
-    PlayerSub_->setShapes(GlobalResources::Get.getShapesSubmarine());
-    PlayerSub_->init(&(*World_), &Scene_, BodyDef, &Drawables_);
+    PlayerSub_->Hull.setMeshes(GlobalResources::Get.getMeshesSubmarine())
+                    .setShapes(GlobalResources::Get.getShapesSubmarine())
+                    .setShader(GlobalResources::Get.getShader());
+    PlayerSub_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables());
     
     PlayerSub2_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef2;
@@ -68,20 +66,20 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
     BodyDef2.angle = 3.14159f;
-    PlayerSub2_->setMeshes(GlobalResources::Get.getMeshesSubmarine());
-    PlayerSub2_->setShader(&Shader_);
-    PlayerSub2_->setShapes(GlobalResources::Get.getShapesSubmarine());
-    PlayerSub2_->init(&(*World_), &Scene_, BodyDef2, &Drawables_);
+    PlayerSub2_->Hull.setMeshes(GlobalResources::Get.getMeshesSubmarine())
+                     .setShapes(GlobalResources::Get.getShapesSubmarine())
+                     .setShader(GlobalResources::Get.getShader());
+    PlayerSub2_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef2, GlobalResources::Get.getDrawables());
     
     CanyonBoundary = GlobalFactories::Landscapes.create();
     b2BodyDef BodyDef3;
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
     BodyDef3.position.Set(0.0f, 0.0f);
-    CanyonBoundary->setShapes(GlobalResources::Get.getShapesLandscape());
-    CanyonBoundary->setMeshes(GlobalResources::Get.getMeshesLandscape());
-    CanyonBoundary->setShader(&Shader_);
-    CanyonBoundary->init(&(*World_), &Scene_, BodyDef3, &Drawables_);
+    CanyonBoundary->setMeshes(GlobalResources::Get.getMeshesLandscape())
+                   .setShapes(GlobalResources::Get.getShapesLandscape())
+                   .setShader(GlobalResources::Get.getShader());
+    CanyonBoundary->init(&(*World_), GlobalResources::Get.getScene(), BodyDef3, GlobalResources::Get.getDrawables());
     
     if (!setSwapInterval(1))
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
@@ -101,10 +99,11 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
             break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = true; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = true; break;
-        case KeyEvent::Key::LeftCtrl: KeyPressedMap["LCTRL"] = true; break;
-        case KeyEvent::Key::Esc: KeyPressedMap["Esc"] = true; break;
+        case KeyEvent::Key::Esc:
+        {
+            cleanupAndExit();
+        }
         case KeyEvent::Key::Space:
-            KeyPressedMap["Space"] = true;
             if (IsPaused_) IsStepForward_ = true;
             break;
         default: break;
@@ -117,12 +116,8 @@ void BattleSub::keyReleaseEvent(KeyEvent& Event)
     {
         case KeyEvent::Key::A: KeyPressedMap["a"] = false; break;
         case KeyEvent::Key::D: KeyPressedMap["d"] = false; break;
-        case KeyEvent::Key::P: KeyPressedMap["p"] = false; break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = false; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = false; break;
-        case KeyEvent::Key::LeftCtrl: KeyPressedMap["LCTRL"] = false; break;
-        case KeyEvent::Key::Esc: KeyPressedMap["Esc"] = false; break;
-        case KeyEvent::Key::Space: KeyPressedMap["Space"] = false; break;
         default: break;
     }
 }
@@ -171,39 +166,44 @@ void BattleSub::mousePressEvent(MouseEvent& Event)
 
 void BattleSub::drawEvent()
 {
-    GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
-    
-    if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
-    if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
-    if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
-    if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
-    if (KeyPressedMap["Esc"] == true)
+    if (!IsExitTriggered_)
     {
-        cleanupAndExit();
-    }
-    
-    Camera_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
-    
-    if (!IsPaused_ || IsStepForward_)
-    {
-        updateGameObjects();
-    }
-      
-    if (GlobalErrorHandler.checkError() == true)
-    {
-        cleanupAndExit();
-    }
-    
-    // Draw the scene
-    Camera_->draw(Drawables_);
+        GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
+        
+        if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
+        if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
+        if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
+        if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
+        
+        Camera_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
+        
+        if (!IsPaused_ || IsStepForward_)
+        {
+            updateGameObjects();
+        }
+        
+        if (GlobalErrorHandler.checkError() == true)
+        {
+            cleanupAndExit();
+        }
+        
+        // Draw the scene
+        Camera_->draw(*GlobalResources::Get.getDrawables());
 
-    swapBuffers();
-    redraw();
+        swapBuffers();
+        redraw();
+    }
 }
 
 void BattleSub::cleanupAndExit()
 {
+    // Use flag to avoid further processing within drawEvent calls
+    IsExitTriggered_ = true;
+    
+    // Resources need to be released first, as long as the GL context is still
+    // valid
     GlobalResources::Get.release();
+    
     Platform::Application::Sdl2Application::exit();
 }
 
@@ -220,7 +220,7 @@ void BattleSub::updateGameObjects()
     }
     for (auto Sub : GlobalFactories::Submarines.getEntities())
     {
-        Sub.second->update(Drawables_);
+        Sub.second->update();
     }
     
     // Update physics

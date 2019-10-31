@@ -1,15 +1,13 @@
-#ifndef LANDSCAPE_H
-#define LANDSCAPE_H
-
-#include <vector>
+#ifndef SUBMARINE_HULL_H
+#define SUBMARINE_HULL_H
 
 #include "game_object.h"
-#include "landscape_drawable.h"
+#include "sub_drawable.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
 
-class Landscape : public GameObject
+class SubmarineHull : public GameObject
 {
     public:
         
@@ -19,21 +17,27 @@ class Landscape : public GameObject
             
             for (auto Shape : *Shapes_)
             {
-                b2ChainShape Chain;
-                Chain.CreateLoop(Shape.data(), Shape.size());
-            
+                b2PolygonShape Shp;
+                Shp.Set(Shape.data(), Shape.size());
+                
                 b2FixtureDef fixture;
                 fixture.friction = 0.8f;
-                fixture.shape = &Chain;
+                fixture.density = 1.0f;
+                fixture.shape = &Shp;
+                
                 Body_->CreateFixture(&fixture);
             }
             
             for (auto i=0; i<Meshes_->size(); ++i)
             {
-                new LandscapeDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x444455_rgbf, DrawableGrp_);
+                new SubDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x2f83cc_rgbf, DrawableGrp_);
             }
         }
         
+        void update();
+        
+    private:
+        
 };
 
-#endif // LANDSCAPE_H
+#endif // SUB_H

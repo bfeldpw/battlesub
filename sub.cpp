@@ -6,36 +6,36 @@
 
 void Sub::fire(float GunPos)
 {
-    assert(Body_ != nullptr);
+    assert(Hull.getBody() != nullptr);
     
     Projectile* Bullet = GlobalFactories::Projectiles.create();
     
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
-    BodyDef.position.Set(this->Body_->GetPosition().x +
-                         this->Body_->GetWorldVector({GunPos, 8.0f}).x,
-                         this->Body_->GetPosition().y + 
-                         this->Body_->GetWorldVector({GunPos, 8.0f}).y);
-    BodyDef.angle = this->Body_->GetAngle();
+    BodyDef.position.Set(Hull.getBody()->GetPosition().x +
+                         Hull.getBody()->GetWorldVector({GunPos, 8.0f}).x,
+                         Hull.getBody()->GetPosition().y + 
+                         Hull.getBody()->GetWorldVector({GunPos, 8.0f}).y);
+    BodyDef.angle = Hull.getBody()->GetAngle();
     BodyDef.angularDamping = 10.0f;
     BodyDef.linearDamping = 2.0f;
-    Bullet->setShapes(GlobalResources::Get.getShapesProjectile());
-    Bullet->setMeshes(GlobalResources::Get.getMeshesProjectile());
-    Bullet->setShader(Shader_);
-    Bullet->init(World_, Scene_, BodyDef, DrawableGrp_);
+    Bullet->setShapes(GlobalResources::Get.getShapesProjectile())
+           .setMeshes(GlobalResources::Get.getMeshesProjectile())
+           .setShader(GlobalResources::Get.getShader());
+    Bullet->init(Hull.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables());
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
                                           Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
-    this->Body_->ApplyLinearImpulse(this->Body_->GetWorldVector({0.0f,-1.0f}),
-                                    this->Body_->GetWorldPoint({GunPos, 8.0f}), true);
+    Hull.getBody()->ApplyLinearImpulse(Hull.getBody()->GetWorldVector({0.0f,-1.0f}),
+                                       Hull.getBody()->GetWorldPoint({GunPos, 8.0f}), true);
 }
 
-void Sub::update(SceneGraph::DrawableGroup2D& Drawables)
+void Sub::update()
 {
-    assert(Body_ != nullptr);
+    assert(Hull.getBody() != nullptr);
     
-    this->Body_->ApplyForce(this->Body_->GetWorldVector({Rudder_, 0.0f}),
-                            this->Body_->GetWorldPoint({0.0f, 1.0f}), true);
-    this->Body_->ApplyForce(this->Body_->GetWorldVector({0.0f, Throttle_}),
-                            this->Body_->GetWorldPoint({0.0f, 0.0f}), true);
+    Hull.getBody()->ApplyForce(Hull.getBody()->GetWorldVector({Rudder_, 0.0f}),
+                               Hull.getBody()->GetWorldPoint({0.0f, 1.0f}), true);
+    Hull.getBody()->ApplyForce(Hull.getBody()->GetWorldVector({0.0f, Throttle_}),
+                               Hull.getBody()->GetWorldPoint({0.0f, 0.0f}), true);
 }

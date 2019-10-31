@@ -21,23 +21,32 @@ class GameObject : public Entity
 {
     public:
         
-        b2Body*     getBody() const {return Body_;}
-        Object2D&   getVisuals() {return *Visuals_;}
+        b2Body*     getBody() const {assert(Body_ != nullptr); return Body_;}
+        b2World*    getWorld() {assert(World_ != nullptr); return World_;}
+        ShapesType* getShapes() {assert(Shapes_ != nullptr); return Shapes_;}
+        
+        MeshesType* getMeshes() {assert(Meshes_ != nullptr); return Meshes_;}
+        Object2D*   getVisuals() {return Visuals_;}
+        
         bool        isSunk() const {return IsSunk_;}
 
         void destroy();
-        void init(b2World* World, Scene2D* Scene,
-                  const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp);
         void sink();
         
-        void setShapes(ShapesType* const Shapes) {Shapes_ = Shapes;}
-        void setMeshes(MeshesType* const Meshes) {Meshes_ = Meshes;}
-        void setShader(Shaders::Flat2D* const Shader) {Shader_ = Shader;}
+        GameObject& setMeshes(MeshesType* const Meshes) {Meshes_ = Meshes; return *this;}
+        GameObject& setShapes(ShapesType* const Shapes) {Shapes_ = Shapes; return *this;}
+        GameObject& setShader(Shaders::Flat2D* const Shader) {Shader_ = Shader; return *this;}
         
     protected:
         
+        void init(b2World* World,
+                  Scene2D* Scene,
+                  const b2BodyDef& BodyDef,
+                  SceneGraph::DrawableGroup2D* const DGrp);
+        
         // General data
         Timer Age_;
+        bool  IsSunk_ = false;
         
         // Physics data
         b2Body*     Body_   = nullptr;
@@ -51,7 +60,6 @@ class GameObject : public Entity
         Scene2D*                        Scene_          = nullptr;
         SceneGraph::DrawableGroup2D*    DrawableGrp_    = nullptr;
         float                           Scale_          = 1.0f;
-        bool                            IsSunk_         = false;
      
     public:
         
