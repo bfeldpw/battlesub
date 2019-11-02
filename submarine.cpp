@@ -1,10 +1,10 @@
-#include "sub.h"
+#include "submarine.h"
 
 #include "global_factories.h"
 #include "global_resources.h"
 #include "projectile_drawable.h"
 
-void Sub::fire(float GunPos)
+void Submarine::fire(float GunPos)
 {
     assert(Hull.getBody() != nullptr);
     
@@ -30,7 +30,7 @@ void Sub::fire(float GunPos)
                                        Hull.getBody()->GetWorldPoint({GunPos, 8.0f}), true);
 }
 
-void Sub::update()
+void Submarine::update()
 {
     assert(Hull.getBody() != nullptr);
     

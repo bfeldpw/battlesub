@@ -48,8 +48,9 @@ set(HEADERS
         projectile_drawable.h
         projectile_factory.h
         resource_storage.h
-        sub.h
-        sub_drawable.h
+        submarine.h
+        submarine_definition.h
+        submarine_drawable.h
         submarine_factory.h
         submarine_hull.h
         submarine_rudder.h
@@ -67,7 +68,7 @@ set(SOURCES
         global_factories.cpp
         global_resources.cpp
         resource_storage.cpp
-        sub.cpp
+        submarine.cpp
 )
 
 add_executable(battle_sub ${LIB_NOISE_HEADERS} ${HEADERS} ${SOURCES})

@@ -1,19 +1,19 @@
-#ifndef SUB_DRAWABLE_H
-#define SUB_DRAWABLE_H
+#ifndef SUBMARINE_DRAWABLE_H
+#define SUBMARINE_DRAWABLE_H
 
 #include "common.h"
 
-class SubDrawable: public SceneGraph::Drawable2D
+class SubmarineDrawable: public SceneGraph::Drawable2D
 {
 
     public:
         
-        explicit SubDrawable(Object2D* Obj,
-                             GL::Mesh* Mesh,
-                             Shaders::Flat2D* Shader,
-                             const Color4& Color,
-                             SceneGraph::DrawableGroup2D* Drawables) : 
-                             SceneGraph::Drawable2D{*Obj, Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
+        explicit SubmarineDrawable(Object2D* Obj,
+                                   GL::Mesh* Mesh,
+                                   Shaders::Flat2D* Shader,
+                                   const Color4& Color,
+                                   SceneGraph::DrawableGroup2D* Drawables) : 
+                    SceneGraph::Drawable2D{*Obj, Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
 
     private:
         
@@ -33,4 +33,4 @@ class SubDrawable: public SceneGraph::Drawable2D
         
 };
 
-#endif // SUB_DRAWABLE_H
+#endif // SUBMARINE_DRAWABLE_H

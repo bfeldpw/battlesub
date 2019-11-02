@@ -80,7 +80,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
 //     jointDef.motorSpeed = 0.2f;
 //     jointDef.enableMotor = true;
     jointDef.collideConnected = false;
-    b2RevoluteJoint* joint = (b2RevoluteJoint*)World_->CreateJoint(&jointDef);
+    b2RevoluteJoint* joint = static_cast<b2RevoluteJoint*>(World_->CreateJoint(&jointDef));
 //     std::cout << joint->Get << std::endl;
     
     

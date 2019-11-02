@@ -6,7 +6,7 @@
 
 #include "common.h"
 #include "landscape.h"
-#include "sub.h"
+#include "submarine.h"
 
 namespace BattleSub
 {
@@ -43,8 +43,8 @@ class BattleSub : public Platform::Application
         
         Containers::Optional<b2World> World_;
 
-        Sub* PlayerSub_  = nullptr;
-        Sub* PlayerSub2_ = nullptr;
+        Submarine* PlayerSub_  = nullptr;
+        Submarine* PlayerSub2_ = nullptr;
         Landscape* CanyonBoundary = nullptr;
         
         float VPX_ = 100.0f;

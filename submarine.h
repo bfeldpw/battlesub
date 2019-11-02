@@ -1,21 +1,18 @@
-#ifndef SUB_H
-#define SUB_H
+#ifndef SUBMARINE_H
+#define SUBMARINE_H
 
 #include "entity.h"
 #include "submarine_hull.h"
 #include "submarine_rudder.h"
 
-using namespace Magnum;
-using namespace Magnum::Math::Literals;
-
-class Sub : public Entity
+class Submarine : public Entity
 {
     public:
         
         SubmarineHull Hull;
         SubmarineHull Rudder;
         
-        Sub& setPose(float PosX, float PosY, float Angle=0.0f)
+        Submarine& setPose(float PosX, float PosY, float Angle=0.0f)
         {
             if (IsInitialised)
             {
@@ -61,4 +58,4 @@ class Sub : public Entity
         
 };
 
-#endif // SUB_H
+#endif // SUBMARINE_H

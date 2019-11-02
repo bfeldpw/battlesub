@@ -2,7 +2,7 @@
 #define SUBMARINE_RUDDER_H
 
 #include "game_object.h"
-#include "sub_drawable.h"
+#include "submarine_drawable.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
@@ -30,7 +30,7 @@ class SubmarineRudder : public GameObject
             
             for (auto i=0u; i<Meshes_->size(); ++i)
             {
-                new SubDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x2f83cc_rgbf, DrawableGrp_);
+                new SubmarineDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x2f83cc_rgbf, DrawableGrp_);
             }
         }
         
