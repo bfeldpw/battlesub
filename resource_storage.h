@@ -12,7 +12,7 @@
 
 #include "game_object.h"
 
-constexpr int GAME_OBJECT_TYPE_ENUM_MAX = 3;
+constexpr int GAME_OBJECT_TYPE_ENUM_SIZE = 4;
 
 enum class GameObjectType : int
 {
@@ -45,8 +45,8 @@ class ResourceStorage
         SceneGraph::DrawableGroup2D* Drawables_ = new SceneGraph::DrawableGroup2D;
         Shaders::Flat2D* Shader_ = nullptr;
 
-        std::array<MeshesType, GAME_OBJECT_TYPE_ENUM_MAX> Meshes_;
-        std::array<ShapesType, GAME_OBJECT_TYPE_ENUM_MAX> Shapes_;
+        std::array<MeshesType, GAME_OBJECT_TYPE_ENUM_SIZE> Meshes_;
+        std::array<ShapesType, GAME_OBJECT_TYPE_ENUM_SIZE> Shapes_;
         
 };
 
