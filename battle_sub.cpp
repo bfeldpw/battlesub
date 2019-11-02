@@ -62,17 +62,20 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     b2BodyDef BodyDefRudder;
     BodyDefRudder.type = b2_dynamicBody;
     BodyDefRudder.active = true;
-    BodyDefRudder.position.Set(0.0f, -35.0f);
-    PlayerSub_->Rudder.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
-                      .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
+    BodyDefRudder.position.Set(0.0f, -27.0f);
+    PlayerSub_->Rudder.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_RUDDER))
+                      .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_RUDDER))
                       .setShader(GlobalResources::Get.getShader());
     PlayerSub_->Rudder.init(&(*World_), GlobalResources::Get.getScene(), BodyDefRudder, GlobalResources::Get.getDrawables());
         
     b2RevoluteJointDef jointDef;
-    jointDef.Initialize(PlayerSub_->Hull.getBody(), PlayerSub_->Rudder.getBody(), PlayerSub_->Hull.getBody()->GetWorldCenter());
     jointDef.lowerAngle = -0.5f * b2_pi; // -90 degrees
     jointDef.upperAngle = 0.25f * b2_pi; // 45 degrees
     jointDef.enableLimit = true;
+    jointDef.bodyA = PlayerSub_->Hull.getBody();
+    jointDef.localAnchorA = {0.0f, -6.0f};
+    jointDef.bodyB = PlayerSub_->Rudder.getBody();
+    jointDef.localAnchorB = {0.0f,  1.0f};
 //     jointDef.maxMotorTorque = 100000.0f;
 //     jointDef.motorSpeed = 0.2f;
 //     jointDef.enableMotor = true;

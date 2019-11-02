@@ -128,28 +128,24 @@ void ResourceStorage::init()
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Mesh));
         }
-//         {
-//             ShapeType Shape;
-//             
-//             Shape.push_back({-2.0f, -6.0f});
-//             Shape.push_back({ 2.0f, -6.0f});
-//             Shape.push_back({ 2.0f,  6.0f});
-//             Shape.push_back({ 1.5f,  8.0f});
-//             Shape.push_back({ 0.5f,  9.0f});
-//             Shape.push_back({-0.5f,  9.0f});
-//             Shape.push_back({-1.5f,  8.0f});
-//             Shape.push_back({-2.0f,  6.0f});
-//             
-//             ShapesSubmarineRudder_.push_back(std::move(Shape));
-//             
-//             GL::Mesh Mesh;
-//             GL::Buffer Buffer;
-//             Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesSubmarineRudder_.front()), GL::BufferUsage::StaticDraw);
-//             Mesh.setCount(ShapesSubmarineRudder_.front().size())
-//                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
-//                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-//             MeshesSub_.push_back(std::move(Mesh));
-//         }
+        {
+            ShapeType Shape;
+            
+            Shape.push_back({-0.1f, -1.0f});
+            Shape.push_back({ 0.1f, -1.0f});
+            Shape.push_back({ 0.1f,  1.0f});
+            Shape.push_back({-0.1f,  1.0f});
+            
+            Shapes_[int(GameObjectType::SUBMARINE_RUDDER)].push_back(std::move(Shape));
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes_[int(GameObjectType::SUBMARINE_RUDDER)].front()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Shapes_[int(GameObjectType::SUBMARINE_RUDDER)].front().size())
+                .setPrimitive(GL::MeshPrimitive::TriangleFan)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Meshes_[int(GameObjectType::SUBMARINE_RUDDER)].push_back(std::move(Mesh));
+        }
     }
     
     Shader_ = new Shaders::Flat2D{};
