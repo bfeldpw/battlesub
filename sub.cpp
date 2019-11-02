@@ -20,8 +20,8 @@ void Sub::fire(float GunPos)
     BodyDef.angle = Hull.getBody()->GetAngle();
     BodyDef.angularDamping = 10.0f;
     BodyDef.linearDamping = 2.0f;
-    Bullet->setShapes(GlobalResources::Get.getShapesProjectile())
-           .setMeshes(GlobalResources::Get.getMeshesProjectile())
+    Bullet->setShapes(GlobalResources::Get.getShapes(GameObjectType::PROJECTILE))
+           .setMeshes(GlobalResources::Get.getMeshes(GameObjectType::PROJECTILE))
            .setShader(GlobalResources::Get.getShader());
     Bullet->init(Hull.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables());
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),

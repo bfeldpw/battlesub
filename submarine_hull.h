@@ -28,7 +28,7 @@ class SubmarineHull : public GameObject
                 Body_->CreateFixture(&fixture);
             }
             
-            for (auto i=0; i<Meshes_->size(); ++i)
+            for (auto i=0u; i<Meshes_->size(); ++i)
             {
                 new SubDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x2f83cc_rgbf, DrawableGrp_);
             }
@@ -40,4 +40,4 @@ class SubmarineHull : public GameObject
         
 };
 
-#endif // SUB_H
+#endif // SUBMARINE_HULL_H

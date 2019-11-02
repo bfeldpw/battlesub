@@ -1,13 +1,13 @@
-#ifndef PROJECTILE_H
-#define PROJECTILE_H
+#ifndef SUBMARINE_RUDDER_H
+#define SUBMARINE_RUDDER_H
 
 #include "game_object.h"
-#include "projectile_drawable.h"
+#include "sub_drawable.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
 
-class Projectile : public GameObject
+class SubmarineRudder : public GameObject
 {
     public:
         
@@ -15,39 +15,29 @@ class Projectile : public GameObject
         {
             GameObject::init(World, Scene, BodyDef, DGrp);
             
-            assert(Visuals_ != nullptr);
-            assert(Meshes_ != nullptr);
-            assert(Shader_ != nullptr);
-            
-            Body_->SetBullet(true);
-
             for (auto Shape : *Shapes_)
             {
                 b2PolygonShape Shp;
                 Shp.Set(Shape.data(), Shape.size());
-            
+                
                 b2FixtureDef fixture;
-                fixture.density = 10.0f;
                 fixture.friction = 0.8f;
+                fixture.density = 1.0f;
                 fixture.shape = &Shp;
+                
                 Body_->CreateFixture(&fixture);
             }
             
             for (auto i=0u; i<Meshes_->size(); ++i)
             {
-                new ProjectileDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0xdf0000_rgbf, DrawableGrp_);
+                new SubDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x2f83cc_rgbf, DrawableGrp_);
             }
         }
         
-        void update()
-        {
-            // Body starts sinking if too slow
-            if (Body_->GetLinearVelocity().Length() < 0.01f)
-            {
-                this->sink();
-            }
-        }
+        void update();
+        
+    private:
         
 };
 
-#endif // PROJECTILE_H
+#endif // SUBMARINE_RUDDER_H

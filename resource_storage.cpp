@@ -46,19 +46,19 @@ void ResourceStorage::init()
 //                 Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
 //             }
             
-            ShapesLandscape_.push_back(std::move(Shape));
+            Shapes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Shape));
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesLandscape_.front()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(ShapesLandscape_.front().size())
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes_[int(GameObjectType::LANDSCAPE)].front()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Shapes_[int(GameObjectType::LANDSCAPE)].front().size())
                 .setPrimitive(GL::MeshPrimitive::LineLoop)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            MeshesLandscape_.push_back(std::move(Mesh));
+            Meshes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Mesh));
             
             DBLK(
                 GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
-                GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(ShapesLandscape_.front().size()), MessageHandler::DEBUG_L1);
+                GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(Shapes_[int(GameObjectType::LANDSCAPE)].front().size()), MessageHandler::DEBUG_L1);
             )
         }
         {
@@ -69,15 +69,15 @@ void ResourceStorage::init()
                 
                 Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+200.0f});
             }
-            ShapesLandscape_.push_back(std::move(Shape));
+            Shapes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Shape));
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesLandscape_.back()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(ShapesLandscape_.back().size())
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes_[int(GameObjectType::LANDSCAPE)].back()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Shapes_[int(GameObjectType::LANDSCAPE)].back().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            MeshesLandscape_.push_back(std::move(Mesh));
+            Meshes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Mesh));
         }
     }
     // Initialise projectile
@@ -90,38 +90,66 @@ void ResourceStorage::init()
         Shape.push_back({ 0.0f,  0.15f});
         Shape.push_back({-0.02f, 0.1f});
         
-        ShapesProjectile_.push_back(std::move(Shape));
+        Shapes_[int(GameObjectType::PROJECTILE)].push_back(std::move(Shape));
         
         GL::Mesh Mesh;
         GL::Buffer Buffer;
-        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesProjectile_.front()), GL::BufferUsage::StaticDraw);
-        Mesh.setCount(ShapesProjectile_.front().size())
+        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes_[int(GameObjectType::PROJECTILE)].front()), GL::BufferUsage::StaticDraw);
+        Mesh.setCount(Shapes_[int(GameObjectType::PROJECTILE)].front().size())
             .setPrimitive(GL::MeshPrimitive::TriangleFan)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-        MeshesProjectile_.push_back(std::move(Mesh));
+        Meshes_[int(GameObjectType::PROJECTILE)].push_back(std::move(Mesh));
     }
     // Initialise submarine
     {
-        ShapeType Shape;
-        
-        Shape.push_back({-2.0f, -6.0f});
-        Shape.push_back({ 2.0f, -6.0f});
-        Shape.push_back({ 2.0f,  6.0f});
-        Shape.push_back({ 1.5f,  8.0f});
-        Shape.push_back({ 0.5f,  9.0f});
-        Shape.push_back({-0.5f,  9.0f});
-        Shape.push_back({-1.5f,  8.0f});
-        Shape.push_back({-2.0f,  6.0f});
-        
-        ShapesSubmarine_.push_back(std::move(Shape));
-        
-        GL::Mesh Mesh;
-        GL::Buffer Buffer;
-        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesSubmarine_.front()), GL::BufferUsage::StaticDraw);
-        Mesh.setCount(ShapesSubmarine_.front().size())
-            .setPrimitive(GL::MeshPrimitive::TriangleFan)
-            .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-        MeshesSub_.push_back(std::move(Mesh));
+        {
+            ShapeType Shape;
+            
+            Shape.push_back({-2.0f, -6.0f});
+            Shape.push_back({ 2.0f, -6.0f});
+            Shape.push_back({ 2.0f,  6.0f});
+            Shape.push_back({ 1.5f,  8.0f});
+            Shape.push_back({ 0.5f,  9.0f});
+            Shape.push_back({-0.5f,  9.0f});
+            Shape.push_back({-1.5f,  8.0f});
+            Shape.push_back({-2.0f,  6.0f});
+            
+            Shapes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Shape));
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(
+                            GameObject::convertGeometryPhysicsToGraphics(
+                            Shapes_[int(GameObjectType::SUBMARINE_HULL)].front()),
+                            GL::BufferUsage::StaticDraw
+                          );
+            Mesh.setCount(Shapes_[int(GameObjectType::SUBMARINE_HULL)].front().size())
+                .setPrimitive(GL::MeshPrimitive::TriangleFan)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Meshes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Mesh));
+        }
+//         {
+//             ShapeType Shape;
+//             
+//             Shape.push_back({-2.0f, -6.0f});
+//             Shape.push_back({ 2.0f, -6.0f});
+//             Shape.push_back({ 2.0f,  6.0f});
+//             Shape.push_back({ 1.5f,  8.0f});
+//             Shape.push_back({ 0.5f,  9.0f});
+//             Shape.push_back({-0.5f,  9.0f});
+//             Shape.push_back({-1.5f,  8.0f});
+//             Shape.push_back({-2.0f,  6.0f});
+//             
+//             ShapesSubmarineRudder_.push_back(std::move(Shape));
+//             
+//             GL::Mesh Mesh;
+//             GL::Buffer Buffer;
+//             Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapesSubmarineRudder_.front()), GL::BufferUsage::StaticDraw);
+//             Mesh.setCount(ShapesSubmarineRudder_.front().size())
+//                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
+//                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+//             MeshesSub_.push_back(std::move(Mesh));
+//         }
     }
     
     Shader_ = new Shaders::Flat2D{};
@@ -131,12 +159,8 @@ void ResourceStorage::init()
 
 void ResourceStorage::release()
 {
-    ShapesLandscape_.clear();
-    ShapesProjectile_.clear();
-    ShapesSubmarine_.clear();
-    MeshesLandscape_.clear();
-    MeshesProjectile_.clear();
-    MeshesSub_.clear();
+    for (auto i=0u; i<Meshes_.size(); ++i) Meshes_[i].clear();
+    for (auto i=0u; i<Shapes_.size(); ++i) Shapes_[i].clear();
 
     if (Drawables_ != nullptr)
     {

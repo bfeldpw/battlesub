@@ -52,6 +52,7 @@ set(HEADERS
         sub_drawable.h
         submarine_factory.h
         submarine_hull.h
+        submarine_rudder.h
         timer.h
 )
 

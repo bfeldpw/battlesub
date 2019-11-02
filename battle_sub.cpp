@@ -55,10 +55,31 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
-    PlayerSub_->Hull.setMeshes(GlobalResources::Get.getMeshesSubmarine())
-                    .setShapes(GlobalResources::Get.getShapesSubmarine())
+    PlayerSub_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
+                    .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
                     .setShader(GlobalResources::Get.getShader());
     PlayerSub_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables());
+    b2BodyDef BodyDefRudder;
+    BodyDefRudder.type = b2_dynamicBody;
+    BodyDefRudder.active = true;
+    BodyDefRudder.position.Set(0.0f, -35.0f);
+    PlayerSub_->Rudder.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
+                      .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
+                      .setShader(GlobalResources::Get.getShader());
+    PlayerSub_->Rudder.init(&(*World_), GlobalResources::Get.getScene(), BodyDefRudder, GlobalResources::Get.getDrawables());
+        
+    b2RevoluteJointDef jointDef;
+    jointDef.Initialize(PlayerSub_->Hull.getBody(), PlayerSub_->Rudder.getBody(), PlayerSub_->Hull.getBody()->GetWorldCenter());
+    jointDef.lowerAngle = -0.5f * b2_pi; // -90 degrees
+    jointDef.upperAngle = 0.25f * b2_pi; // 45 degrees
+    jointDef.enableLimit = true;
+//     jointDef.maxMotorTorque = 100000.0f;
+//     jointDef.motorSpeed = 0.2f;
+//     jointDef.enableMotor = true;
+    jointDef.collideConnected = false;
+    b2RevoluteJoint* joint = (b2RevoluteJoint*)World_->CreateJoint(&jointDef);
+//     std::cout << joint->Get << std::endl;
+    
     
     PlayerSub2_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef2;
@@ -66,8 +87,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
     BodyDef2.angle = 3.14159f;
-    PlayerSub2_->Hull.setMeshes(GlobalResources::Get.getMeshesSubmarine())
-                     .setShapes(GlobalResources::Get.getShapesSubmarine())
+    PlayerSub2_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
+                     .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
                      .setShader(GlobalResources::Get.getShader());
     PlayerSub2_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef2, GlobalResources::Get.getDrawables());
     
@@ -76,8 +97,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
     BodyDef3.position.Set(0.0f, 0.0f);
-    CanyonBoundary->setMeshes(GlobalResources::Get.getMeshesLandscape())
-                   .setShapes(GlobalResources::Get.getShapesLandscape())
+    CanyonBoundary->setMeshes(GlobalResources::Get.getMeshes(GameObjectType::LANDSCAPE))
+                   .setShapes(GlobalResources::Get.getShapes(GameObjectType::LANDSCAPE))
                    .setShader(GlobalResources::Get.getShader());
     CanyonBoundary->init(&(*World_), GlobalResources::Get.getScene(), BodyDef3, GlobalResources::Get.getDrawables());
     
@@ -92,7 +113,7 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
     switch (Event.key())
     {
         case KeyEvent::Key::A: KeyPressedMap["a"] = true; break;
-        case KeyEvent::Key::D: KeyPressedMap["d"] = true; break;
+        case KeyEvent::Key::D: KeyPressedMap["d"] = true; PlayerSub_->setPose(50.0f, 0.0f, 0.7f); break;
         case KeyEvent::Key::P:
             KeyPressedMap["p"] = true;
             IsPaused_ ^= true;
@@ -102,6 +123,7 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
         case KeyEvent::Key::Esc:
         {
             cleanupAndExit();
+            break;
         }
         case KeyEvent::Key::Space:
             if (IsPaused_) IsStepForward_ = true;

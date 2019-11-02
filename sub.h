@@ -3,6 +3,7 @@
 
 #include "entity.h"
 #include "submarine_hull.h"
+#include "submarine_rudder.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
@@ -12,7 +13,23 @@ class Sub : public Entity
     public:
         
         SubmarineHull Hull;
-        SubmarineHull Hull2;
+        SubmarineHull Rudder;
+        
+        Sub& setPose(float PosX, float PosY, float Angle=0.0f)
+        {
+            if (IsInitialised)
+            {
+                Hull.getBody()->SetTransform({PosX, PosY}, Angle);
+                Rudder.getBody()->SetTransform({PosX*std::cos(Angle), (PosY-15.0f)*std::sin(Angle)}, Angle);
+            }
+            else
+            {
+                b2BodyDef Bodydef;
+                Bodydef.position = {PosX, PosY};
+                Bodydef.angle    = Angle;
+            }
+            return *this;
+        }
         
         void fire(float GunPos);
         
@@ -36,6 +53,8 @@ class Sub : public Entity
         void update();
         
     private:
+
+        bool IsInitialised = false;
         
         float Rudder_   = 0.0f;
         float Throttle_ = 0.0f;
