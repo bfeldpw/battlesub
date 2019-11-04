@@ -46,19 +46,29 @@ void ResourceStorage::init()
 //                 Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
 //             }
             
-            Shapes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Shape));
+            auto& Shapes = Shapes_[int(GameObjectType::LANDSCAPE)];
+            
+            b2FixtureDef Fixture;
+            Fixture.density =  1.0f;
+            Fixture.friction = 0.8f;
+            Fixture.restitution = 0.0f;
+            Fixture.isSensor = false;
+            
+            Shapes.ShapeDefs.push_back(std::move(Shape));
+            Shapes.FixtureDefs.push_back(std::move(Fixture));
+            Shapes.Type = ShapeEnumType::CHAIN;
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes_[int(GameObjectType::LANDSCAPE)].front()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(Shapes_[int(GameObjectType::LANDSCAPE)].front().size())
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.front()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Shapes.ShapeDefs.front().size())
                 .setPrimitive(GL::MeshPrimitive::LineLoop)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Mesh));
             
             DBLK(
                 GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
-                GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(Shapes_[int(GameObjectType::LANDSCAPE)].front().size()), MessageHandler::DEBUG_L1);
+                GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(Shapes.ShapeDefs.front().size()), MessageHandler::DEBUG_L1);
             )
         }
         {
@@ -69,12 +79,22 @@ void ResourceStorage::init()
                 
                 Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+200.0f});
             }
-            Shapes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Shape));
+            auto& Shapes = Shapes_[int(GameObjectType::LANDSCAPE)];
+            
+            b2FixtureDef Fixture;
+            Fixture.density =  1.0f;
+            Fixture.friction = 0.8f;
+            Fixture.restitution = 0.0f;
+            Fixture.isSensor = false;
+            
+            Shapes.ShapeDefs.push_back(std::move(Shape));
+            Shapes.FixtureDefs.push_back(std::move(Fixture));
+            Shapes.Type = ShapeEnumType::CHAIN;
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes_[int(GameObjectType::LANDSCAPE)].back()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(Shapes_[int(GameObjectType::LANDSCAPE)].back().size())
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Shapes.ShapeDefs.back().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Mesh));
@@ -90,12 +110,21 @@ void ResourceStorage::init()
         Shape.push_back({ 0.0f,  0.15f});
         Shape.push_back({-0.02f, 0.1f});
         
-        Shapes_[int(GameObjectType::PROJECTILE)].push_back(std::move(Shape));
+        auto& Shapes = Shapes_[int(GameObjectType::PROJECTILE)];
         
+        b2FixtureDef Fixture;
+        Fixture.density = 10.0f;
+        Fixture.friction = 0.5f;
+        Fixture.restitution = 0.0f;
+        Fixture.isSensor = false;
+        
+        Shapes.ShapeDefs.push_back(std::move(Shape));
+        Shapes.FixtureDefs.push_back(std::move(Fixture));
+                
         GL::Mesh Mesh;
         GL::Buffer Buffer;
-        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes_[int(GameObjectType::PROJECTILE)].front()), GL::BufferUsage::StaticDraw);
-        Mesh.setCount(Shapes_[int(GameObjectType::PROJECTILE)].front().size())
+        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.front()), GL::BufferUsage::StaticDraw);
+        Mesh.setCount(Shapes.ShapeDefs.front().size())
             .setPrimitive(GL::MeshPrimitive::TriangleFan)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
         Meshes_[int(GameObjectType::PROJECTILE)].push_back(std::move(Mesh));
@@ -114,16 +143,24 @@ void ResourceStorage::init()
             Shape.push_back({-1.5f,  8.0f});
             Shape.push_back({-2.0f,  6.0f});
             
-            Shapes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Shape));
+            auto& Shapes = Shapes_[int(GameObjectType::SUBMARINE_HULL)];
+            
+            b2FixtureDef Fixture;
+            Fixture.density =  1.0f;
+            Fixture.friction = 0.8f;
+            Fixture.restitution = 0.0f;
+            Fixture.isSensor = false;
+            
+            Shapes.ShapeDefs.push_back(std::move(Shape));
+            Shapes.FixtureDefs.push_back(std::move(Fixture));
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
             Buffer.setData(
-                            GameObject::convertGeometryPhysicsToGraphics(
-                            Shapes_[int(GameObjectType::SUBMARINE_HULL)].front()),
+                            GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.front()),
                             GL::BufferUsage::StaticDraw
                           );
-            Mesh.setCount(Shapes_[int(GameObjectType::SUBMARINE_HULL)].front().size())
+            Mesh.setCount(Shapes.ShapeDefs.front().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Mesh));
@@ -136,12 +173,21 @@ void ResourceStorage::init()
             Shape.push_back({ 0.1f,  1.0f});
             Shape.push_back({-0.1f,  1.0f});
             
-            Shapes_[int(GameObjectType::SUBMARINE_RUDDER)].push_back(std::move(Shape));
+            auto& Shapes = Shapes_[int(GameObjectType::SUBMARINE_RUDDER)];
+            
+            b2FixtureDef Fixture;
+            Fixture.density =  1.0f;
+            Fixture.friction = 0.8f;
+            Fixture.restitution = 0.0f;
+            Fixture.isSensor = false;
+            
+            Shapes.ShapeDefs.push_back(std::move(Shape));
+            Shapes.FixtureDefs.push_back(std::move(Fixture));
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes_[int(GameObjectType::SUBMARINE_RUDDER)].front()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(Shapes_[int(GameObjectType::SUBMARINE_RUDDER)].front().size())
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.front()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Shapes.ShapeDefs.front().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectType::SUBMARINE_RUDDER)].push_back(std::move(Mesh));
@@ -156,7 +202,8 @@ void ResourceStorage::init()
 void ResourceStorage::release()
 {
     for (auto i=0u; i<Meshes_.size(); ++i) Meshes_[i].clear();
-    for (auto i=0u; i<Shapes_.size(); ++i) Shapes_[i].clear();
+    for (auto i=0u; i<Shapes_.size(); ++i) Shapes_[i].ShapeDefs.clear();
+    for (auto i=0u; i<Shapes_.size(); ++i) Shapes_[i].FixtureDefs.clear();
 
     if (Drawables_ != nullptr)
     {

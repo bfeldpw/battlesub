@@ -40,6 +40,32 @@ void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, 
     Body_=World_->CreateBody(&BodyDef);
     Body_->SetUserData(Visuals_);
     
+    for (auto i=0u; i<Shapes_->ShapeDefs.size(); ++i)
+    {
+        // Shape has to be defined here, since CreateFixture needs a
+        // valid Shape (Box2D internal cloning is done within
+        // CreateFixture while Fixture is just a structure).
+        switch(Shapes_->Type)
+        {
+            case ShapeEnumType::CHAIN:
+            {
+                b2ChainShape Chain;
+                Chain.CreateLoop(Shapes_->ShapeDefs[i].data(), Shapes_->ShapeDefs[i].size());
+                Shapes_->FixtureDefs[i].shape = &Chain;
+                Body_->CreateFixture(&(Shapes_->FixtureDefs[i]));
+                break;
+            }
+            case ShapeEnumType::POLYGON:
+            {
+                b2PolygonShape Shp;
+                Shp.Set(Shapes_->ShapeDefs[i].data(), Shapes_->ShapeDefs[i].size());
+                Shapes_->FixtureDefs[i].shape = &Shp;
+                Body_->CreateFixture(&(Shapes_->FixtureDefs[i]));
+            }
+        }
+        
+    }
+    
     Scale_  = 1.0f;
     IsSunk_ = false;
 }

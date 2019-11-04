@@ -13,8 +13,20 @@
 constexpr float SINKING_SCALE_FACTOR = 0.995f;
 constexpr float SINKING_SCALE_MIN    = 0.01f;
 
+enum class ShapeEnumType : int
+{
+    CHAIN,
+    POLYGON
+};
+
 typedef std::vector<b2Vec2>     ShapeType;
-typedef std::vector<ShapeType>  ShapesType;
+typedef struct
+{
+    std::vector<ShapeType>    ShapeDefs;
+    std::vector<b2FixtureDef> FixtureDefs;
+    ShapeEnumType             Type = ShapeEnumType::POLYGON;
+    
+} ShapesType;
 typedef std::vector<GL::Mesh>   MeshesType;
 
 class GameObject : public Entity

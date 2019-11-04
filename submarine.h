@@ -9,8 +9,8 @@ class Submarine : public Entity
 {
     public:
         
-        SubmarineHull Hull;
-        SubmarineHull Rudder;
+        SubmarineHull   Hull;
+        SubmarineRudder Rudder;
         
         Submarine& setPose(float PosX, float PosY, float Angle=0.0f)
         {

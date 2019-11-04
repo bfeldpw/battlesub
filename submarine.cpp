@@ -20,6 +20,7 @@ void Submarine::fire(float GunPos)
     BodyDef.angle = Hull.getBody()->GetAngle();
     BodyDef.angularDamping = 10.0f;
     BodyDef.linearDamping = 2.0f;
+    BodyDef.bullet = true;
     Bullet->setShapes(GlobalResources::Get.getShapes(GameObjectType::PROJECTILE))
            .setMeshes(GlobalResources::Get.getMeshes(GameObjectType::PROJECTILE))
            .setShader(GlobalResources::Get.getShader());

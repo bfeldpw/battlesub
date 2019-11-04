@@ -55,6 +55,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
+    BodyDef.angularDamping = 10.0f;
+    BodyDef.linearDamping = 2.0f;
     PlayerSub_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
                     .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
                     .setShader(GlobalResources::Get.getShader());
@@ -63,6 +65,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDefRudder.type = b2_dynamicBody;
     BodyDefRudder.active = true;
     BodyDefRudder.position.Set(0.0f, -27.0f);
+    BodyDefRudder.angularDamping = 10.0f;
+    BodyDefRudder.linearDamping = 2.0f;
     PlayerSub_->Rudder.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_RUDDER))
                       .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_RUDDER))
                       .setShader(GlobalResources::Get.getShader());
@@ -90,6 +94,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
     BodyDef2.angle = 3.14159f;
+    BodyDef2.angularDamping = 10.0f;
+    BodyDef2.linearDamping = 2.0f;
     PlayerSub2_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
                      .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
                      .setShader(GlobalResources::Get.getShader());
