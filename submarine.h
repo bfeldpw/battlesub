@@ -9,8 +9,9 @@ class Submarine : public Entity
 {
     public:
         
-        SubmarineHull   Hull;
-        SubmarineRudder Rudder;
+        SubmarineHull    Hull;
+        SubmarineRudder  Rudder;
+        b2RevoluteJoint* RudderJoint = nullptr;
         
         Submarine& setPose(float PosX, float PosY, float Angle=0.0f)
         {
@@ -30,21 +31,27 @@ class Submarine : public Entity
         
         void fire(float GunPos);
         
+        void fullStop()
+        {
+            Throttle_ = 0.0f;
+        }
         void rudderLeft()
         {
+            RudderJoint->SetMotorSpeed(-1.0f);
             Rudder_ = -10.0f;
         }
         void rudderRight()
         {
+            RudderJoint->SetMotorSpeed(1.0f);
             Rudder_ = 10.0f;
         }
         void throttleForward()
         {
-            Throttle_ = 20.0f;
+            if (Throttle_ < 60000.0f) Throttle_ += 2000.0f;
         }
         void throttleReverse()
         {
-            Throttle_ = -20.0f;
+            if (Throttle_ > -60000.0f) Throttle_ -= 2000.0f;
         }
         
         void update();

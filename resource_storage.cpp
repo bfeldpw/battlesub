@@ -50,8 +50,8 @@ void ResourceStorage::init()
             
             b2FixtureDef Fixture;
             Fixture.density =  1.0f;
-            Fixture.friction = 0.8f;
-            Fixture.restitution = 0.0f;
+            Fixture.friction = 0.9f;
+            Fixture.restitution = 0.6f;
             Fixture.isSensor = false;
             
             Shapes.ShapeDefs.push_back(std::move(Shape));
@@ -113,7 +113,7 @@ void ResourceStorage::init()
         auto& Shapes = Shapes_[int(GameObjectType::PROJECTILE)];
         
         b2FixtureDef Fixture;
-        Fixture.density = 10.0f;
+        Fixture.density = 800.0f; // Roughly the density of steel
         Fixture.friction = 0.5f;
         Fixture.restitution = 0.0f;
         Fixture.isSensor = false;
@@ -132,10 +132,11 @@ void ResourceStorage::init()
     // Initialise submarine
     {
         {
+            // Hull front
             ShapeType Shape;
             
-            Shape.push_back({-2.0f, -6.0f});
-            Shape.push_back({ 2.0f, -6.0f});
+            Shape.push_back({-1.8f, -5.0f});
+            Shape.push_back({ 1.8f, -5.0f});
             Shape.push_back({ 2.0f,  6.0f});
             Shape.push_back({ 1.5f,  8.0f});
             Shape.push_back({ 0.5f,  9.0f});
@@ -146,9 +147,9 @@ void ResourceStorage::init()
             auto& Shapes = Shapes_[int(GameObjectType::SUBMARINE_HULL)];
             
             b2FixtureDef Fixture;
-            Fixture.density =  1.0f;
-            Fixture.friction = 0.8f;
-            Fixture.restitution = 0.0f;
+            Fixture.density =  400.0f; // Half of the hull consist of steel (roughly 800kg/m³)
+            Fixture.friction = 0.2f;
+            Fixture.restitution = 0.3f;
             Fixture.isSensor = false;
             
             Shapes.ShapeDefs.push_back(std::move(Shape));
@@ -166,6 +167,38 @@ void ResourceStorage::init()
             Meshes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Mesh));
         }
         {
+            // Hull back
+            ShapeType Shape;
+            
+            Shape.push_back({-1.5f, -7.0f});
+            Shape.push_back({ 1.5f, -7.0f});
+            Shape.push_back({ 1.8f, -5.0f});
+            Shape.push_back({-1.8f, -5.0f});
+            
+            auto& Shapes = Shapes_[int(GameObjectType::SUBMARINE_HULL)];
+            
+            b2FixtureDef Fixture;
+            Fixture.density =  600.0f; // Half of the hull consist of steel (roughly 800kg/m³)
+            Fixture.friction = 0.2f;
+            Fixture.restitution = 0.3f;
+            Fixture.isSensor = false;
+            
+            Shapes.ShapeDefs.push_back(std::move(Shape));
+            Shapes.FixtureDefs.push_back(std::move(Fixture));
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(
+                            GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs[1]),
+                            GL::BufferUsage::StaticDraw
+                          );
+            Mesh.setCount(Shapes.ShapeDefs[1].size())
+                .setPrimitive(GL::MeshPrimitive::TriangleFan)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Meshes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Mesh));
+        }
+        {
+            // Rudder
             ShapeType Shape;
             
             Shape.push_back({-0.1f, -1.0f});
@@ -176,9 +209,9 @@ void ResourceStorage::init()
             auto& Shapes = Shapes_[int(GameObjectType::SUBMARINE_RUDDER)];
             
             b2FixtureDef Fixture;
-            Fixture.density =  1.0f;
-            Fixture.friction = 0.8f;
-            Fixture.restitution = 0.0f;
+            Fixture.density =  800.0f;
+            Fixture.friction = 0.2f;
+            Fixture.restitution = 0.3f;
             Fixture.isSensor = false;
             
             Shapes.ShapeDefs.push_back(std::move(Shape));

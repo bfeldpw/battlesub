@@ -17,7 +17,7 @@ class SubmarineRudder : public GameObject
             
             for (auto i=0u; i<Meshes_->size(); ++i)
             {
-                new SubmarineDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x2f83cc_rgbf, DrawableGrp_);
+                new SubmarineDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x202038_rgbf, DrawableGrp_);
             }
         }
         

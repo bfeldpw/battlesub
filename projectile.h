@@ -17,7 +17,7 @@ class Projectile : public GameObject
             
             for (auto i=0u; i<Meshes_->size(); ++i)
             {
-                new ProjectileDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0xdf0000_rgbf, DrawableGrp_);
+                new ProjectileDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0xaa6611_rgbf, DrawableGrp_);
             }
         }
         

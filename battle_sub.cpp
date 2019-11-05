@@ -29,7 +29,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
         conf.setTitle("BattleSub")
             .setSize(conf.size(), dpiScaling);
         
-            GLConfiguration glConf;
+        GLConfiguration glConf;
         glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
         
         if (!tryCreate(conf, glConf))
@@ -55,8 +55,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, -20.0f);
-    BodyDef.angularDamping = 10.0f;
-    BodyDef.linearDamping = 2.0f;
+    BodyDef.angularDamping = 0.8f;
+    BodyDef.linearDamping = 0.2f;
     PlayerSub_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
                     .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
                     .setShader(GlobalResources::Get.getShader());
@@ -65,27 +65,26 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDefRudder.type = b2_dynamicBody;
     BodyDefRudder.active = true;
     BodyDefRudder.position.Set(0.0f, -27.0f);
-    BodyDefRudder.angularDamping = 10.0f;
-    BodyDefRudder.linearDamping = 2.0f;
+    BodyDefRudder.angularDamping = 0.8f;
+    BodyDefRudder.linearDamping = 0.2f;
     PlayerSub_->Rudder.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_RUDDER))
                       .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_RUDDER))
                       .setShader(GlobalResources::Get.getShader());
     PlayerSub_->Rudder.init(&(*World_), GlobalResources::Get.getScene(), BodyDefRudder, GlobalResources::Get.getDrawables());
         
     b2RevoluteJointDef jointDef;
-    jointDef.lowerAngle = -0.5f * b2_pi; // -90 degrees
-    jointDef.upperAngle = 0.25f * b2_pi; // 45 degrees
+    jointDef.lowerAngle = -0.25f * b2_pi; // -45 degrees
+    jointDef.upperAngle =  0.25f * b2_pi; // 45 degrees
     jointDef.enableLimit = true;
     jointDef.bodyA = PlayerSub_->Hull.getBody();
     jointDef.localAnchorA = {0.0f, -6.0f};
     jointDef.bodyB = PlayerSub_->Rudder.getBody();
     jointDef.localAnchorB = {0.0f,  1.0f};
-//     jointDef.maxMotorTorque = 100000.0f;
-//     jointDef.motorSpeed = 0.2f;
-//     jointDef.enableMotor = true;
+    jointDef.maxMotorTorque = 10000.0f;
+    jointDef.motorSpeed = 0.0f;
+    jointDef.enableMotor = true;
     jointDef.collideConnected = false;
-    b2RevoluteJoint* joint = static_cast<b2RevoluteJoint*>(World_->CreateJoint(&jointDef));
-//     std::cout << joint->Get << std::endl;
+    PlayerSub_->RudderJoint = static_cast<b2RevoluteJoint*>(World_->CreateJoint(&jointDef));
     
     
     PlayerSub2_ = GlobalFactories::Submarines.create();
@@ -94,8 +93,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.active = true;
     BodyDef2.position.Set(0.0f, 20.0f);
     BodyDef2.angle = 3.14159f;
-    BodyDef2.angularDamping = 10.0f;
-    BodyDef2.linearDamping = 2.0f;
+    BodyDef2.angularDamping = 0.8f;
+    BodyDef2.linearDamping = 0.2f;
     PlayerSub2_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
                      .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
                      .setShader(GlobalResources::Get.getShader());
@@ -121,14 +120,23 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
 {
     switch (Event.key())
     {
-        case KeyEvent::Key::A: KeyPressedMap["a"] = true; break;
-        case KeyEvent::Key::D: KeyPressedMap["d"] = true; PlayerSub_->setPose(50.0f, 0.0f, 0.7f); break;
+        case KeyEvent::Key::A:
+            KeyPressedMap["a"] = true;
+            PlayerSub_->RudderJoint->SetMotorSpeed(-1.0f);
+            break;
+        case KeyEvent::Key::D:
+            KeyPressedMap["d"] = true;
+            PlayerSub_->RudderJoint->SetMotorSpeed(1.0f);
+            break;
         case KeyEvent::Key::P:
             KeyPressedMap["p"] = true;
             IsPaused_ ^= true;
             break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = true; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = true; break;
+        case KeyEvent::Key::X:
+            PlayerSub_->fullStop();
+            break;
         case KeyEvent::Key::Esc:
         {
             cleanupAndExit();
@@ -145,8 +153,14 @@ void BattleSub::keyReleaseEvent(KeyEvent& Event)
 {
     switch (Event.key())
     {
-        case KeyEvent::Key::A: KeyPressedMap["a"] = false; break;
-        case KeyEvent::Key::D: KeyPressedMap["d"] = false; break;
+        case KeyEvent::Key::A:
+            KeyPressedMap["a"] = false;
+            PlayerSub_->RudderJoint->SetMotorSpeed(0.0f);
+            break;
+        case KeyEvent::Key::D:
+            KeyPressedMap["d"] = false;
+            PlayerSub_->RudderJoint->SetMotorSpeed(0.0f);
+            break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = false; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = false; break;
         default: break;
@@ -199,10 +213,12 @@ void BattleSub::drawEvent()
 {
     if (!IsExitTriggered_)
     {
+
         GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
+        GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.1f, 1.0f));
         
-        if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
-        if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
+//         if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
+//         if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
         if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
         if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
         
@@ -249,13 +265,14 @@ void BattleSub::updateGameObjects()
             break;
         }
     }
-    for (auto Sub : GlobalFactories::Submarines.getEntities())
-    {
-        Sub.second->update();
-    }
+//     for (auto Sub : GlobalFactories::Submarines.getEntities())
+//     {
+//         Sub.second->update();
+//     }
+    PlayerSub_->update();
     
     // Update physics
-    World_->Step(1.0f/60.0f, 80, 30);
+    World_->Step(1.0f/60.0f, 8, 3);
 
     // Update object visuals    
     for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())

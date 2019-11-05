@@ -68,6 +68,11 @@ void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, 
     
     Scale_  = 1.0f;
     IsSunk_ = false;
+    
+    DBLK(GlobalMessageHandler.reportDebug("GameObject created\n"
+                                          " * Mass:    "+std::to_string(Body_->GetMass())+" kg\n"
+                                          " * Inertia: "+std::to_string(Body_->GetInertia()),
+                                          MessageHandler::DEBUG_L1);)
 }
         
 std::vector<Vector2> GameObject::convertGeometryPhysicsToGraphics(const std::vector<b2Vec2> Verts)

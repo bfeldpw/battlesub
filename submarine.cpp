@@ -35,8 +35,18 @@ void Submarine::update()
 {
     assert(Hull.getBody() != nullptr);
     
-    Hull.getBody()->ApplyForce(Hull.getBody()->GetWorldVector({Rudder_, 0.0f}),
-                               Hull.getBody()->GetWorldPoint({0.0f, 1.0f}), true);
-    Hull.getBody()->ApplyForce(Hull.getBody()->GetWorldVector({0.0f, Throttle_}),
-                               Hull.getBody()->GetWorldPoint({0.0f, 0.0f}), true);
+    constexpr float PROPELLER_RADIUS = 0.5f;
+    constexpr float RUDDER_LENGTH = 2.0f;
+    constexpr float WATER_FORCE_FACTOR = 1000.0f;
+    
+    float ThrottleOnCOM = (0.5f + 
+                           0.5f*(1.0f-PROPELLER_RADIUS/RUDDER_LENGTH) +
+                           0.5f*PROPELLER_RADIUS/RUDDER_LENGTH * std::cos(RudderJoint->GetJointAngle())) * 
+                          Throttle_;
+    float ThrottleOnRudder = 0.5f*PROPELLER_RADIUS/RUDDER_LENGTH * std::sin(RudderJoint->GetJointAngle())*Throttle_;
+    float WaterResistanceOnRudder = RUDDER_LENGTH * std::sin(RudderJoint->GetJointAngle()) * Hull.getBody()->GetLocalVector(Hull.getBody()->GetLinearVelocity()).y * WATER_FORCE_FACTOR;
+    
+    Hull.getBody()->ApplyForceToCenter(Hull.getBody()->GetWorldVector({0.0f, ThrottleOnCOM}), true);
+    Hull.getBody()->ApplyForce(Rudder.getBody()->GetWorldVector({-ThrottleOnRudder-WaterResistanceOnRudder, 0.0f }),
+                               Hull.getBody()->GetWorldPoint({0.0f, -6.0f}), true);
 }
