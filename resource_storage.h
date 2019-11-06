@@ -44,6 +44,8 @@ class ResourceStorage
 
     private:
 
+        void initLandscape();
+        
         bool IsInitialised = false;
         
         Scene2D* Scene_ = new Scene2D;

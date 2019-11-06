@@ -4,102 +4,8 @@
 
 void ResourceStorage::init()
 {
-    // Initialise landscape
-    {
-        noise::module::Perlin Boundary;
-        
-        Boundary.SetFrequency(0.005);
-        Boundary.SetPersistence(0.57317);
-        Boundary.SetLacunarity(1.9731);
-        Boundary.SetNoiseQuality(noise::QUALITY_BEST);
-        Boundary.SetNoiseType(noise::TYPE_VALUE);
-        
-        int OctaveCount = ceil(log2(1/0.005)/log2(1.9731));
-        if (OctaveCount < 1) OctaveCount = 1;
-        
-        Boundary.SetOctaveCount(OctaveCount);
-        Boundary.SetSeed(7);
-        
-        {
-            ShapeType Shape;
-            constexpr float w = 500.0f; // Half width
-            constexpr float h = 350.0f; // Half height
-            
-            Shape.push_back({-w, h});
-            for (auto i=-w; i<=w; i+=1.0f)
-            {
-                Shape.push_back({i, h-50.0f - 50.0f * float(Boundary.GetValue(i, h-50.0f))});
-            }
-            Shape.push_back({w, h});
-            
-//             for (auto i=Shape.back().y; i>=-300.0f; i-=1.0f)
-//             for (auto i=w; i>=-300.0f; i-=1.0f)
-//             {
-//                 Shape.push_back({500.0f - 50.0f * float(Boundary.GetValue(500.0, i)), i});
-//             }
-//             for (auto i=Shape.back().x; i>=-500.0f; i-=1.0f)
-//             {
-//                 Shape.push_back({i, -300.0f - 50.0f * float(Boundary.GetValue(i, -300.0))});
-//             }
-//             for (auto i=Shape.back().y; i<=300.0f; i+=1.0f)
-//             {
-//                 Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
-//             }
-            
-            auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
-            
-            b2FixtureDef Fixture;
-            Fixture.density =  1.0f;
-            Fixture.friction = 0.9f;
-            Fixture.restitution = 0.2f;
-            Fixture.isSensor = false;
-            
-            Shapes.ShapeDefs.push_back(std::move(Shape));
-            Shapes.FixtureDefs.push_back(std::move(Fixture));
-            Shapes.Type = ShapeEnumType::CHAIN;
-            
-            GL::Mesh Mesh;
-            GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.front()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(Shapes.ShapeDefs.front().size())
-                .setPrimitive(GL::MeshPrimitive::LineLoop)
-                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
-            
-            DBLK(
-                GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
-                GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(Shapes.ShapeDefs.front().size()), MessageHandler::DEBUG_L1);
-            )
-        }
-        {
-            ShapeType Shape;
-            for (auto i=0.0f; i<2.0*b2_pi; i+=2.0*b2_pi/100.0)
-            {
-                auto Value = 5.0f * Boundary.GetValue(100.0f * std::cos(i), 100.0f * std::sin(i));
-                
-                Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+200.0f});
-            }
-            auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
-            
-            b2FixtureDef Fixture;
-            Fixture.density =  1.0f;
-            Fixture.friction = 0.8f;
-            Fixture.restitution = 0.0f;
-            Fixture.isSensor = false;
-            
-            Shapes.ShapeDefs.push_back(std::move(Shape));
-            Shapes.FixtureDefs.push_back(std::move(Fixture));
-            Shapes.Type = ShapeEnumType::CHAIN;
-            
-            GL::Mesh Mesh;
-            GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(Shapes.ShapeDefs.back().size())
-                .setPrimitive(GL::MeshPrimitive::TriangleFan)
-                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
-        }
-    }
+    this->initLandscape();
+    
     // Initialise projectile
     {
         ShapeType Shape;
@@ -123,8 +29,8 @@ void ResourceStorage::init()
                 
         GL::Mesh Mesh;
         GL::Buffer Buffer;
-        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.front()), GL::BufferUsage::StaticDraw);
-        Mesh.setCount(Shapes.ShapeDefs.front().size())
+        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+        Mesh.setCount(Shapes.ShapeDefs.back().size())
             .setPrimitive(GL::MeshPrimitive::TriangleFan)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
         Meshes_[int(GameObjectTypeE::PROJECTILE)].push_back(std::move(Mesh));
@@ -158,10 +64,10 @@ void ResourceStorage::init()
             GL::Mesh Mesh;
             GL::Buffer Buffer;
             Buffer.setData(
-                            GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.front()),
+                            GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
                             GL::BufferUsage::StaticDraw
                           );
-            Mesh.setCount(Shapes.ShapeDefs.front().size())
+            Mesh.setCount(Shapes.ShapeDefs.back().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Mesh));
@@ -189,10 +95,10 @@ void ResourceStorage::init()
             GL::Mesh Mesh;
             GL::Buffer Buffer;
             Buffer.setData(
-                            GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs[1]),
+                            GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
                             GL::BufferUsage::StaticDraw
                           );
-            Mesh.setCount(Shapes.ShapeDefs[1].size())
+            Mesh.setCount(Shapes.ShapeDefs.back().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Mesh));
@@ -219,8 +125,8 @@ void ResourceStorage::init()
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.front()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(Shapes.ShapeDefs.front().size())
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(Shapes.ShapeDefs.back().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectTypeE::SUBMARINE_RUDDER)].push_back(std::move(Mesh));
@@ -258,4 +164,198 @@ void ResourceStorage::release()
     }
     
     IsInitialised = false;
+}
+
+void ResourceStorage::initLandscape()
+{
+    // Initialise landscape
+    noise::module::Perlin Boundary;
+    
+    Boundary.SetFrequency(0.008);
+    Boundary.SetPersistence(0.47317);
+    Boundary.SetLacunarity(1.9731);
+    Boundary.SetNoiseQuality(noise::QUALITY_BEST);
+    Boundary.SetNoiseType(noise::TYPE_VALUE);
+    
+    int OctaveCount = ceil(log2(1/0.005)/log2(1.9731));
+    if (OctaveCount < 1) OctaveCount = 1;
+    
+    Boundary.SetOctaveCount(OctaveCount);
+    Boundary.SetSeed(7);
+    
+    {
+        constexpr float w = 500.0f; // Half width
+        constexpr float h = 300.0f; // Half height
+        constexpr float b = 100.0f;  // Boundary
+        constexpr float a = 100.0f;  // Amplitude
+        
+        // Top
+        ShapeType ShapeTop;
+        ShapeTop.push_back({-w-b, h+b});
+        for (auto i=-w-b; i<=w+b; i+=1.0f)
+        {
+            ShapeTop.push_back({i, h - a * float(Boundary.GetValue(i, h))});
+        }
+        ShapeTop.push_back({w+b, h+b});
+        
+        // Right
+        ShapeType ShapeRight;
+        ShapeRight.push_back({w+b, h+b});
+        for (auto i=h+b; i>=-h-b; i-=1.0f)
+        {
+            ShapeRight.push_back({w - a * float(Boundary.GetValue(w, i)), i});
+        }
+        ShapeRight.push_back({w+b, -h-b});
+        
+        // Right
+        ShapeType ShapeLeft;
+        ShapeLeft.push_back({-w-b, h+b});
+        for (auto i=h+b; i>=-h-b; i-=1.0f)
+        {
+            ShapeLeft.push_back({-w + a * float(Boundary.GetValue(-w, i)), i});
+        }
+        ShapeLeft.push_back({-w-b, -h-b});
+        
+        // Bottom
+        ShapeType ShapeBottom;
+        ShapeBottom.push_back({-w-b, -h-b});
+        for (auto i=-w-b; i<=w+b; i+=1.0f)
+        {
+            ShapeBottom.push_back({i, -h + a * float(Boundary.GetValue(i, -h))});
+        }
+        ShapeBottom.push_back({w+b, -h-b});
+        
+        auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
+        
+        b2FixtureDef Fixture;
+        Fixture.density =  1.0f;
+        Fixture.friction = 0.9f;
+        Fixture.restitution = 0.2f;
+        Fixture.isSensor = false;
+        
+        Shapes.ShapeDefs.push_back(std::move(ShapeTop));
+        Shapes.FixtureDefs.push_back(Fixture);
+        Shapes.Type = ShapeEnumType::CHAIN;
+        {
+            ShapeType TmpShape;
+            for (auto i=1u; i<Shapes.ShapeDefs.back().size()-2; ++i)
+            {
+                TmpShape.push_back({float((i-1)-w-b), h+b});
+                TmpShape.push_back({float(i-w-b), h+b});
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
+                TmpShape.push_back({float(i-w-b), h+b});
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i+1]);
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
+            }
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(TmpShape.size())
+                .setPrimitive(GL::MeshPrimitive::Triangles)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
+        }
+        Shapes.ShapeDefs.push_back(ShapeRight);
+        Shapes.FixtureDefs.push_back(std::move(Fixture));
+        {
+            ShapeType TmpShape;
+            std::cout << Shapes.ShapeDefs.back().size() << std::endl;
+            for (auto i=1u; i<Shapes.ShapeDefs.back().size()-2; ++i)
+            {
+                TmpShape.push_back({w+b, float(h+b-(i-1))});
+                TmpShape.push_back({w+b, float(h+b-i)});
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
+                TmpShape.push_back({w+b, float(h+b-i)});
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i+1]);
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
+            }
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(TmpShape.size())
+                .setPrimitive(GL::MeshPrimitive::Triangles)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
+        }
+        Shapes.ShapeDefs.push_back(std::move(ShapeLeft));
+        Shapes.FixtureDefs.push_back(Fixture);
+        {
+            ShapeType TmpShape;
+            std::cout << Shapes.ShapeDefs.back().size() << std::endl;
+            for (auto i=1u; i<Shapes.ShapeDefs.back().size()-2; ++i)
+            {
+                TmpShape.push_back({-w-b, float(h+b-(i-1))});
+                TmpShape.push_back({-w-b, float(h+b-i)});
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
+                TmpShape.push_back({-w-b, float(h+b-i)});
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i+1]);
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
+            }
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(TmpShape.size())
+                .setPrimitive(GL::MeshPrimitive::Triangles)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
+        }
+        Shapes.ShapeDefs.push_back(std::move(ShapeBottom));
+        Shapes.FixtureDefs.push_back(std::move(Fixture));
+        {
+            ShapeType TmpShape;
+            for (auto i=1u; i<Shapes.ShapeDefs.back().size()-2; ++i)
+            {
+                TmpShape.push_back({float((i-1)-w-b), -h-b});
+                TmpShape.push_back({float(i-w-b), -h-b});
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
+                TmpShape.push_back({float(i-w-b), -h-b});
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i+1]);
+                TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
+            }
+            
+            GL::Mesh Mesh;
+            GL::Buffer Buffer;
+            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
+            Mesh.setCount(TmpShape.size())
+                .setPrimitive(GL::MeshPrimitive::Triangles)
+                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+            Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
+        }
+        
+        DBLK(
+            GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
+            GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(Shapes.ShapeDefs.back().size()), MessageHandler::DEBUG_L1);
+        )
+    }
+    {
+        ShapeType Shape;
+        for (auto i=0.0f; i<2.0*b2_pi; i+=2.0*b2_pi/100.0)
+        {
+            auto Value = 5.0f * Boundary.GetValue(100.0f * std::cos(i), 100.0f * std::sin(i));
+            
+            Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+200.0f});
+        }
+        auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
+        
+        b2FixtureDef Fixture;
+        Fixture.density =  1.0f;
+        Fixture.friction = 0.8f;
+        Fixture.restitution = 0.0f;
+        Fixture.isSensor = false;
+        
+        Shapes.ShapeDefs.push_back(std::move(Shape));
+        Shapes.FixtureDefs.push_back(std::move(Fixture));
+        Shapes.Type = ShapeEnumType::CHAIN;
+        
+        GL::Mesh Mesh;
+        GL::Buffer Buffer;
+        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+        Mesh.setCount(Shapes.ShapeDefs.back().size())
+            .setPrimitive(GL::MeshPrimitive::TriangleFan)
+            .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+        Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
+    }
 }
