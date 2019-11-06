@@ -18,13 +18,13 @@ void Submarine::fire(float GunPos)
                          Hull.getBody()->GetPosition().y + 
                          Hull.getBody()->GetWorldVector({GunPos, 8.0f}).y);
     BodyDef.angle = Hull.getBody()->GetAngle();
-    BodyDef.angularDamping = 10.0f;
-    BodyDef.linearDamping = 2.0f;
+    BodyDef.angularDamping = 5.0f;
+    BodyDef.linearDamping = 1.0f;
     BodyDef.bullet = true;
-    Bullet->setShapes(GlobalResources::Get.getShapes(GameObjectType::PROJECTILE))
-           .setMeshes(GlobalResources::Get.getMeshes(GameObjectType::PROJECTILE))
+    Bullet->setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::PROJECTILE))
+           .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::PROJECTILE))
            .setShader(GlobalResources::Get.getShader());
-    Bullet->init(Hull.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables());
+    Bullet->init(Hull.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
                                           Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
     Hull.getBody()->ApplyLinearImpulse(Hull.getBody()->GetWorldVector({0.0f,-1.0f}),
@@ -35,7 +35,7 @@ void Submarine::update()
 {
     assert(Hull.getBody() != nullptr);
     
-    constexpr float WATER_FORCE_FACTOR = 1000.0f;
+    constexpr float WATER_FORCE_FACTOR = 3000.0f;
     constexpr float RUDDER_LENGTH = 2.0f;
 
     float WaterResistanceOnRudder = RUDDER_LENGTH * Rudder.getBody()->GetLocalVector(Hull.getBody()->GetLinearVelocity()).x * WATER_FORCE_FACTOR;

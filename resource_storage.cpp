@@ -46,12 +46,12 @@ void ResourceStorage::init()
 //                 Shape.push_back({-500.0f - 50.0f * float(Boundary.GetValue(-500.0f, i)), i});
 //             }
             
-            auto& Shapes = Shapes_[int(GameObjectType::LANDSCAPE)];
+            auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
             
             b2FixtureDef Fixture;
             Fixture.density =  1.0f;
             Fixture.friction = 0.9f;
-            Fixture.restitution = 0.6f;
+            Fixture.restitution = 0.2f;
             Fixture.isSensor = false;
             
             Shapes.ShapeDefs.push_back(std::move(Shape));
@@ -64,7 +64,7 @@ void ResourceStorage::init()
             Mesh.setCount(Shapes.ShapeDefs.front().size())
                 .setPrimitive(GL::MeshPrimitive::LineLoop)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Mesh));
+            Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
             
             DBLK(
                 GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
@@ -79,7 +79,7 @@ void ResourceStorage::init()
                 
                 Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+200.0f});
             }
-            auto& Shapes = Shapes_[int(GameObjectType::LANDSCAPE)];
+            auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
             
             b2FixtureDef Fixture;
             Fixture.density =  1.0f;
@@ -97,7 +97,7 @@ void ResourceStorage::init()
             Mesh.setCount(Shapes.ShapeDefs.back().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectType::LANDSCAPE)].push_back(std::move(Mesh));
+            Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
         }
     }
     // Initialise projectile
@@ -106,11 +106,11 @@ void ResourceStorage::init()
         
         Shape.push_back({-0.02f, 0.0f});
         Shape.push_back({ 0.02f, 0.0f});
-        Shape.push_back({ 0.02f, 0.1f});
+        Shape.push_back({ 0.02f, 0.05f});
         Shape.push_back({ 0.0f,  0.15f});
-        Shape.push_back({-0.02f, 0.1f});
+        Shape.push_back({-0.02f, 0.05f});
         
-        auto& Shapes = Shapes_[int(GameObjectType::PROJECTILE)];
+        auto& Shapes = Shapes_[int(GameObjectTypeE::PROJECTILE)];
         
         b2FixtureDef Fixture;
         Fixture.density = 800.0f; // Roughly the density of steel
@@ -127,7 +127,7 @@ void ResourceStorage::init()
         Mesh.setCount(Shapes.ShapeDefs.front().size())
             .setPrimitive(GL::MeshPrimitive::TriangleFan)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-        Meshes_[int(GameObjectType::PROJECTILE)].push_back(std::move(Mesh));
+        Meshes_[int(GameObjectTypeE::PROJECTILE)].push_back(std::move(Mesh));
     }
     // Initialise submarine
     {
@@ -144,7 +144,7 @@ void ResourceStorage::init()
             Shape.push_back({-1.5f,  8.0f});
             Shape.push_back({-2.0f,  6.0f});
             
-            auto& Shapes = Shapes_[int(GameObjectType::SUBMARINE_HULL)];
+            auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_HULL)];
             
             b2FixtureDef Fixture;
             Fixture.density =  400.0f; // Half of the hull consist of steel (roughly 800kg/m³)
@@ -164,7 +164,7 @@ void ResourceStorage::init()
             Mesh.setCount(Shapes.ShapeDefs.front().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Mesh));
+            Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Mesh));
         }
         {
             // Hull back
@@ -175,10 +175,10 @@ void ResourceStorage::init()
             Shape.push_back({ 1.8f, -5.0f});
             Shape.push_back({-1.8f, -5.0f});
             
-            auto& Shapes = Shapes_[int(GameObjectType::SUBMARINE_HULL)];
+            auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_HULL)];
             
             b2FixtureDef Fixture;
-            Fixture.density =  600.0f; // Half of the hull consist of steel (roughly 800kg/m³)
+            Fixture.density =  600.0f; // Half of the hull consist of steel (roughly 800kg/m³) + engine
             Fixture.friction = 0.2f;
             Fixture.restitution = 0.3f;
             Fixture.isSensor = false;
@@ -195,7 +195,7 @@ void ResourceStorage::init()
             Mesh.setCount(Shapes.ShapeDefs[1].size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectType::SUBMARINE_HULL)].push_back(std::move(Mesh));
+            Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Mesh));
         }
         {
             // Rudder
@@ -206,7 +206,7 @@ void ResourceStorage::init()
             Shape.push_back({ 0.1f,  1.0f});
             Shape.push_back({-0.1f,  1.0f});
             
-            auto& Shapes = Shapes_[int(GameObjectType::SUBMARINE_RUDDER)];
+            auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_RUDDER)];
             
             b2FixtureDef Fixture;
             Fixture.density =  800.0f;
@@ -223,7 +223,7 @@ void ResourceStorage::init()
             Mesh.setCount(Shapes.ShapeDefs.front().size())
                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectType::SUBMARINE_RUDDER)].push_back(std::move(Mesh));
+            Meshes_[int(GameObjectTypeE::SUBMARINE_RUDDER)].push_back(std::move(Mesh));
         }
     }
     
@@ -238,10 +238,13 @@ void ResourceStorage::release()
     for (auto i=0u; i<Shapes_.size(); ++i) Shapes_[i].ShapeDefs.clear();
     for (auto i=0u; i<Shapes_.size(); ++i) Shapes_[i].FixtureDefs.clear();
 
-    if (Drawables_ != nullptr)
+    for (auto Drawable : Drawables_)
     {
-        delete Drawables_;
-        Drawables_ = nullptr;
+        if (Drawable != nullptr)
+        {
+            delete Drawable;
+            Drawable = nullptr;
+        }
     }
     if (Scene_ != nullptr)
     {

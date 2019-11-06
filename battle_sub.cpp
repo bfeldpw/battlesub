@@ -57,20 +57,20 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef.position.Set(0.0f, -20.0f);
     BodyDef.angularDamping = 0.8f;
     BodyDef.linearDamping = 0.2f;
-    PlayerSub_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
-                    .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
+    PlayerSub_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
+                    .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
                     .setShader(GlobalResources::Get.getShader());
-    PlayerSub_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables());
+    PlayerSub_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
     b2BodyDef BodyDefRudder;
     BodyDefRudder.type = b2_dynamicBody;
     BodyDefRudder.active = true;
     BodyDefRudder.position.Set(0.0f, -27.0f);
     BodyDefRudder.angularDamping = 0.8f;
     BodyDefRudder.linearDamping = 0.2f;
-    PlayerSub_->Rudder.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_RUDDER))
-                      .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_RUDDER))
+    PlayerSub_->Rudder.setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_RUDDER))
+                      .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_RUDDER))
                       .setShader(GlobalResources::Get.getShader());
-    PlayerSub_->Rudder.init(&(*World_), GlobalResources::Get.getScene(), BodyDefRudder, GlobalResources::Get.getDrawables());
+    PlayerSub_->Rudder.init(&(*World_), GlobalResources::Get.getScene(), BodyDefRudder, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
         
     b2RevoluteJointDef jointDef;
     jointDef.lowerAngle = -0.25f * b2_pi; // -45 degrees
@@ -95,20 +95,20 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     BodyDef2.angle = 3.14159f;
     BodyDef2.angularDamping = 0.8f;
     BodyDef2.linearDamping = 0.2f;
-    PlayerSub2_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectType::SUBMARINE_HULL))
-                     .setShapes(GlobalResources::Get.getShapes(GameObjectType::SUBMARINE_HULL))
+    PlayerSub2_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
+                     .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
                      .setShader(GlobalResources::Get.getShader());
-    PlayerSub2_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef2, GlobalResources::Get.getDrawables());
+    PlayerSub2_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef2, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
     
     CanyonBoundary = GlobalFactories::Landscapes.create();
     b2BodyDef BodyDef3;
     BodyDef3.type = b2_staticBody;
     BodyDef3.active = true;
     BodyDef3.position.Set(0.0f, 0.0f);
-    CanyonBoundary->setMeshes(GlobalResources::Get.getMeshes(GameObjectType::LANDSCAPE))
-                   .setShapes(GlobalResources::Get.getShapes(GameObjectType::LANDSCAPE))
+    CanyonBoundary->setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::LANDSCAPE))
+                   .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::LANDSCAPE))
                    .setShader(GlobalResources::Get.getShader());
-    CanyonBoundary->init(&(*World_), GlobalResources::Get.getScene(), BodyDef3, GlobalResources::Get.getDrawables());
+    CanyonBoundary->init(&(*World_), GlobalResources::Get.getScene(), BodyDef3, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
     
     if (!setSwapInterval(1))
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
@@ -235,7 +235,8 @@ void BattleSub::drawEvent()
         }
         
         // Draw the scene
-        Camera_->draw(*GlobalResources::Get.getDrawables());
+        Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+        Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
         swapBuffers();
         redraw();
