@@ -280,7 +280,7 @@ void BattleSub::updateGameObjects()
     {
         if (Body->IsActive() && Body->GetType() != b2_staticBody)
         {            
-            (*static_cast<Object2D*>(Body->GetUserData()))
+            (*static_cast<GameObject*>(Body->GetUserData())->getVisuals())
                 .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
                 .setRotation(Complex::rotation(Rad(Body->GetAngle())));
         }

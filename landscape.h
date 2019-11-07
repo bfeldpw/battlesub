@@ -13,6 +13,8 @@ class Landscape : public GameObject
 {
     public:
         
+        Landscape() {Type = GameObjectTypeE::LANDSCAPE;}
+        
         void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef, SceneGraph::DrawableGroup2D* DGrp)
         {
             GameObject::init(World, Scene, BodyDef, DGrp);

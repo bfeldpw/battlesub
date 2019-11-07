@@ -194,7 +194,7 @@ void ResourceStorage::initLandscape()
         ShapeTop.push_back({-w-b, h+b});
         for (auto i=-w-b; i<=w+b; i+=1.0f)
         {
-            ShapeTop.push_back({i, h - a * float(Boundary.GetValue(i, h))});
+            ShapeTop.push_back({i, h - a * float(Boundary.GetValue(double(i), double(h)))});
         }
         ShapeTop.push_back({w+b, h+b});
         
@@ -203,7 +203,7 @@ void ResourceStorage::initLandscape()
         ShapeRight.push_back({w+b, h+b});
         for (auto i=h+b; i>=-h-b; i-=1.0f)
         {
-            ShapeRight.push_back({w - a * float(Boundary.GetValue(w, i)), i});
+            ShapeRight.push_back({w - a * float(Boundary.GetValue(double(w), double(i))), i});
         }
         ShapeRight.push_back({w+b, -h-b});
         
@@ -212,7 +212,7 @@ void ResourceStorage::initLandscape()
         ShapeLeft.push_back({-w-b, h+b});
         for (auto i=h+b; i>=-h-b; i-=1.0f)
         {
-            ShapeLeft.push_back({-w + a * float(Boundary.GetValue(-w, i)), i});
+            ShapeLeft.push_back({-w + a * float(Boundary.GetValue(double(-w), double(i))), i});
         }
         ShapeLeft.push_back({-w-b, -h-b});
         
@@ -221,7 +221,7 @@ void ResourceStorage::initLandscape()
         ShapeBottom.push_back({-w-b, -h-b});
         for (auto i=-w-b; i<=w+b; i+=1.0f)
         {
-            ShapeBottom.push_back({i, -h + a * float(Boundary.GetValue(i, -h))});
+            ShapeBottom.push_back({i, -h + a * float(Boundary.GetValue(double(i), double(-h)))});
         }
         ShapeBottom.push_back({w+b, -h-b});
         
@@ -260,7 +260,6 @@ void ResourceStorage::initLandscape()
         Shapes.FixtureDefs.push_back(std::move(Fixture));
         {
             ShapeType TmpShape;
-            std::cout << Shapes.ShapeDefs.back().size() << std::endl;
             for (auto i=1u; i<Shapes.ShapeDefs.back().size()-2; ++i)
             {
                 TmpShape.push_back({w+b, float(h+b-(i-1))});
@@ -283,7 +282,6 @@ void ResourceStorage::initLandscape()
         Shapes.FixtureDefs.push_back(Fixture);
         {
             ShapeType TmpShape;
-            std::cout << Shapes.ShapeDefs.back().size() << std::endl;
             for (auto i=1u; i<Shapes.ShapeDefs.back().size()-2; ++i)
             {
                 TmpShape.push_back({-w-b, float(h+b-(i-1))});
@@ -334,7 +332,7 @@ void ResourceStorage::initLandscape()
         ShapeType Shape;
         for (auto i=0.0f; i<2.0*b2_pi; i+=2.0*b2_pi/100.0)
         {
-            auto Value = 5.0f * Boundary.GetValue(100.0f * std::cos(i), 100.0f * std::sin(i));
+            auto Value = 5.0f * float(Boundary.GetValue(100.0 * std::cos(double(i)), 100.0 * std::sin(double(i))));
             
             Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+200.0f});
         }

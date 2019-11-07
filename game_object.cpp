@@ -38,7 +38,7 @@ void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, 
     DrawableGrp_ = DGrp;
     
     Body_=World_->CreateBody(&BodyDef);
-    Body_->SetUserData(Visuals_);
+    Body_->SetUserData(this);
     
     for (auto i=0u; i<Shapes_->ShapeDefs.size(); ++i)
     {

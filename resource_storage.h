@@ -11,15 +11,7 @@
 #include "game_object.h"
 
 constexpr int DRAWABLE_GROUPS_TYPE_ENUM_SIZE = 2;
-constexpr int GAME_OBJECT_TYPE_ENUM_SIZE = 4;
-
-enum class GameObjectTypeE : int
-{
-    LANDSCAPE,
-    PROJECTILE,
-    SUBMARINE_HULL,
-    SUBMARINE_RUDDER
-};
+constexpr int GAME_OBJECT_TYPE_ENUM_SIZE = 5;
 
 enum class DrawableGroupsTypeE : int
 {

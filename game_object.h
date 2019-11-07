@@ -29,9 +29,20 @@ typedef struct
 } ShapesType;
 typedef std::vector<GL::Mesh>   MeshesType;
 
+enum class GameObjectTypeE : int
+{
+    LANDSCAPE,
+    PROJECTILE,
+    SUBMARINE_HULL,
+    SUBMARINE_RUDDER,
+    DEFAULT
+};
+
 class GameObject : public Entity
 {
     public:
+        
+        GameObjectTypeE getType() const {return Type;}
         
         b2Body*     getBody() const {assert(Body_ != nullptr); return Body_;}
         b2World*    getWorld() {assert(World_ != nullptr); return World_;}
@@ -57,6 +68,7 @@ class GameObject : public Entity
                   SceneGraph::DrawableGroup2D* const DGrp);
         
         // General data
+        GameObjectTypeE Type = GameObjectTypeE::DEFAULT;
         Timer Age_;
         bool  IsSunk_ = false;
         
