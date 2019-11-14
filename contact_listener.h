@@ -57,8 +57,8 @@ class ContactListener : public b2ContactListener
                     DebrisEmitter->setOrigin(POC.x+WorldManifold.normal.x*0.2f, POC.y+WorldManifold.normal.y*0.2f)
                                   .setAngle(Angle)
                                   .setAngleStdDev(1.0f)
-                                  .setVelocity(Velocity.Length()*0.1f)
-                                  .setVelocityStdDev(Velocity.Length()*0.01f);
+                                  .setVelocity(Velocity.Length()*0.05f)
+                                  .setVelocityStdDev(Velocity.Length()*0.005f);
                 }
             }
             

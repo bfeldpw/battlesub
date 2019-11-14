@@ -22,7 +22,7 @@ class Emitter : public Entity
             
             for (auto i=0u; i<Number_; ++i)
             {
-                Debris* Bullet = GlobalFactories::Debris.create();
+                Debris* LandscapeDebris = GlobalFactories::Debris.create();
                 b2BodyDef BodyDef;
                 BodyDef.type = b2_dynamicBody;
                 BodyDef.active = true;
@@ -31,10 +31,16 @@ class Emitter : public Entity
                 BodyDef.position.Set(OriginX_+i*0.01f, OriginY_);
                 BodyDef.linearVelocity.Set(std::cos(DistAngle(Generator_))*(Velocity_+VelocityStdDev_),
                                            std::sin(DistAngle(Generator_))*(Velocity_+VelocityStdDev_));
-                Bullet->setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::DEBRIS))
-                       .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::DEBRIS))
-                       .setShader(GlobalResources::Get.getShader());
-                Bullet->init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+                LandscapeDebris->setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::DEBRIS))
+                                .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::DEBRIS))
+                                .setShader(GlobalResources::Get.getShader());
+                LandscapeDebris->init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(),
+                                      BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+                
+                b2Filter Filter;
+                Filter.categoryBits = 0x0002;
+                Filter.maskBits = 0xFFFD;
+                LandscapeDebris->getBody()->GetFixtureList()->SetFilterData(Filter);
             }
             Counter_ += Number_;
         }
