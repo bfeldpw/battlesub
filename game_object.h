@@ -15,6 +15,7 @@ constexpr float SINKING_SCALE_MIN    = 0.01f;
 
 enum class ShapeEnumType : int
 {
+    CIRCLE,
     CHAIN,
     POLYGON
 };
@@ -58,6 +59,7 @@ class GameObject : public Entity
         void sink();
         
         GameObject& setMeshes(MeshesType* const Meshes) {Meshes_ = Meshes; return *this;}
+        GameObject& setScale(float X, float Y);
         GameObject& setShapes(ShapesType* const Shapes) {Shapes_ = Shapes; return *this;}
         GameObject& setShader(Shaders::Flat2D* const Shader) {Shader_ = Shader; return *this;}
         
@@ -84,7 +86,8 @@ class GameObject : public Entity
         Object2D*                       Visuals_        = nullptr;
         Scene2D*                        Scene_          = nullptr;
         SceneGraph::DrawableGroup2D*    DrawableGrp_    = nullptr;
-        float                           Scale_          = 1.0f;
+        float                           ScaleX_         = 1.0f;
+        float                           ScaleY_         = 1.0f;
      
     public:
         

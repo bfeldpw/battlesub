@@ -183,8 +183,8 @@ void ResourceStorage::initDebris()
     auto& Shapes = Shapes_[int(GameObjectTypeE::DEBRIS)];
     
     b2FixtureDef Fixture;
-    Fixture.density =  1.0f;
-    Fixture.friction = 0.9f;
+    Fixture.density =  2.5f;
+    Fixture.friction = 0.02f; // Use low value, since we are using a circle for performance reasons
     Fixture.restitution = 0.2f;
     Fixture.isSensor = false;
     
@@ -194,6 +194,7 @@ void ResourceStorage::initDebris()
     
     Shapes.ShapeDefs.push_back(std::move(Shape));
     Shapes.FixtureDefs.push_back(std::move(Fixture));
+    Shapes.Type = ShapeEnumType::CIRCLE;
             
     GL::Mesh Mesh;
     GL::Buffer Buffer;
@@ -372,7 +373,7 @@ void ResourceStorage::initLandscape()
         {
             auto Value = 5.0f * float(Boundary.GetValue(100.0 * std::cos(double(i)), 100.0 * std::sin(double(i))));
             
-            Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+50.0f});
+            Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+10.0f});
         }
         auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
         

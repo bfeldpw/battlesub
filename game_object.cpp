@@ -17,19 +17,21 @@ void GameObject::destroy()
 void GameObject::sink()
 {
     // Just change the visuals
-    Scale_ *= SINKING_SCALE_FACTOR;
-    if (Scale_ <= SINKING_SCALE_MIN) IsSunk_ = true;
-    Visuals_->setScaling({Scale_, Scale_});
+    ScaleX_ *= SINKING_SCALE_FACTOR;
+    ScaleY_ *= SINKING_SCALE_FACTOR;
+    if (ScaleX_ <= SINKING_SCALE_MIN && ScaleY_ <= SINKING_SCALE_MIN) IsSunk_ = true;
+    Visuals_->setScaling({ScaleX_, ScaleY_});
     
     Body_->SetActive(false);
-    
-//     // Physics: Filter collisions to not collide with sinking objects
-//     for (auto Fixture = Body_->GetFixtureList(); Fixture; Fixture = Fixture->GetNext())
-//     {
-//         b2Filter Filter;
-//         Filter.maskBits = 0;
-//         Fixture->SetFilterData(Filter);
-//     }
+}
+
+GameObject& GameObject::setScale(float X, float Y)
+{
+    assert(Visuals_ != nullptr);
+    ScaleX_ = X;
+    ScaleY_ = Y;
+    Visuals_->setScaling({X, Y});
+    return *this;
 }
 
 void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp)
@@ -49,6 +51,15 @@ void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, 
         // CreateFixture while Fixture is just a structure).
         switch(Shapes_->Type)
         {
+            case ShapeEnumType::CIRCLE:
+            {
+                b2CircleShape Circle;
+                Circle.m_p.Set(0.0f, 0.0f);
+                Circle.m_radius = 0.05f;
+                Shapes_->FixtureDefs[i].shape = &Circle;
+                Body_->CreateFixture(&(Shapes_->FixtureDefs[i]));
+                break;
+            }
             case ShapeEnumType::CHAIN:
             {
                 b2ChainShape Chain;
@@ -68,7 +79,8 @@ void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, 
         
     }
     
-    Scale_  = 1.0f;
+    ScaleX_  = 1.0f;
+    ScaleY_  = 1.0f;
     IsSunk_ = false;
     
     DBLK(GlobalMessageHandler.reportDebug("GameObject created\n"

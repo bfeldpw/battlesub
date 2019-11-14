@@ -19,6 +19,7 @@ class Emitter : public Entity
         void emit()
         {
             std::normal_distribution<float> DistAngle(Angle_, AngleStdDev_);
+            std::normal_distribution<float> DistScale(1.5f, 1.3f);
             
             for (auto i=0u; i<Number_; ++i)
             {
@@ -26,11 +27,12 @@ class Emitter : public Entity
                 b2BodyDef BodyDef;
                 BodyDef.type = b2_dynamicBody;
                 BodyDef.active = true;
-                BodyDef.angularDamping = 5.0f;
+                BodyDef.angularDamping = 1.0f;
                 BodyDef.linearDamping = 1.0f;
                 BodyDef.position.Set(OriginX_+i*0.01f, OriginY_);
                 BodyDef.linearVelocity.Set(std::cos(DistAngle(Generator_))*(Velocity_+VelocityStdDev_),
                                            std::sin(DistAngle(Generator_))*(Velocity_+VelocityStdDev_));
+                BodyDef.angularVelocity = 0.5f*DistAngle(Generator_);
                 LandscapeDebris->setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::DEBRIS))
                                 .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::DEBRIS))
                                 .setShader(GlobalResources::Get.getShader());
@@ -41,6 +43,8 @@ class Emitter : public Entity
                 Filter.categoryBits = 0x0002;
                 Filter.maskBits = 0xFFFD;
                 LandscapeDebris->getBody()->GetFixtureList()->SetFilterData(Filter);
+                auto Size = DistScale(Generator_);
+                static_cast<Debris*>(LandscapeDebris->getBody()->GetUserData())->setScale(Size, Size+0.5f*DistScale(Generator_));
             }
             Counter_ += Number_;
         }
