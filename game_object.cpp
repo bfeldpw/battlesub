@@ -21,13 +21,15 @@ void GameObject::sink()
     if (Scale_ <= SINKING_SCALE_MIN) IsSunk_ = true;
     Visuals_->setScaling({Scale_, Scale_});
     
-    // Physics: Filter collisions to not collide with sinking objects
-    for (auto Fixture = Body_->GetFixtureList(); Fixture; Fixture = Fixture->GetNext())
-    {
-        b2Filter Filter;
-        Filter.maskBits = 0;
-        Fixture->SetFilterData(Filter);
-    }
+    Body_->SetActive(false);
+    
+//     // Physics: Filter collisions to not collide with sinking objects
+//     for (auto Fixture = Body_->GetFixtureList(); Fixture; Fixture = Fixture->GetNext())
+//     {
+//         b2Filter Filter;
+//         Filter.maskBits = 0;
+//         Fixture->SetFilterData(Filter);
+//     }
 }
 
 void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp)

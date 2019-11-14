@@ -26,6 +26,8 @@ class ResourceStorage
         void init();
         void release();
         
+        b2World* getWorld() {return &World_;}
+        
         SceneGraph::DrawableGroup2D* getDrawables(DrawableGroupsTypeE t) {assert(IsInitialised == true); return Drawables_[int(t)];};
         Shaders::Flat2D* getShader() {assert(IsInitialised == true); return Shader_;}
         Scene2D*         getScene() {assert(IsInitialised == true); return Scene_;}
@@ -36,9 +38,12 @@ class ResourceStorage
 
     private:
 
+        void initDebris();
         void initLandscape();
         
         bool IsInitialised = false;
+        
+        b2World World_{{0.0f, 0.0f}};
         
         Scene2D* Scene_ = new Scene2D;
         Shaders::Flat2D* Shader_ = nullptr;

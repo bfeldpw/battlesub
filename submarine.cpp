@@ -24,7 +24,7 @@ void Submarine::fire(float GunPos)
     Bullet->setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::PROJECTILE))
            .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::PROJECTILE))
            .setShader(GlobalResources::Get.getShader());
-    Bullet->init(Hull.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+    Bullet->init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
                                           Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
     Hull.getBody()->ApplyLinearImpulse(Hull.getBody()->GetWorldVector({0.0f,-1.0f}),

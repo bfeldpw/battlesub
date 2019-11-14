@@ -5,15 +5,13 @@
 #include <unordered_map>
 
 #include "common.h"
+#include "contact_listener.h"
 #include "landscape.h"
 #include "submarine.h"
 
 namespace BattleSub
 {
     
-using namespace Magnum;
-using namespace Magnum::Math::Literals;
-
 class BattleSub : public Platform::Application
 {
 
@@ -41,7 +39,7 @@ class BattleSub : public Platform::Application
         Object2D* CameraObject_;
         SceneGraph::Camera2D* Camera_;
         
-        Containers::Optional<b2World> World_;
+        ContactListener ContactListener_;
 
         Submarine* PlayerSub_  = nullptr;
         Submarine* PlayerSub2_ = nullptr;

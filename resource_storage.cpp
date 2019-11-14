@@ -4,6 +4,7 @@
 
 void ResourceStorage::init()
 {
+    this->initDebris();
     this->initLandscape();
     
     // Initialise projectile
@@ -23,6 +24,10 @@ void ResourceStorage::init()
         Fixture.friction = 0.5f;
         Fixture.restitution = 0.0f;
         Fixture.isSensor = false;
+        
+//         b2Filter Filter;
+//         Filter.maskBits = 0;
+//         Fixture.filter = Filter;
         
         Shapes.ShapeDefs.push_back(std::move(Shape));
         Shapes.FixtureDefs.push_back(std::move(Fixture));
@@ -164,6 +169,39 @@ void ResourceStorage::release()
     }
     
     IsInitialised = false;
+}
+
+void ResourceStorage::initDebris()
+{
+    ShapeType Shape;
+        
+    for (auto i=0.0f; i<2.0f*3.14159f; i+=2.0f*3.14159f/5.0f)
+    {
+        Shape.push_back({0.05*std::cos(i), 0.05*std::sin(i)});
+    }
+    
+    auto& Shapes = Shapes_[int(GameObjectTypeE::DEBRIS)];
+    
+    b2FixtureDef Fixture;
+    Fixture.density =  1.0f;
+    Fixture.friction = 0.9f;
+    Fixture.restitution = 0.2f;
+    Fixture.isSensor = false;
+    
+//         b2Filter Filter;
+//         Filter.maskBits = 0;
+//         Fixture.filter = Filter;
+    
+    Shapes.ShapeDefs.push_back(std::move(Shape));
+    Shapes.FixtureDefs.push_back(std::move(Fixture));
+            
+    GL::Mesh Mesh;
+    GL::Buffer Buffer;
+    Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+    Mesh.setCount(Shapes.ShapeDefs.back().size())
+        .setPrimitive(GL::MeshPrimitive::TriangleFan)
+        .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+    Meshes_[int(GameObjectTypeE::DEBRIS)].push_back(std::move(Mesh));
 }
 
 void ResourceStorage::initLandscape()
@@ -334,7 +372,7 @@ void ResourceStorage::initLandscape()
         {
             auto Value = 5.0f * float(Boundary.GetValue(100.0 * std::cos(double(i)), 100.0 * std::sin(double(i))));
             
-            Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+200.0f});
+            Shape.push_back({(5.0f-Value)*std::cos(i), (5.0f-Value)*std::sin(i)+50.0f});
         }
         auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
         

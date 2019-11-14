@@ -38,10 +38,16 @@ set(LIB_NOISE_HEADERS
 set(HEADERS
         battle_sub.h
         common.h
+        contact_listener.h
+        debris.h
+        debris_factory.h
+        emitter.h
+        emitter_factory.h
         entity.h
         error_handler.h
         game_object.h
         game_object_factory.h
+        global_emitter_factory.h
         global_factories.h
         global_resources.h
         landscape.h
@@ -70,6 +76,7 @@ set(SOURCES
         battle_sub.cpp
         entity.cpp
         game_object.cpp
+        global_emitter_factory.cpp
         global_factories.cpp
         global_resources.cpp
         resource_storage.cpp

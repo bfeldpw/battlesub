@@ -16,7 +16,6 @@ class GameObjectFactory
             return Entities;
         }
         
-        
         T* create()
         {
             T* NewEntity = EntityPool.allocate();

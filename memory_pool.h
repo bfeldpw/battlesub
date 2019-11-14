@@ -29,7 +29,7 @@ class MemoryPool
                 FreeItems_.pop_back();
                 
                 DBLK(GlobalMessageHandler.reportDebug("Item allocated from memory pool. Items: " +
-                                                      std::to_string(FreeItems_.size()), MessageHandler::DEBUG_L1);)
+                                                      std::to_string(FreeItems_.size()), MessageHandler::DEBUG_L2);)
                 
                 return Item;
             }
@@ -46,7 +46,7 @@ class MemoryPool
             {
                 FreeItems_.push_back(Item);
                 DBLK(GlobalMessageHandler.reportDebug("Item destroyed from memory pool. Items: " +
-                                                      std::to_string(FreeItems_.size()), MessageHandler::DEBUG_L1);)
+                                                      std::to_string(FreeItems_.size()), MessageHandler::DEBUG_L2);)
                 Item = nullptr;
             }
             else

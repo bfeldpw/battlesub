@@ -1,5 +1,5 @@
-#ifndef PROJECTILE_H
-#define PROJECTILE_H
+#ifndef DEBRIS_H
+#define DEBRIS_H
 
 #include "game_object.h"
 #include "projectile_drawable.h"
@@ -7,11 +7,11 @@
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
 
-class Projectile : public GameObject
+class Debris : public GameObject
 {
     public:
         
-        Projectile() {Type = GameObjectTypeE::PROJECTILE;}
+        Debris() {Type = GameObjectTypeE::DEBRIS;}
         
         void init(b2World* World, Scene2D* Scene, const b2BodyDef BodyDef, SceneGraph::DrawableGroup2D* DGrp)
         {
@@ -19,7 +19,7 @@ class Projectile : public GameObject
             
             for (auto i=0u; i<Meshes_->size(); ++i)
             {
-                new ProjectileDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0xaa6611_rgbf, DrawableGrp_);
+                new ProjectileDrawable(Visuals_, &((*Meshes_)[i]), Shader_, 0x444455_rgbf, DrawableGrp_);
             }
         }
         
@@ -36,4 +36,4 @@ class Projectile : public GameObject
         
 };
 
-#endif // PROJECTILE_H
+#endif // DEBRIS_H

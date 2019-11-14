@@ -31,6 +31,7 @@ typedef std::vector<GL::Mesh>   MeshesType;
 
 enum class GameObjectTypeE : int
 {
+    DEBRIS,
     LANDSCAPE,
     PROJECTILE,
     SUBMARINE_HULL,

@@ -48,7 +48,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
             .setViewport(GL::defaultFramebuffer.viewport().size());
 
     /* Create the Box2D world with the usual gravity vector */
-    World_.emplace(b2Vec2{0.0f, 0.0f});
+    GlobalResources::Get.getWorld()->SetContactListener(&ContactListener_);
     
     PlayerSub_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef;
@@ -60,7 +60,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     PlayerSub_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
                     .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
                     .setShader(GlobalResources::Get.getShader());
-    PlayerSub_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+    PlayerSub_->Hull.init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
     b2BodyDef BodyDefRudder;
     BodyDefRudder.type = b2_dynamicBody;
     BodyDefRudder.active = true;
@@ -70,7 +70,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     PlayerSub_->Rudder.setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_RUDDER))
                       .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_RUDDER))
                       .setShader(GlobalResources::Get.getShader());
-    PlayerSub_->Rudder.init(&(*World_), GlobalResources::Get.getScene(), BodyDefRudder, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+    PlayerSub_->Rudder.init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(), BodyDefRudder, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
         
     b2RevoluteJointDef jointDef;
     jointDef.lowerAngle = -0.25f * b2_pi; // -45 degrees
@@ -84,21 +84,21 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     jointDef.motorSpeed = 0.0f;
     jointDef.enableMotor = true;
     jointDef.collideConnected = false;
-    PlayerSub_->RudderJoint = static_cast<b2RevoluteJoint*>(World_->CreateJoint(&jointDef));
+    PlayerSub_->RudderJoint = static_cast<b2RevoluteJoint*>(GlobalResources::Get.getWorld()->CreateJoint(&jointDef));
     
     
     PlayerSub2_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef2;
     BodyDef2.type = b2_dynamicBody;
     BodyDef2.active = true;
-    BodyDef2.position.Set(0.0f, 20.0f);
+    BodyDef2.position.Set(10.0f, 20.0f);
     BodyDef2.angle = 3.14159f;
     BodyDef2.angularDamping = 0.8f;
     BodyDef2.linearDamping = 0.2f;
     PlayerSub2_->Hull.setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
                      .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
                      .setShader(GlobalResources::Get.getShader());
-    PlayerSub2_->Hull.init(&(*World_), GlobalResources::Get.getScene(), BodyDef2, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+    PlayerSub2_->Hull.init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(), BodyDef2, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
     
     CanyonBoundary = GlobalFactories::Landscapes.create();
     b2BodyDef BodyDef3;
@@ -108,7 +108,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     CanyonBoundary->setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::LANDSCAPE))
                    .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::LANDSCAPE))
                    .setShader(GlobalResources::Get.getShader());
-    CanyonBoundary->init(&(*World_), GlobalResources::Get.getScene(), BodyDef3, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+    CanyonBoundary->init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(), BodyDef3, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
     
     if (!setSwapInterval(1))
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
@@ -266,6 +266,29 @@ void BattleSub::updateGameObjects()
             break;
         }
     }
+    for (auto Debris : GlobalFactories::Debris.getEntities())
+    {
+        Debris.second->update();
+        if (Debris.second->isSunk())
+        {
+            GlobalFactories::Debris.destroy(Debris.second);
+            break;
+        }
+    }
+    
+    std::vector<EntityIDType> EmittersToBeDeleted;
+    for (auto Emitter : GlobalEmitterFactory::Get.getEntities())
+    {
+        if (Emitter.second->isFinished())
+        {
+            EmittersToBeDeleted.push_back(Emitter.second->ID);
+        }
+        Emitter.second->emit();
+    }
+    for (auto d : EmittersToBeDeleted)
+    {
+        GlobalEmitterFactory::Get.destroy(GlobalEmitterFactory::Get.getEntities().at(d));
+    }
 //     for (auto Sub : GlobalFactories::Submarines.getEntities())
 //     {
 //         Sub.second->update();
@@ -273,10 +296,10 @@ void BattleSub::updateGameObjects()
     PlayerSub_->update();
     
     // Update physics
-    World_->Step(1.0f/60.0f, 8, 3);
+    GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
 
     // Update object visuals    
-    for(b2Body* Body = World_->GetBodyList(); Body; Body = Body->GetNext())
+    for(b2Body* Body = GlobalResources::Get.getWorld()->GetBodyList(); Body; Body = Body->GetNext())
     {
         if (Body->IsActive() && Body->GetType() != b2_staticBody)
         {            
