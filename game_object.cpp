@@ -54,8 +54,8 @@ void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, 
             case ShapeEnumType::CIRCLE:
             {
                 b2CircleShape Circle;
-                Circle.m_p.Set(0.0f, 0.0f);
-                Circle.m_radius = 0.05f;
+                Circle.m_p.Set(Shapes_->ShapeDefs[i][0].x, Shapes_->ShapeDefs[i][0].y);
+                Circle.m_radius = Shapes_->ShapeDefs[i][1].x;
                 Shapes_->FixtureDefs[i].shape = &Circle;
                 Body_->CreateFixture(&(Shapes_->FixtureDefs[i]));
                 break;

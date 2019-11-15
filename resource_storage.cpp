@@ -173,11 +173,14 @@ void ResourceStorage::release()
 
 void ResourceStorage::initDebris()
 {
-    ShapeType Shape;
+    constexpr float DEBRIS_SIZE_AVG = 0.05;
+    
+    ShapeType ShapeG; // Shape for graphics differs from physics shape (circle)
         
     for (auto i=0.0f; i<2.0f*3.14159f; i+=2.0f*3.14159f/5.0f)
     {
-        Shape.push_back({0.05*std::cos(i), 0.05*std::sin(i)});
+        ShapeG.push_back({DEBRIS_SIZE_AVG*std::cos(i),
+                          DEBRIS_SIZE_AVG*std::sin(i)});
     }
     
     auto& Shapes = Shapes_[int(GameObjectTypeE::DEBRIS)];
@@ -188,18 +191,20 @@ void ResourceStorage::initDebris()
     Fixture.restitution = 0.2f;
     Fixture.isSensor = false;
     
-//         b2Filter Filter;
-//         Filter.maskBits = 0;
-//         Fixture.filter = Filter;
-    
-    Shapes.ShapeDefs.push_back(std::move(Shape));
+    // Physics shape (circle), always 3 values here
+    // - center x
+    // - center y
+    // - radius 
+    ShapeType ShapeP{{0.0f, 0.0f}, {0.05f, 0.0f}};
+        
+    Shapes.ShapeDefs.push_back(std::move(ShapeP));
     Shapes.FixtureDefs.push_back(std::move(Fixture));
     Shapes.Type = ShapeEnumType::CIRCLE;
             
     GL::Mesh Mesh;
     GL::Buffer Buffer;
-    Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
-    Mesh.setCount(Shapes.ShapeDefs.back().size())
+    Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapeG), GL::BufferUsage::StaticDraw);
+    Mesh.setCount(ShapeG.size())
         .setPrimitive(GL::MeshPrimitive::TriangleFan)
         .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
     Meshes_[int(GameObjectTypeE::DEBRIS)].push_back(std::move(Mesh));
