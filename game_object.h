@@ -7,6 +7,7 @@
 #include <Box2D/Box2D.h>
 
 #include "common.h"
+#include "drawable_generic.h"
 #include "entity.h"
 #include "timer.h"
 
@@ -44,7 +45,7 @@ class GameObject : public Entity
 {
     public:
         
-        GameObjectTypeE getType() const {return Type;}
+        GameObjectTypeE getType() const {return Type_;}
         
         b2Body*     getBody() const {assert(Body_ != nullptr); return Body_;}
         b2World*    getWorld() {assert(World_ != nullptr); return World_;}
@@ -53,25 +54,37 @@ class GameObject : public Entity
         MeshesType* getMeshes() {assert(Meshes_ != nullptr); return Meshes_;}
         Object2D*   getVisuals() {return Visuals_;}
         
+        void        init(const GameObjectTypeE Type, const b2BodyDef& BodyDef);
+        
         bool        isSunk() const {return IsSunk_;}
 
         void destroy();
         void sink();
         
+        GameObject& setColor(Color4 Color) {Color_ = Color; return *this;}
+        GameObject& setDrawableGroup(SceneGraph::DrawableGroup2D* const DrawableGrp) {DrawableGrp_ = DrawableGrp; return *this;}
         GameObject& setMeshes(MeshesType* const Meshes) {Meshes_ = Meshes; return *this;}
         GameObject& setScale(float X, float Y);
+        GameObject& setScene(Scene2D* const Scene) {Scene_ = Scene; return *this;}
         GameObject& setShapes(ShapesType* const Shapes) {Shapes_ = Shapes; return *this;}
         GameObject& setShader(Shaders::Flat2D* const Shader) {Shader_ = Shader; return *this;}
+        GameObject& setWorld(b2World* const World) {World_ = World; return *this;}
+        
+        void update()
+        {
+            assert(Body_ != nullptr);
+            
+            // Body starts sinking if too slow
+            if (Body_->GetLinearVelocity().Length() < 0.01f)
+            {
+                this->sink();
+            }
+        }
         
     protected:
         
-        void init(b2World* World,
-                  Scene2D* Scene,
-                  const b2BodyDef& BodyDef,
-                  SceneGraph::DrawableGroup2D* const DGrp);
-        
         // General data
-        GameObjectTypeE Type = GameObjectTypeE::DEFAULT;
+        GameObjectTypeE Type_ = GameObjectTypeE::DEFAULT;
         Timer Age_;
         bool  IsSunk_ = false;
         
@@ -85,6 +98,8 @@ class GameObject : public Entity
         Shaders::Flat2D*                Shader_         = nullptr;
         Object2D*                       Visuals_        = nullptr;
         Scene2D*                        Scene_          = nullptr;
+        Color4                          Color_{0.1f, 0.1f, 0.2f, 1.0f};
+        DrawableGeneric*                Drawable        = nullptr;
         SceneGraph::DrawableGroup2D*    DrawableGrp_    = nullptr;
         float                           ScaleX_         = 1.0f;
         float                           ScaleY_         = 1.0f;

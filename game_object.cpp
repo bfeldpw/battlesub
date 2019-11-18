@@ -21,7 +21,7 @@ void GameObject::sink()
     ScaleY_ *= SINKING_SCALE_FACTOR;
     if (ScaleX_ <= SINKING_SCALE_MIN && ScaleY_ <= SINKING_SCALE_MIN) IsSunk_ = true;
     Visuals_->setScaling({ScaleX_, ScaleY_});
-    
+        
     Body_->SetActive(false);
 }
 
@@ -34,12 +34,18 @@ GameObject& GameObject::setScale(float X, float Y)
     return *this;
 }
 
-void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, SceneGraph::DrawableGroup2D* const DGrp)
+void GameObject::init(const GameObjectTypeE Type, const b2BodyDef& BodyDef)
 {
-    World_ = World;
-    Scene_ = Scene;
-    Visuals_ = new Object2D(Scene);
-    DrawableGrp_ = DGrp;
+    assert(World_ != nullptr);
+    assert(Shapes_ != nullptr);
+    assert(Meshes_ != nullptr);
+    assert(Shader_ != nullptr);
+    assert(Scene_ != nullptr);
+    assert(DrawableGrp_ != nullptr);
+    
+    Type_ = Type;
+    
+    Visuals_ = new Object2D(Scene_);
     
     Body_=World_->CreateBody(&BodyDef);
     Body_->SetUserData(this);
@@ -82,6 +88,11 @@ void GameObject::init(b2World* World, Scene2D* Scene, const b2BodyDef& BodyDef, 
     ScaleX_  = 1.0f;
     ScaleY_  = 1.0f;
     IsSunk_ = false;
+    
+    for (auto i=0u; i<Meshes_->size(); ++i)
+    {
+        Drawable = new DrawableGeneric(Visuals_, &((*Meshes_)[i]), Shader_, Color_, DrawableGrp_);
+    }
     
     DBLK(GlobalMessageHandler.reportDebug("GameObject created\n"
                                           " * Mass:    "+std::to_string(Body_->GetMass())+" kg\n"

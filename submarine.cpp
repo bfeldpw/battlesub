@@ -2,13 +2,13 @@
 
 #include "global_factories.h"
 #include "global_resources.h"
-#include "projectile_drawable.h"
+#include "drawable_generic.h"
 
 void Submarine::fire(float GunPos)
 {
     assert(Hull.getBody() != nullptr);
     
-    Projectile* Bullet = GlobalFactories::Projectiles.create();
+    GameObject* Bullet = GlobalFactories::Projectiles.create();
     
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
@@ -21,10 +21,14 @@ void Submarine::fire(float GunPos)
     BodyDef.angularDamping = 5.0f;
     BodyDef.linearDamping = 1.0f;
     BodyDef.bullet = true;
-    Bullet->setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::PROJECTILE))
+    Bullet->setColor({0.7f, 0.5f, 0.3f, 1.0f})
+           .setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON))
            .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::PROJECTILE))
-           .setShader(GlobalResources::Get.getShader());
-    Bullet->init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(), BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+           .setScene(GlobalResources::Get.getScene())
+           .setShader(GlobalResources::Get.getShader())
+           .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::PROJECTILE))
+           .setWorld(GlobalResources::Get.getWorld()) 
+           .init(GameObjectTypeE::PROJECTILE, BodyDef);
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
                                           Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
     Hull.getBody()->ApplyLinearImpulse(Hull.getBody()->GetWorldVector({0.0f,-1.0f}),

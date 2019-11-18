@@ -1,19 +1,21 @@
-#ifndef PROJECTILE_DRAWABLE_H
-#define PROJECTILE_DRAWABLE_H
+#ifndef DRAWABLE_GENERIC_H
+#define DRAWABLE_GENERIC_H
+
+#include <Magnum/Math/Color.h>
 
 #include "common.h"
 
-class ProjectileDrawable: public SceneGraph::Drawable2D
+class DrawableGeneric: public SceneGraph::Drawable2D
 {
 
     public:
         
-        explicit ProjectileDrawable(Object2D* Obj,
-                                    GL::Mesh* Mesh,
-                                    Shaders::Flat2D* Shader,
-                                    const Color4& Color,
-                                    SceneGraph::DrawableGroup2D* Drawables) : 
-                                    SceneGraph::Drawable2D{*Obj, Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
+        explicit DrawableGeneric(Object2D* Obj,
+                                 GL::Mesh* Mesh,
+                                 Shaders::Flat2D* Shader,
+                                 const Color4& Color,
+                                 SceneGraph::DrawableGroup2D* Drawables) : 
+                                 SceneGraph::Drawable2D{*Obj, Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
                                     
         void setColor(const Color4 Color)
         {
@@ -38,4 +40,4 @@ class ProjectileDrawable: public SceneGraph::Drawable2D
         
 };
 
-#endif // PROJECTILE_DRAWABLE_H
+#endif // DRAWABLE_GENERIC_H

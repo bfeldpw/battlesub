@@ -21,9 +21,9 @@ class Emitter : public Entity
             std::normal_distribution<float> DistAngle(Angle_, AngleStdDev_);
             std::normal_distribution<float> DistScale(1.5f, 1.3f);
             
-            for (auto i=0u; i<Number_; ++i)
+            for (auto i=0; i<Number_; ++i)
             {
-                Debris* LandscapeDebris = GlobalFactories::Debris.create();
+                GameObject* LandscapeDebris = GlobalFactories::Debris.create();
                 b2BodyDef BodyDef;
                 BodyDef.type = b2_dynamicBody;
                 BodyDef.active = true;
@@ -33,18 +33,21 @@ class Emitter : public Entity
                 BodyDef.linearVelocity.Set(std::cos(DistAngle(Generator_))*(Velocity_+VelocityStdDev_),
                                            std::sin(DistAngle(Generator_))*(Velocity_+VelocityStdDev_));
                 BodyDef.angularVelocity = 0.5f*DistAngle(Generator_);
-                LandscapeDebris->setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::DEBRIS))
+                LandscapeDebris->setColor({0.2f, 0.2f, 0.3f})
+                                .setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON))
                                 .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::DEBRIS))
-                                .setShader(GlobalResources::Get.getShader());
-                LandscapeDebris->init(GlobalResources::Get.getWorld(), GlobalResources::Get.getScene(),
-                                      BodyDef, GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+                                .setScene(GlobalResources::Get.getScene())
+                                .setShader(GlobalResources::Get.getShader())
+                                .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::DEBRIS))
+                                .setWorld(GlobalResources::Get.getWorld())
+                                .init(GameObjectTypeE::DEBRIS, BodyDef);
                 
                 b2Filter Filter;
                 Filter.categoryBits = 0x0002;
                 Filter.maskBits = 0xFFFD;
                 LandscapeDebris->getBody()->GetFixtureList()->SetFilterData(Filter);
                 auto Size = DistScale(Generator_);
-                static_cast<Debris*>(LandscapeDebris->getBody()->GetUserData())->setScale(Size, Size+0.5f*DistScale(Generator_));
+                static_cast<GameObject*>(LandscapeDebris->getBody()->GetUserData())->setScale(Size, Size+0.5f*DistScale(Generator_));
             }
             Counter_ += Number_;
         }

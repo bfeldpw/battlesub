@@ -2,15 +2,14 @@
 #define SUBMARINE_H
 
 #include "entity.h"
-#include "submarine_hull.h"
-#include "submarine_rudder.h"
+#include "game_object.h"
 
 class Submarine : public Entity
 {
     public:
         
-        SubmarineHull    Hull;
-        SubmarineRudder  Rudder;
+        GameObject       Hull;
+        GameObject       Rudder;
         b2RevoluteJoint* RudderJoint = nullptr;
         
         Submarine& setPose(float PosX, float PosY, float Angle=0.0f)

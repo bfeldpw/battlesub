@@ -8,17 +8,11 @@ else()
     add_compile_options(-std=c++14 -mtune=native -Wall -Wextra -pedantic)
 endif()
 
-# Add module path in case this is project root
-if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../../modules/" ${CMAKE_MODULE_PATH})
-endif()
-
 if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
     set (BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install_debug/lib/libBox2D.a")
 else()
     set (BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install/lib/libBox2D.a")
 endif()
-
 
 find_package(Magnum REQUIRED
     GL
@@ -39,8 +33,8 @@ set(HEADERS
         battle_sub.h
         common.h
         contact_listener.h
-        debris.h
         debris_factory.h
+        drawable_generic.h
         emitter.h
         emitter_factory.h
         entity.h
@@ -50,21 +44,14 @@ set(HEADERS
         global_emitter_factory.h
         global_factories.h
         global_resources.h
-        landscape.h
-        landscape_drawable.h
         landscape_factory.h
         memory_pool.h
         message_handler.h
-        projectile.h
-        projectile_drawable.h
         projectile_factory.h
         resource_storage.h
         submarine.h
         submarine_definition.h
-        submarine_drawable.h
         submarine_factory.h
-        submarine_hull.h
-        submarine_rudder.h
         timer.h
 )
 
@@ -90,6 +77,7 @@ target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/Bo
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/libnoise2d/src/")
 
 target_link_libraries(battle_sub PRIVATE
+    OpenGL::GL
     Magnum::Application
     Magnum::GL
     Magnum::Magnum
