@@ -1,5 +1,5 @@
-#ifndef GAMEOBJECT_FACTORY_H
-#define GAMEOBJECT_FACTORY_H
+#ifndef ENTITY_FACTORY_H
+#define ENTITY_FACTORY_H
 
 #include <unordered_map>
 
@@ -7,7 +7,7 @@
 #include "memory_pool.h"
 
 template<class T, size_t S>
-class GameObjectFactory
+class EntityFactory
 {
     public:
         
@@ -37,4 +37,4 @@ class GameObjectFactory
         
 };
 
-#endif // GAMEOBJECT_FACTORY_H
+#endif // ENTITY_FACTORY_H

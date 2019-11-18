@@ -38,9 +38,9 @@ set(HEADERS
         emitter.h
         emitter_factory.h
         entity.h
+        entity_factory.h
         error_handler.h
         game_object.h
-        game_object_factory.h
         global_emitter_factory.h
         global_factories.h
         global_resources.h
