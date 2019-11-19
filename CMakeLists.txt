@@ -61,6 +61,7 @@ set(LIB_NOISE_LIBRARY
 
 set(SOURCES
         battle_sub.cpp
+        emitter.cpp
         entity.cpp
         game_object.cpp
         global_emitter_factory.cpp

@@ -64,6 +64,11 @@ class Emitter : public Entity
             AngleStdDev_ = as;
             return *this;
         }
+        Emitter& setNumber(int n)
+        {
+            Number_ = n;
+            return *this;
+        }
         Emitter& setOrigin(float x, float y)
         {
             OriginX_ = x;
@@ -83,13 +88,13 @@ class Emitter : public Entity
     
     private:
 
-        std::mt19937 Generator_;
+        static std::mt19937 Generator_;
         
         float  Angle_ = 0.0f;
         float  AngleStdDev_ = 0.0f;
         float  Frequency_ = 0.0f;
         int    Counter_ = 0;
-        int    Number_ = 10;
+        int    Number_ = 1;
         float  OriginX_ = 0.0f;
         float  OriginY_ = 0.0f;
         float  Velocity_ = 1.0f;
