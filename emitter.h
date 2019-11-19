@@ -44,7 +44,7 @@ class Emitter : public Entity
                 
                 b2Filter Filter;
                 Filter.categoryBits = 0x0002;
-                Filter.maskBits = 0xFFFD;
+                Filter.maskBits = 0xFFF9;
                 LandscapeDebris->getBody()->GetFixtureList()->SetFilterData(Filter);
                 auto Size = DistScale(Generator_);
                 static_cast<GameObject*>(LandscapeDebris->getBody()->GetUserData())->setScale(Size, Size+0.5f*DistScale(Generator_));

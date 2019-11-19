@@ -29,6 +29,10 @@ void Submarine::fire(float GunPos)
            .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::PROJECTILE))
            .setWorld(GlobalResources::Get.getWorld()) 
            .init(GameObjectTypeE::PROJECTILE, BodyDef);
+    b2Filter Filter;
+    Filter.categoryBits = 0x0004;
+//     Filter.maskBits = 0xFFFD;
+    Bullet->getBody()->GetFixtureList()->SetFilterData(Filter);
     Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
                                           Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
     Hull.getBody()->ApplyLinearImpulse(Hull.getBody()->GetWorldVector({0.0f,-1.0f}),

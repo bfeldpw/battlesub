@@ -14,17 +14,6 @@ void GameObject::destroy()
     }
 }
 
-void GameObject::sink()
-{
-    // Just change the visuals
-    ScaleX_ *= SINKING_SCALE_FACTOR;
-    ScaleY_ *= SINKING_SCALE_FACTOR;
-    if (ScaleX_ <= SINKING_SCALE_MIN && ScaleY_ <= SINKING_SCALE_MIN) IsSunk_ = true;
-    Visuals_->setScaling({ScaleX_, ScaleY_});
-        
-    Body_->SetActive(false);
-}
-
 GameObject& GameObject::setScale(float X, float Y)
 {
     assert(Visuals_ != nullptr);
@@ -87,6 +76,7 @@ void GameObject::init(const GameObjectTypeE Type, const b2BodyDef& BodyDef)
     
     ScaleX_  = 1.0f;
     ScaleY_  = 1.0f;
+    ScaleSinkColor = 1.0f;
     IsSunk_ = false;
     
     for (auto i=0u; i<Meshes_->size(); ++i)
@@ -98,6 +88,20 @@ void GameObject::init(const GameObjectTypeE Type, const b2BodyDef& BodyDef)
                                           " * Mass:    "+std::to_string(Body_->GetMass())+" kg\n"
                                           " * Inertia: "+std::to_string(Body_->GetInertia()),
                                           MessageHandler::DEBUG_L1);)
+}
+
+void GameObject::sink()
+{
+    // Just change the visuals
+    ScaleX_ *= SINKING_SCALE_FACTOR;
+    ScaleY_ *= SINKING_SCALE_FACTOR;
+    ScaleSinkColor *= SINKING_SCALE_FACTOR_COLOR;
+    if (ScaleX_ <= SINKING_SCALE_MIN && ScaleY_ <= SINKING_SCALE_MIN) IsSunk_ = true;
+    Visuals_->setScaling({ScaleX_, ScaleY_});
+    
+    Drawable->setColorScale(ScaleSinkColor);
+        
+    Body_->SetActive(false);
 }
         
 std::vector<Vector2> GameObject::convertGeometryPhysicsToGraphics(const std::vector<b2Vec2> Verts)

@@ -12,6 +12,7 @@
 #include "timer.h"
 
 constexpr float SINKING_SCALE_FACTOR = 0.995f;
+constexpr float SINKING_SCALE_FACTOR_COLOR = 0.998f;
 constexpr float SINKING_SCALE_MIN    = 0.01f;
 
 enum class ShapeEnumType : int
@@ -59,8 +60,7 @@ class GameObject : public Entity
         bool        isSunk() const {return IsSunk_;}
 
         void destroy();
-        void sink();
-        
+                
         GameObject& setColor(Color4 Color) {Color_ = Color; return *this;}
         GameObject& setDrawableGroup(SceneGraph::DrawableGroup2D* const DrawableGrp) {DrawableGrp_ = DrawableGrp; return *this;}
         GameObject& setMeshes(MeshesType* const Meshes) {Meshes_ = Meshes; return *this;}
@@ -83,6 +83,8 @@ class GameObject : public Entity
         
     protected:
         
+        void sink();
+        
         // General data
         GameObjectTypeE Type_ = GameObjectTypeE::DEFAULT;
         Timer Age_;
@@ -103,6 +105,7 @@ class GameObject : public Entity
         SceneGraph::DrawableGroup2D*    DrawableGrp_    = nullptr;
         float                           ScaleX_         = 1.0f;
         float                           ScaleY_         = 1.0f;
+        float                           ScaleSinkColor  = 1.0f;
      
     public:
         

@@ -17,10 +17,8 @@ class DrawableGeneric: public SceneGraph::Drawable2D
                                  SceneGraph::DrawableGroup2D* Drawables) : 
                                  SceneGraph::Drawable2D{*Obj, Drawables}, Mesh_(Mesh), Shader_(Shader), Color_{Color} {}
                                     
-        void setColor(const Color4 Color)
-        {
-            Color_ = Color;
-        }
+        void setColor(const Color4 Color) {Color_ = Color;}
+        void setColorScale(const float ColorScale) {ColorScale_ = ColorScale;};
 
     private:
         
@@ -30,13 +28,14 @@ class DrawableGeneric: public SceneGraph::Drawable2D
             assert(Shader_ != nullptr);
             Shader_
                 ->setTransformationProjectionMatrix(Camera.projectionMatrix()*TransformationMatrix)
-                 .setColor(Color_);
+                 .setColor(ColorScale_*Color_);
             Mesh_->draw(*Shader_);
         }
 
         GL::Mesh*           Mesh_;
         Shaders::Flat2D*    Shader_;
         Color4              Color_;
+        float               ColorScale_ = 1.0f;
         
 };
 
