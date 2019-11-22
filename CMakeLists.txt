@@ -34,6 +34,7 @@ set(HEADERS
         common.h
         contact_listener.h
         debris_factory.h
+        density_shader.h
         drawable_generic.h
         emitter.h
         emitter_factory.h

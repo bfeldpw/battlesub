@@ -10,6 +10,7 @@
 #include <Magnum/ImageView.h>
 #include <Magnum/PixelFormat.h>
 
+#include "density_shader.h"
 #include "drawable_generic.h"
 #include "global_resources.h"
 
@@ -49,7 +50,7 @@ class FluidGrid
             if (FirstUse)
             {
                 DensityTexture_ = GL::Texture2D{};
-                Shader_ = Shaders::Flat2D(Shaders::Flat2D::Flag::Textured);
+                Shader_ = DensityShader();
 
                 std::poisson_distribution<std::uint8_t> Dist(64);
                 for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
@@ -90,8 +91,8 @@ class FluidGrid
                 Mesh_.setCount(6)
                      .setPrimitive(GL::MeshPrimitive::Triangles)
                      .addVertexBuffer(std::move(Buffer), 0,
-                                      Shaders::Flat2D::Position{},
-                                      Shaders::Flat2D::TextureCoordinates{});
+                                      DensityShader::Position{},
+                                      DensityShader::TextureCoordinates{});
             
                 Shader_.bindTexture(DensityTexture_);
             
@@ -110,7 +111,7 @@ class FluidGrid
             ImageView2D Image(PixelFormat::R8Unorm, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, Density_);
             DensityTexture_.setImage(0, GL::TextureFormat::RGBA8, Image);
 
-            Shader_.setTransformationProjectionMatrix(CameraProjection);
+            Shader_.setTransformation(CameraProjection);
 
             Mesh_.draw(Shader_);
         }
@@ -142,7 +143,7 @@ class FluidGrid
         
         std::mt19937 Generator_;
         
-        Shaders::Flat2D Shader_{NoCreate};
+        DensityShader Shader_{NoCreate};
         GL::Mesh Mesh_{NoCreate};
         GL::Texture2D DensityTexture_{NoCreate};
         float Viscosity_ = 1.0f;
