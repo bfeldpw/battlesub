@@ -40,6 +40,7 @@ set(HEADERS
         entity.h
         entity_factory.h
         error_handler.h
+        fluid_grid.h
         game_object.h
         global_emitter_factory.h
         global_factories.h
@@ -82,6 +83,8 @@ target_link_libraries(battle_sub PRIVATE
     Magnum::Application
     Magnum::GL
     Magnum::Magnum
+    Magnum::MeshTools
+    Magnum::Primitives
     Magnum::SceneGraph
     Magnum::Shaders
     ${BOX2D_LIBRARY_LOCAL}

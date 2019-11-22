@@ -47,7 +47,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     Camera_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
             .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
             .setViewport(GL::defaultFramebuffer.viewport().size());
-
+            
     /* Create the Box2D world with the usual gravity vector */
     GlobalResources::Get.getWorld()->SetContactListener(&ContactListener_);
     
@@ -249,9 +249,10 @@ void BattleSub::drawEvent()
         }
         
         // Draw the scene
+        FluidGrid_.init(Camera_->projectionMatrix()*Camera_->cameraMatrix());
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
-
+        
         swapBuffers();
         redraw();
     }

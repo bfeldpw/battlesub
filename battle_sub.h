@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "contact_listener.h"
+#include "fluid_grid.h"
 #include "submarine.h"
 
 namespace BattleSub
@@ -39,6 +40,7 @@ class BattleSub : public Platform::Application
         SceneGraph::Camera2D* Camera_;
         
         ContactListener ContactListener_;
+        FluidGrid FluidGrid_;
 
         Submarine* PlayerSub_  = nullptr;
         Submarine* PlayerSub2_ = nullptr;
