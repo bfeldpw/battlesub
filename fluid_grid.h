@@ -27,7 +27,8 @@ class FluidGrid
         
         FluidGrid()
         {
-            std::fill(Density_.begin(), Density_.end(), 64/*255*256*256*256+25*256*256*/);
+            std::fill(Density_.begin(), Density_.end(), 0.05f);
+            std::fill(Density0_.begin(), Density0_.end(), 0.05f);
             std::fill(VelocityX_.begin(), VelocityX_.end(), 0);
             std::fill(VelocityY_.begin(), VelocityY_.end(), 0);
         }
@@ -51,8 +52,9 @@ class FluidGrid
             {
                 DensityTexture_ = GL::Texture2D{};
                 Shader_ = DensityShader();
+                Shader_.setColor({1.0f, 1.0f, 1.0f});
 
-                std::poisson_distribution<std::uint8_t> Dist(64);
+                std::normal_distribution<float> Dist(0.1f, 0.05f);
                 for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
                 {
                     for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
@@ -61,13 +63,13 @@ class FluidGrid
                     }
                 }
                 
-                ImageView2D Image(PixelFormat::R8Unorm, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, Density_);
+                ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, Density_);
                 
                 DensityTexture_.setMagnificationFilter(GL::SamplerFilter::Linear)
                        .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
                        .setWrapping(GL::SamplerWrapping::ClampToEdge)
                        .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-                       .setImage(0, GL::TextureFormat::RGBA8, Image)
+                       .setImage(0, GL::TextureFormat::R32F, Image)
                        .generateMipmap();
                 
                 
@@ -108,8 +110,8 @@ class FluidGrid
 //             }
             this->lin_solve(0.2f, 0, 1);
             
-            ImageView2D Image(PixelFormat::R8Unorm, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, Density_);
-            DensityTexture_.setImage(0, GL::TextureFormat::RGBA8, Image);
+            ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, Density_);
+            DensityTexture_.setImage(0, GL::TextureFormat::R32F, Image);
 
             Shader_.setTransformation(CameraProjection);
 
@@ -126,11 +128,11 @@ class FluidGrid
 //                     for (int i = 1; i < FLUID_GRID_SIZE_X - 1; i++)
 //                     {
 //                         Density_[I(i, j)] = 0.01 *
-//                                   ((    96.0 * double(Density_[I(i  , j)]) 
-//                                        + 1.0 * double(Density_[I(i+1, j)])
-//                                        + 1.0 * double(Density_[I(i-1, j)])
-//                                        + 1.0 * double(Density_[I(i  , j+1)])
-//                                        + 1.0 * double(Density_[I(i  , j-1)])
+//                                   ((    96.0 * Density_[I(i  , j)] 
+//                                        + 1.0 * Density_[I(i+1, j)]
+//                                        + 1.0 * Density_[I(i-1, j)]
+//                                        + 1.0 * Density_[I(i  , j+1])
+//                                        + 1.0 * Density_[I(i  , j-1])
 //                                     ))/** cRecip*/;
 //                     }
 //                 }
@@ -148,7 +150,8 @@ class FluidGrid
         GL::Texture2D DensityTexture_{NoCreate};
         float Viscosity_ = 1.0f;
         
-        std::array<std::uint8_t, FLUID_GRID_ARRAY_SIZE> Density_;
+        std::array<float, FLUID_GRID_ARRAY_SIZE> Density_;
+        std::array<float, FLUID_GRID_ARRAY_SIZE> Density0_;
         std::array<float, FLUID_GRID_ARRAY_SIZE> VelocityX_;
         std::array<float, FLUID_GRID_ARRAY_SIZE> VelocityY_;
         

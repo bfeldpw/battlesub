@@ -7,6 +7,6 @@ out vec4 fragmentColor;
 
 void main()
 {
-    fragmentColor.rgb = u_col*texture(u_texture, v_tex).rgb;
-    fragmentColor.a = 1.0;
+    fragmentColor.b = float(texture(u_texture, v_tex))*u_col.b;
+    fragmentColor.rga = vec3(0.0, 0.0, 1.0);
 }
