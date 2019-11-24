@@ -55,6 +55,7 @@ set(HEADERS
         submarine_definition.h
         submarine_factory.h
         timer.h
+        world_def.h
 )
 
 set(LIB_NOISE_LIBRARY

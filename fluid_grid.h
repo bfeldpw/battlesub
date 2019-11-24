@@ -14,6 +14,7 @@
 #include "density_shader.h"
 #include "drawable_generic.h"
 #include "global_resources.h"
+#include "world_def.h"
 
 using namespace Magnum;
 
@@ -40,7 +41,7 @@ class FluidGrid
             std::fill(VelocityY_.begin(), VelocityY_.end(), 0);
         }
         
-        void changeDensity(const int x, const int y, const float d)
+        void addDensity(const int x, const int y, const float d)
         {
             (*Density_)[I(x, y)] += d;
         }
@@ -75,13 +76,15 @@ class FluidGrid
                     Vector2 Pos;
                     Vector2 Tex;
                 };
+                constexpr float x = WORLD_SIZE_X*0.5f;
+                constexpr float y = WORLD_SIZE_Y*0.5f;
                 Vertex Data[6]{
-                    {{-600.0f, -400.0f}, { 0.0f,  0.0f}},
-                    {{ 600.0f, -400.0f}, { 1.0f,  0.0f}},
-                    {{-600.0f,  400.0f}, { 0.0f,  1.0f}},
-                    {{-600.0f,  400.0f}, { 0.0f,  1.0f}},
-                    {{ 600.0f, -400.0f}, { 1.0f,  0.0f}},
-                    {{ 600.0f,  400.0f}, { 1.0f,  1.0f}}
+                    {{-x, -y}, { 0.0f,  0.0f}},
+                    {{ x, -y}, { 1.0f,  0.0f}},
+                    {{-x,  y}, { 0.0f,  1.0f}},
+                    {{-x,  y}, { 0.0f,  1.0f}},
+                    {{ x, -y}, { 1.0f,  0.0f}},
+                    {{ x,  y}, { 1.0f,  1.0f}}
                 };
 
                 GL::Buffer Buffer;
@@ -98,7 +101,6 @@ class FluidGrid
                 
                 FirstUse = false;
             }
-            (*Density_)[I(200, 200)] = 0.5;
             this->lin_solve(10000.0f, 1.0f+50000.0f, 1);
             
             ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, *Density_);
@@ -121,7 +123,7 @@ class FluidGrid
                     for (int i = 1; i < FLUID_GRID_SIZE_X - 1; i++)
                     {
                         (*Density_)[I(i, j)] = (0.1f +
-                                      a * (  (*DensityB_)[I(i, j)]
+                                      a*((*DensityB_)[I(i, j)]
                                        + (*DensityB_)[I(i-1, j)]
                                        + (*DensityB_)[I(i+1, j)]
                                        + (*DensityB_)[I(i  , j+1)]

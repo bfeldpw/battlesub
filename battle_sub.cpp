@@ -14,6 +14,7 @@
 #include "common.h"
 #include "global_factories.h"
 #include "global_resources.h"
+#include "world_def.h"
 
 namespace BattleSub{
 
@@ -25,7 +26,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
         const Vector2 dpiScaling = this->dpiScaling({});
         
         Configuration conf;
-        conf.setSize({2000, 1000});
+        conf.setSize({int(WORLD_SIZE_X)*2, int(WORLD_SIZE_Y)*2});
         
         conf.setTitle("BattleSub")
             .setSize(conf.size(), dpiScaling);
@@ -285,8 +286,8 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.changeDensity((Pos.x+600.0f)/1200.0f*FLUID_GRID_SIZE_X,
-                                     (Pos.y+400.0f)/ 800.0f*FLUID_GRID_SIZE_Y, Vel * 0.01);
+            FluidGrid_.addDensity((Pos.x+WORLD_SIZE_X*0.5f)/WORLD_SIZE_X*FLUID_GRID_SIZE_X,
+                                  (Pos.y+WORLD_SIZE_Y*0.5f)/WORLD_SIZE_Y*FLUID_GRID_SIZE_Y, Vel * 0.01);
         }
     }
     for (auto Debris : GlobalFactories::Debris.getEntities())
@@ -302,8 +303,8 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.changeDensity((Pos.x+600.0f)/1200.0f*FLUID_GRID_SIZE_X,
-                                     (Pos.y+400.0f)/ 800.0f*FLUID_GRID_SIZE_Y, Vel * 0.01);
+            FluidGrid_.addDensity((Pos.x+WORLD_SIZE_X*0.5f)/WORLD_SIZE_X*FLUID_GRID_SIZE_X,
+                                  (Pos.y+WORLD_SIZE_Y*0.5f)/WORLD_SIZE_Y*FLUID_GRID_SIZE_Y, Vel * 0.01);
         }
     }
     

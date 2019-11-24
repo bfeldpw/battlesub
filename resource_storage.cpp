@@ -1,6 +1,7 @@
 #include "resource_storage.h"
 
 #include "noise.h"
+#include "world_def.h"
 
 void ResourceStorage::init()
 {
@@ -228,9 +229,9 @@ void ResourceStorage::initLandscape()
     Boundary.SetSeed(7);
     
     {
-        constexpr float w = 500.0f; // Half width
-        constexpr float h = 300.0f; // Half height
         constexpr float b = 100.0f;  // Boundary
+        constexpr float w = WORLD_SIZE_X * 0.5f-b; // Half width
+        constexpr float h = WORLD_SIZE_Y * 0.5f-b; // Half height
         constexpr float a = 100.0f;  // Amplitude
         
         // Top
