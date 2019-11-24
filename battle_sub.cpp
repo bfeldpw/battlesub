@@ -275,19 +275,35 @@ void BattleSub::updateGameObjects()
     for (auto Projectile : GlobalFactories::Projectiles.getEntities())
     {
         Projectile.second->update();
+        auto Pos = Projectile.second->getBody()->GetPosition();
+        auto Vel = Projectile.second->getBody()->GetLinearVelocity().Length();
+        
         if (Projectile.second->isSunk())
         {
             GlobalFactories::Projectiles.destroy(Projectile.second);
             break;
         }
+        else
+        {
+            FluidGrid_.changeDensity((Pos.x+600.0f)/1200.0f*FLUID_GRID_SIZE_X,
+                                     (Pos.y+400.0f)/ 800.0f*FLUID_GRID_SIZE_Y, Vel * 0.01);
+        }
     }
     for (auto Debris : GlobalFactories::Debris.getEntities())
     {
         Debris.second->update();
+        auto Pos = Debris.second->getBody()->GetPosition();
+        auto Vel = Debris.second->getBody()->GetLinearVelocity().Length();
+        
         if (Debris.second->isSunk())
         {
             GlobalFactories::Debris.destroy(Debris.second);
             break;
+        }
+        else
+        {
+            FluidGrid_.changeDensity((Pos.x+600.0f)/1200.0f*FLUID_GRID_SIZE_X,
+                                     (Pos.y+400.0f)/ 800.0f*FLUID_GRID_SIZE_Y, Vel * 0.01);
         }
     }
     
