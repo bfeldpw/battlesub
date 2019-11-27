@@ -297,7 +297,7 @@ void ResourceStorage::initLandscape()
             GL::Buffer Buffer;
             Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
             Mesh.setCount(TmpShape.size())
-                .setPrimitive(GL::MeshPrimitive::Triangles)
+                .setPrimitive(GL::MeshPrimitive::Points)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
         }
@@ -319,7 +319,7 @@ void ResourceStorage::initLandscape()
             GL::Buffer Buffer;
             Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
             Mesh.setCount(TmpShape.size())
-                .setPrimitive(GL::MeshPrimitive::Triangles)
+                .setPrimitive(GL::MeshPrimitive::Points)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
         }
@@ -341,7 +341,7 @@ void ResourceStorage::initLandscape()
             GL::Buffer Buffer;
             Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
             Mesh.setCount(TmpShape.size())
-                .setPrimitive(GL::MeshPrimitive::Triangles)
+                .setPrimitive(GL::MeshPrimitive::Points)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
         }
@@ -363,7 +363,7 @@ void ResourceStorage::initLandscape()
             GL::Buffer Buffer;
             Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
             Mesh.setCount(TmpShape.size())
-                .setPrimitive(GL::MeshPrimitive::Triangles)
+                .setPrimitive(GL::MeshPrimitive::Points)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
             Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
         }
@@ -397,7 +397,7 @@ void ResourceStorage::initLandscape()
         GL::Buffer Buffer;
         Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
         Mesh.setCount(Shapes.ShapeDefs.back().size())
-            .setPrimitive(GL::MeshPrimitive::TriangleFan)
+            .setPrimitive(GL::MeshPrimitive::Points)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
         Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
     }

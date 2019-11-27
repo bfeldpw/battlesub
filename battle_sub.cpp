@@ -3,9 +3,9 @@
 #include <Box2D/Box2D.h>
 #include <Corrade/Utility/Arguments.h>
 #include <Corrade/Utility/ConfigurationValue.h>
+#include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Context.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
-#include <Magnum/GL/Buffer.h>
 #include <Magnum/Math/Color.h>
 
 #include <Magnum/Platform/Sdl2Application.h>
@@ -250,7 +250,8 @@ void BattleSub::drawEvent()
         }
         
         // Draw the scene
-        FluidGrid_.init(Camera_->projectionMatrix()*Camera_->cameraMatrix());
+        FluidGrid_.process();
+        FluidGrid_.drawDiffusion(Camera_->projectionMatrix()*Camera_->cameraMatrix());
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
         
