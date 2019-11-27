@@ -32,21 +32,13 @@ class DensityShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-            ColorUniform_ = uniformLocation("u_col");
-
             setUniform(uniformLocation("u_texture"), TextureUnit);
-            _transformationMatrixUniform = uniformLocation("u_matrix");
+            TransformationMatrixUniform = uniformLocation("u_matrix");
         }
 
-        DensityShader& setColor(const Color3& Color)
-        {
-            setUniform(ColorUniform_, Color);
-            return *this;
-        }
-        
         DensityShader& setTransformation(const Matrix3& t)
         {
-            setUniform(_transformationMatrixUniform, t);
+            setUniform(TransformationMatrixUniform, t);
             return *this;
         }
 
@@ -60,8 +52,7 @@ class DensityShader : public GL::AbstractShaderProgram
         
         enum: Int { TextureUnit = 0 };
 
-        Int ColorUniform_,
-            _transformationMatrixUniform;
+        Int TransformationMatrixUniform;
 };
 
 #endif // DENSITY_SHADER_H

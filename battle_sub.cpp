@@ -287,8 +287,9 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.addDensity((Pos.x+WORLD_SIZE_X*0.5f)/WORLD_SIZE_X*FLUID_GRID_SIZE_X,
-                                  (Pos.y+WORLD_SIZE_Y*0.5f)/WORLD_SIZE_Y*FLUID_GRID_SIZE_Y, Vel * 0.01);
+//             FluidGrid_.addDensity((Pos.x+WORLD_SIZE_X*0.5f)/WORLD_SIZE_X*FLUID_GRID_SIZE_X,
+//                                   (Pos.y+WORLD_SIZE_Y*0.5f)/WORLD_SIZE_Y*FLUID_GRID_SIZE_Y, Vel * 0.01);
+            FluidGrid_.addDensity(Pos.x, Pos.y, Vel * 0.01f);
         }
     }
     for (auto Debris : GlobalFactories::Debris.getEntities())
@@ -304,8 +305,9 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.addDensity((Pos.x+WORLD_SIZE_X*0.5f)/WORLD_SIZE_X*FLUID_GRID_SIZE_X,
-                                  (Pos.y+WORLD_SIZE_Y*0.5f)/WORLD_SIZE_Y*FLUID_GRID_SIZE_Y, Vel * 0.01);
+//             FluidGrid_.addDensity((Pos.x+WORLD_SIZE_X*0.5f)/WORLD_SIZE_X*FLUID_GRID_SIZE_X,
+//                                   (Pos.y+WORLD_SIZE_Y*0.5f)/WORLD_SIZE_Y*FLUID_GRID_SIZE_Y, Vel * 0.01);
+            FluidGrid_.addDensity(Pos.x, Pos.y, Vel * 0.01f);
         }
     }
     

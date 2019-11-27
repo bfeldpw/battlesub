@@ -13,6 +13,7 @@
 #include <Magnum/PixelFormat.h>
 
 #include "density_shader.h"
+#include "density_sources_shader.h"
 #include "diffusion_shader.h"
 #include "drawable_generic.h"
 #include "global_resources.h"
@@ -23,7 +24,7 @@ using namespace Magnum;
 constexpr GL::SamplerFilter FLUID_GRID_DIFFUSION_FILTER = GL::SamplerFilter::Linear;
 constexpr GL::SamplerMipmap FLUID_GRID_DIFFUSION_FILTER_MIP_MAP = GL::SamplerMipmap::Base;
 
-constexpr int FLUID_GRID_SIZE_X_BITS = 10;
+constexpr int FLUID_GRID_SIZE_X_BITS = 13;
 constexpr int FLUID_GRID_SIZE_X = 1 << FLUID_GRID_SIZE_X_BITS;
 constexpr int FLUID_GRID_SIZE_Y = 1 << (FLUID_GRID_SIZE_X_BITS-1);
 constexpr int FLUID_GRID_ARRAY_SIZE = FLUID_GRID_SIZE_X * FLUID_GRID_SIZE_Y;
@@ -34,27 +35,30 @@ class FluidGrid
         
         FluidGrid()
         {
-            Density0_.resize(FLUID_GRID_ARRAY_SIZE);
-            Density1_.resize(FLUID_GRID_ARRAY_SIZE);
-            VelocityX_.resize(FLUID_GRID_ARRAY_SIZE);
-            VelocityY_.resize(FLUID_GRID_ARRAY_SIZE);
-            Density_ = &Density0_;
-            DensityB_ = &Density1_;
-            std::fill(Density0_.begin(), Density0_.end(), 0.1f);
-            std::fill(Density1_.begin(), Density1_.end(), 0.1f);
-            std::fill(VelocityX_.begin(), VelocityX_.end(), 0);
-            std::fill(VelocityY_.begin(), VelocityY_.end(), 0);
+//             Density0_.resize(FLUID_GRID_ARRAY_SIZE);
+//             Density1_.resize(FLUID_GRID_ARRAY_SIZE);
+//             VelocityX_.resize(FLUID_GRID_ARRAY_SIZE);
+//             VelocityY_.resize(FLUID_GRID_ARRAY_SIZE);
+//             Density_ = &Density0_;
+//             DensityB_ = &Density1_;
+//             std::fill(Density0_.begin(), Density0_.end(), 0.1f);
+//             std::fill(Density1_.begin(), Density1_.end(), 0.1f);
+//             std::fill(VelocityX_.begin(), VelocityX_.end(), 0);
+//             std::fill(VelocityY_.begin(), VelocityY_.end(), 0);
         }
         
-        void addDensity(const int x, const int y, const float d)
+        void addDensity(const float x, const float y, const float d)
         {
-            (*Density_)[I(x, y)] += d;
+//             (*Density_)[I(x,y)] += d;
+            DensitySources_.push_back(x);
+            DensitySources_.push_back(y);
+            DensitySources_.push_back(d);
         }
         
         void changeVelocity(const int x, const int y, const float Vx, const float Vy)
         {
-            VelocityX_[I(x, y)] += Vx;
-            VelocityY_[I(x, y)] += Vy;
+//             VelocityX_[I(x, y)] += Vx;
+//             VelocityY_[I(x, y)] += Vy;
         }
         
         void drawDiffusion(const Matrix3 CameraProjection)
@@ -73,13 +77,11 @@ class FluidGrid
                 TexDiffusion_ = GL::Texture2D{};
                 Shader_ = DiffusionShader();
                 ShaderDiffusion_ = DensityShader();
-                
-                ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, *Density_);
+                ShaderDensitySources_ = DensitySourcesShader();
                 
                 TexDensitySrcs_.setMagnificationFilter(GL::SamplerFilter::Nearest)
                                .setMinificationFilter(GL::SamplerFilter::Nearest, GL::SamplerMipmap::Nearest)
-                               .setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
-                               .setSubImage(0, {}, Image);
+                               .setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
                 TexDiffusion_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                              .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
                              .setWrapping(GL::SamplerWrapping::ClampToEdge)
@@ -121,46 +123,61 @@ class FluidGrid
                               .addVertexBuffer(std::move(Buffer), 0,
                                                DensityShader::Position{},
                                                DensityShader::TextureCoordinates{});
-            
+                              
                 Shader_.setTransformation(Matrix3::projection({FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})) 
                        .bindTextures(TexDensitySrcs_, TexDiffusion_);
-                
+                       
+                ShaderDensitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}));
                 
                 FirstUse = false;
             }
-            this->lin_solve(1000.0f, 1.0f+5000.0f, 1);
             
-            ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, *Density_);
-            TexDensitySrcs_.setSubImage(0, {}, Image);
+            GL::Buffer DensitySourcesBuffer;
+            DensitySourcesBuffer.setData(DensitySources_, GL::BufferUsage::StreamDraw);
             
-            FBODiffusion_.clear(GL::FramebufferClear::Color);
+            GL::Mesh Mesh;
+            Mesh.setCount(DensitySources_.size())
+                .setPrimitive(GL::MeshPrimitive::Points)
+                .addVertexBuffer(std::move(DensitySourcesBuffer), 0,
+                                 DensitySourcesShader::Position{},
+                                 DensitySourcesShader::Amount{});
+            DensitySources_.clear();
+            
+//             this->lin_solve(1000.0f, 1.0f+5000.0f, 1);
+            
+//             ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, *Density_);
+//             TexDensitySrcs_.setSubImage(0, {}, Image);
+            
+//             FBODiffusion_.clear(GL::FramebufferClear::Color);
             FBODiffusion_.bind();
-            Shader_.bindTextures(TexDensitySrcs_, TexDiffusion_);
-            Mesh_.draw(Shader_);
+            Shader_.bindTextures(TexDensitySrcs_, TexDensitySrcs_);
+//             Mesh_.draw(Shader_);
+            
+            Mesh.draw(ShaderDensitySources_);
             ShaderDiffusion_.bindTexture(TexDiffusion_);
             GL::defaultFramebuffer.bind();
         }
         
         void lin_solve(float a, float c, int iter)
         {
-            std::swap(Density_, DensityB_);
-            float cRecip = 1.0f / c;
-            for (int k = 0; k < iter; k++)
-            {
-                for (int j = 1; j < FLUID_GRID_SIZE_Y - 1; j++)
-                {
-                    for (int i = 1; i < FLUID_GRID_SIZE_X - 1; i++)
-                    {
-                        (*Density_)[I(i, j)] = (0.1f +
-                                      a*((*DensityB_)[I(i, j)]
-                                       + (*DensityB_)[I(i-1, j)]
-                                       + (*DensityB_)[I(i+1, j)]
-                                       + (*DensityB_)[I(i  , j+1)]
-                                       + (*DensityB_)[I(i  , j-1)]
-                                      )) * cRecip;
-                    }
-                }
-            }
+//             std::swap(Density_, DensityB_);
+//             float cRecip = 1.0f / c;
+//             for (int k = 0; k < iter; k++)
+//             {
+//                 for (int j = 1; j < FLUID_GRID_SIZE_Y - 1; j++)
+//                 {
+//                     for (int i = 1; i < FLUID_GRID_SIZE_X - 1; i++)
+//                     {
+//                         (*Density_)[I(i, j)] = (0.1f +
+//                                       a*((*DensityB_)[I(i, j)]
+//                                        + (*DensityB_)[I(i-1, j)]
+//                                        + (*DensityB_)[I(i+1, j)]
+//                                        + (*DensityB_)[I(i  , j+1)]
+//                                        + (*DensityB_)[I(i  , j-1)]
+//                                       )) * cRecip;
+//                     }
+//                 }
+//             }
         }
         
     private:
@@ -171,6 +188,7 @@ class FluidGrid
         
         GL::Framebuffer FBODiffusion_{NoCreate};
         
+        DensitySourcesShader ShaderDensitySources_{NoCreate};
         DensityShader ShaderDiffusion_{NoCreate};
         DiffusionShader Shader_{NoCreate};
         GL::Mesh Mesh_{NoCreate};
@@ -179,12 +197,13 @@ class FluidGrid
         GL::Texture2D TexDiffusion_{NoCreate};
         float Viscosity_ = 1.0f;
         
-        std::vector<float>* Density_;
-        std::vector<float>* DensityB_;
-        std::vector<float> Density0_;
-        std::vector<float> Density1_;
-        std::vector<float> VelocityX_;
-        std::vector<float> VelocityY_;
+        std::vector<float> DensitySources_;
+//         std::vector<float>* Density_;
+//         std::vector<float>* DensityB_;
+//         std::vector<float> Density0_;
+//         std::vector<float> Density1_;
+//         std::vector<float> VelocityX_;
+//         std::vector<float> VelocityY_;
         
 };
 

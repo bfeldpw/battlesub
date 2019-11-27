@@ -1,13 +1,16 @@
-uniform vec3 u_col = vec3(1.0, 1.0, 1.0);
 uniform sampler2D u_tex_density_srcs;
 uniform sampler2D u_tex_diffusion;
 
 in vec2 v_tex;
 
-out vec4 fragmentColor;
+out float fragmentColor;
 
 void main()
 {
-    fragmentColor.b = (float(texture(u_tex_density_srcs, v_tex)));
-    fragmentColor.rga = vec3(0.0, 0.0, 1.0);
+    fragmentColor = (   float(texture(u_tex_density_srcs, v_tex + vec2( 0,  0))) +
+                        float(texture(u_tex_diffusion, v_tex + vec2(-1,  0))) +
+                        float(texture(u_tex_diffusion, v_tex + vec2( 1,  0))) +
+                        float(texture(u_tex_diffusion, v_tex + vec2( 0, -1))) +
+                        float(texture(u_tex_diffusion, v_tex + vec2( 0,  1)))
+    );
 }
