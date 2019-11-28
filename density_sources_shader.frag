@@ -4,5 +4,6 @@ out float fragmentColor;
 
 void main()
 {
-    fragmentColor = v_amount*10.0;
+    fragmentColor = v_amount*300.0;
+//     fragmentColor.rga = vec3(1.0, 0.0, 0.0);
 }
