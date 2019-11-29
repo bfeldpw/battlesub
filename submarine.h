@@ -28,6 +28,8 @@ class Submarine : public Entity
             return *this;
         }
         
+        float getThrottle() const {return Throttle_;}
+        
         void fire(float GunPos);
         
         void fullStop()

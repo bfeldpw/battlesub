@@ -287,8 +287,6 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-//             FluidGrid_.addDensity((Pos.x+WORLD_SIZE_X*0.5f)/WORLD_SIZE_X*FLUID_GRID_SIZE_X,
-//                                   (Pos.y+WORLD_SIZE_Y*0.5f)/WORLD_SIZE_Y*FLUID_GRID_SIZE_Y, Vel * 0.01);
             FluidGrid_.addDensity(Pos.x, Pos.y, Vel * 10.0f);
         }
     }
@@ -305,8 +303,6 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-//             FluidGrid_.addDensity((Pos.x+WORLD_SIZE_X*0.5f)/WORLD_SIZE_X*FLUID_GRID_SIZE_X,
-//                                   (Pos.y+WORLD_SIZE_Y*0.5f)/WORLD_SIZE_Y*FLUID_GRID_SIZE_Y, Vel * 0.01);
             FluidGrid_.addDensity(Pos.x, Pos.y, Vel * 10.0f);
         }
     }
@@ -329,6 +325,8 @@ void BattleSub::updateGameObjects()
 //         Sub.second->update();
 //     }
     PlayerSub_->update();
+    auto Propellor = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
+    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()));
     
     // Update physics
     GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
