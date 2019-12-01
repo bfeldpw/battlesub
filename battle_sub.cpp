@@ -189,6 +189,7 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
     
     if (Event.modifiers() & MouseMoveEvent::Modifier::Ctrl)
     {
+        DevCam_ = true;
         if (Event.buttons() & MouseMoveEvent::Button::Left)
         {
             if (MouseDelta_.y() != 0) Zoom_ *= 1.0f-0.01f*MouseDelta_.y();
@@ -228,7 +229,6 @@ void BattleSub::drawEvent()
 {
     if (!IsExitTriggered_)
     {
-
         GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
         GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.1f, 1.0f));
         
@@ -237,11 +237,21 @@ void BattleSub::drawEvent()
         if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
         if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
         
+//         Zoom_ = 20.0f + PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
+//         VPX_ = 2.0f * Zoom_;
+//         VPY_ = 2.0f * Zoom_;
+        
         Camera_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
         
         if (!IsPaused_ || IsStepForward_)
         {
             updateGameObjects();
+            if (!DevCam_)
+            {
+                auto Pos = PlayerSub_->Hull.getBody()->GetPosition();
+                CameraObject_->resetTransformation();
+                CameraObject_->translate(Vector2(Pos.x, Pos.y));
+            }
         }
         
         if (GlobalErrorHandler.checkError() == true)
@@ -257,6 +267,8 @@ void BattleSub::drawEvent()
         
         swapBuffers();
         redraw();
+        
+        DevCam_ = false;
     }
 }
 

@@ -49,6 +49,7 @@ class BattleSub : public Platform::Application
         float VPX_ = 100.0f;
         float VPY_ = 100.0f;
         float Zoom_ = 1.0f;
+        bool DevCam_ = false;
 
 };
 
