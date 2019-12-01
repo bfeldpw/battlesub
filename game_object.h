@@ -75,7 +75,7 @@ class GameObject : public Entity
             assert(Body_ != nullptr);
             
             // Body starts sinking if too slow
-            if (Body_->GetLinearVelocity().Length() < 0.01f)
+            if ((Body_->GetLinearVelocity().Length() < 0.01f) || (Age_.split() > 20.0))
             {
                 this->sink();
             }

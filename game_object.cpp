@@ -2,6 +2,9 @@
 
 void GameObject::destroy()
 {
+    // Stop timer, since objects will be reused from pool
+    Age_.stop();
+    
     // Destroy physics data, Box2D will handle everything from here
     World_->DestroyBody(Body_);
     
@@ -31,6 +34,8 @@ void GameObject::init(const GameObjectTypeE Type, const b2BodyDef& BodyDef)
     assert(Shader_ != nullptr);
     assert(Scene_ != nullptr);
     assert(DrawableGrp_ != nullptr);
+    
+    Age_.restart();
     
     Type_ = Type;
     

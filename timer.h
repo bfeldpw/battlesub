@@ -9,6 +9,7 @@ class Timer
         Timer() {this->start();}
         void    start()     {Start = HiResClock::now();}
         void    stop()      {Stop = HiResClock::now();}
+        void    restart()   {stop(); start();}
         double  elapsed()   {return duration<double>(Stop-Start).count();}
         double  split()     {return duration<double>(HiResClock::now() - Start).count();}
     

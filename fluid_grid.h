@@ -145,15 +145,8 @@ class FluidGrid
                                  DensitySourcesShader::Position{},
                                  DensitySourcesShader::Amount{});
                 
-//             for (auto DS : DensitySources_)
-//                 std::cout << DS << ", ";
-//             std::cout << std::endl;
             DensitySources_.clear();
             
-//             this->lin_solve(1000.0f, 1.0f+5000.0f, 1);
-            
-//             FBODiffusionBack_.clear(GL::FramebufferClear::Color);
-
             //------------------------------------------------------------------
             // Draw densities
             //------------------------------------------------------------------

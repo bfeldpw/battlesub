@@ -226,7 +226,7 @@ void ResourceStorage::initLandscape()
     if (OctaveCount < 1) OctaveCount = 1;
     
     Boundary.SetOctaveCount(OctaveCount);
-    Boundary.SetSeed(7);
+    Boundary.SetSeed(19);
     
     {
         constexpr float b = 100.0f;  // Boundary
@@ -240,6 +240,7 @@ void ResourceStorage::initLandscape()
         for (auto i=-w-b; i<=w+b; i+=1.0f)
         {
             ShapeTop.push_back({i, h - a * float(Boundary.GetValue(double(i), double(h)))});
+            std::cout << float(Boundary.GetValue(double(i), double(h))) << std::endl;
         }
         ShapeTop.push_back({w+b, h+b});
         
