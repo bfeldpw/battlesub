@@ -6,6 +6,7 @@
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Context.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
+#include <Magnum/GL/Renderer.h>
 #include <Magnum/Math/Color.h>
 
 #include <Magnum/Platform/Sdl2Application.h>
@@ -38,8 +39,16 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
         {
             create(conf, glConf.setSampleCount(0));
         }
+        
+        ImGUI_ = ImGuiIntegration::Context({int(WORLD_SIZE_X)*2, int(WORLD_SIZE_Y)*2},
+        windowSize(), framebufferSize());
+        
+        GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add,
+        GL::Renderer::BlendEquation::Add);
+        GL::Renderer::setBlendFunction(GL::Renderer::BlendFunction::SourceAlpha,
+        GL::Renderer::BlendFunction::OneMinusSourceAlpha);
     }
-    
+
     GlobalResources::Get.init();
 
     /* Configure camera */
@@ -208,6 +217,8 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
         Platform::Application::Sdl2Application::setMouseLocked(false);
     }
     
+    if (ImGUI_.handleMouseMoveEvent(Event)) return;
+    
 }
 
 void BattleSub::mousePressEvent(MouseEvent& Event)
@@ -223,6 +234,13 @@ void BattleSub::mousePressEvent(MouseEvent& Event)
     {
         PlayerSub_->fire(1.0f);
     }
+    
+    if (ImGUI_.handleMousePressEvent(Event)) return;
+}
+
+void BattleSub::mouseReleaseEvent(MouseEvent& Event)
+{
+    if (ImGUI_.handleMouseReleaseEvent(Event)) return;
 }
 
 void BattleSub::drawEvent()
@@ -264,7 +282,25 @@ void BattleSub::drawEvent()
         FluidGrid_.drawDiffusion(Camera_->projectionMatrix()*Camera_->cameraMatrix());
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+
+//         ImGUI_.updateApplicationCursor(*this);
         
+        GL::Renderer::enable(GL::Renderer::Feature::Blending);
+        GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
+        GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
+        GL::Renderer::disable(GL::Renderer::Feature::DepthTest);
+        
+        ImGUI_.newFrame();
+        {
+            ImGui::Text("%.3f ms; (%.1f FPS)",
+                1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
+        }
+        
+        ImGUI_.drawFrame();
+        
+        GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
+        GL::Renderer::disable(GL::Renderer::Feature::Blending);
+                
         swapBuffers();
         redraw();
         
@@ -290,7 +326,7 @@ void BattleSub::updateGameObjects()
     {
         Projectile.second->update();
         auto Pos = Projectile.second->getBody()->GetPosition();
-        auto Vel = Projectile.second->getBody()->GetLinearVelocity().Length();
+        auto Vel = Projectile.second->getBody()->GetLinearVelocity();
         
         if (Projectile.second->isSunk())
         {
@@ -299,7 +335,8 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.addDensity(Pos.x, Pos.y, Vel * 10.0f);
+            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f);
+            FluidGrid_.addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
         }
     }
     for (auto Debris : GlobalFactories::Debris.getEntities())
@@ -338,7 +375,9 @@ void BattleSub::updateGameObjects()
 //     }
     PlayerSub_->update();
     auto Propellor = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
+    auto Direction = PlayerSub_->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
     FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()));
+    FluidGrid_.addVelocity(Propellor.x, Propellor.y, Direction.x*10.0f, Direction.y*10.0f);
     
     // Update physics
     GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);

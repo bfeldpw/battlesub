@@ -4,6 +4,9 @@
 #include <string>
 #include <unordered_map>
 
+#include <Magnum/ImGuiIntegration/Context.hpp>
+#include "imgui.h"
+
 #include "common.h"
 #include "contact_listener.h"
 #include "fluid_grid.h"
@@ -26,10 +29,13 @@ class BattleSub : public Platform::Application
         void keyReleaseEvent(KeyEvent& Event) override;
         void mouseMoveEvent(MouseMoveEvent& Event) override;
         void mousePressEvent(MouseEvent& Event) override;
+        void mouseReleaseEvent(MouseEvent& Event) override;
         
         void cleanupAndExit();
         void updateGameObjects();
 
+        ImGuiIntegration::Context ImGUI_{NoCreate};
+        
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;
         bool IsExitTriggered_ = false;

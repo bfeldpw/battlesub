@@ -34,6 +34,7 @@ class DiffusionShader : public GL::AbstractShaderProgram
 
             setUniform(uniformLocation("u_tex_densities"), TexUnitDensities);
             setUniform(uniformLocation("u_tex_diffusion"), TexUnitDiffusion);
+            setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
             TransformationUniform_ = uniformLocation("u_matrix");
         }
 
@@ -43,16 +44,24 @@ class DiffusionShader : public GL::AbstractShaderProgram
             return *this;
         }
 
-        DiffusionShader& bindTextures(GL::Texture2D& TexDensities, GL::Texture2D& TexDiffusion)
+        DiffusionShader& bindTextures(GL::Texture2D& TexDensities,
+                                      GL::Texture2D& TexVelocities,
+                                      GL::Texture2D& TexDiffusion)
         {
             TexDensities.bind(TexUnitDensities);
+            TexVelocities.bind(TexUnitVelocities);
             TexDiffusion.bind(TexUnitDiffusion);
             return *this;
         }
 
     private:
         
-        enum: Int { TexUnitDensities = 0, TexUnitDiffusion = 1 };
+        enum: Int
+        {
+            TexUnitDensities = 0,
+            TexUnitDiffusion = 1,
+            TexUnitVelocities = 2
+        };
 
         Int TransformationUniform_;
 };
