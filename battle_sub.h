@@ -5,7 +5,6 @@
 #include <unordered_map>
 
 #include <Magnum/ImGuiIntegration/Context.hpp>
-#include "imgui.h"
 
 #include "common.h"
 #include "contact_listener.h"
