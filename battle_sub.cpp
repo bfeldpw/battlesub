@@ -58,6 +58,9 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
             .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
             .setViewport(GL::defaultFramebuffer.viewport().size());
             
+    FluidGrid_.setDensityBase(GlobalResources::Get.getHeightMap())
+              .init();
+            
     /* Create the Box2D world with the usual gravity vector */
     GlobalResources::Get.getWorld()->SetContactListener(&ContactListener_);
     
@@ -279,12 +282,10 @@ void BattleSub::drawEvent()
         
         // Draw the scene
         FluidGrid_.process();
-        FluidGrid_.drawDiffusion(Camera_->projectionMatrix()*Camera_->cameraMatrix());
+        FluidGrid_.display(Camera_->projectionMatrix()*Camera_->cameraMatrix());
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
-//         ImGUI_.updateApplicationCursor(*this);
-        
         GL::Renderer::enable(GL::Renderer::Feature::Blending);
         GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
         GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
@@ -335,8 +336,8 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f);
-            FluidGrid_.addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
+            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
+                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
         }
     }
     for (auto Debris : GlobalFactories::Debris.getEntities())
@@ -376,8 +377,8 @@ void BattleSub::updateGameObjects()
     PlayerSub_->update();
     auto Propellor = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
     auto Direction = PlayerSub_->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
-    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()));
-    FluidGrid_.addVelocity(Propellor.x, Propellor.y, Direction.x*10.0f, Direction.y*10.0f);
+    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()))
+              .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
     
     // Update physics
     GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);

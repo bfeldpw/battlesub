@@ -8,7 +8,6 @@ else()
     add_compile_options(-std=c++14 -mtune=native -Wall -Wextra -pedantic)
 endif()
 
-# Path where FindImGui.cmake can be found, adapt as needed
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/3rdparty/modules/" ${CMAKE_MODULE_PATH})
 
 find_package(MagnumIntegration REQUIRED ImGui)
@@ -32,9 +31,6 @@ set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
 set(LIB_NOISE_HEADERS
         ${PROJECT_SOURCE_DIR}/3rdparty/libnoise2d/src/noise.h
-)
-set(IMGUI_INCLUDE_DIR
-        ${PROJECT_SOURCE_DIR}/3rdparty/imgui-1.74/
 )
 
 set(HEADERS
@@ -71,11 +67,12 @@ set(LIB_NOISE_LIBRARY
 )
 
 set(SOURCES
-        ${IMGUI_INCLUDE_DIR}/imgui.cpp
-        ${IMGUI_INCLUDE_DIR}/imgui_draw.cpp
+        ${ImGui_INCLUDE_DIR}/imgui.cpp
+        ${ImGui_INCLUDE_DIR}/imgui_draw.cpp
         battle_sub.cpp
         emitter.cpp
         entity.cpp
+        fluid_grid.cpp
         game_object.cpp
         global_emitter_factory.cpp
         global_factories.cpp
@@ -84,10 +81,12 @@ set(SOURCES
         submarine.cpp
 )
 
+# add_subdirectory("./3rdparty/Box2D-2.3.1/Box2D")
+
 add_executable(battle_sub ${LIB_NOISE_HEADERS} ${HEADERS} ${SOURCES})
 
 target_include_directories(battle_sub PRIVATE ${MAGNUM_INCLUDE_DIR})
-target_include_directories(battle_sub PRIVATE ${IMGUI_INCLUDE_DIR})
+target_include_directories(battle_sub PRIVATE ${ImGui_INCLUDE_DIR})
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install/include")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/libnoise2d/src/")
 

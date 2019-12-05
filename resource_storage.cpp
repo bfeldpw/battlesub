@@ -6,6 +6,7 @@
 void ResourceStorage::init()
 {
     this->initDebris();
+    this->initHeightMap();
     this->initLandscape();
     
     // Initialise projectile
@@ -211,6 +212,76 @@ void ResourceStorage::initDebris()
     Meshes_[int(GameObjectTypeE::DEBRIS)].push_back(std::move(Mesh));
 }
 
+void ResourceStorage::initHeightMap()
+{
+    noise::module::RidgedMulti  HeightmapRidge;
+    noise::module::Perlin       HeightmapBillow;
+    noise::module::Add          Average;
+    noise::module::Turbulence   FinalTerrain;
+    noise::module::Exponent     Exponent;
+    noise::module::Clamp        Plateus;
+      
+    {
+        double FrequencyRidged = 0.001;
+        double LacunarityRidged = 1.7931;
+    
+        HeightmapRidge.SetFrequency(FrequencyRidged);
+        HeightmapRidge.SetLacunarity(LacunarityRidged);
+    //     HeightmapRidge.SetPersistence(0.5371);
+        HeightmapRidge.SetNoiseQuality(noise::QUALITY_BEST);
+        HeightmapRidge.SetNoiseType(noise::TYPE_VALUE);
+    
+    
+        int OctaveCount = ceil(log2(1.0/FrequencyRidged)/log2(LacunarityRidged));
+        if (OctaveCount < 1) OctaveCount = 1;
+        
+        HeightmapRidge.SetOctaveCount(OctaveCount);
+        HeightmapRidge.SetSeed(19);
+    }
+    {
+        double Frequency = 0.01;
+        double Lacunarity = 1.9731;
+    
+        HeightmapBillow.SetFrequency(Frequency);
+        HeightmapBillow.SetLacunarity(Lacunarity);
+        HeightmapBillow.SetPersistence(0.5371);
+        HeightmapBillow.SetNoiseQuality(noise::QUALITY_BEST);
+        HeightmapBillow.SetNoiseType(noise::TYPE_VALUE);
+    
+    
+        int OctaveCount = ceil(log2(1.0/Frequency)/log2(Lacunarity));
+        if (OctaveCount < 1) OctaveCount = 1;
+        
+        HeightmapBillow.SetOctaveCount(OctaveCount);
+        HeightmapBillow.SetSeed(19);
+    }
+    Average.SetSourceModule(0, HeightmapRidge);
+    Average.SetSourceModule(1, HeightmapBillow);
+    FinalTerrain.SetSourceModule(0, Average);
+    FinalTerrain.SetFrequency(0.01);
+    FinalTerrain.SetPower(500.0);
+    
+    Exponent.SetExponent(2.0);
+    Exponent.SetSourceModule(0, FinalTerrain);
+    
+    Plateus.SetBounds(-1.0, 0.7);
+    Plateus.SetSourceModule(0, Exponent);
+    
+    float Min = 0.0f;
+    float Max = 0.0f;
+    for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
+    {
+        for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
+        {
+            HeightMap_.push_back(float(Plateus.GetValue(double(x), double(y))*0.5+0.5));
+            auto Value = HeightMap_.back();
+            if (Value > Max) Max=Value;
+            if (Value < Min) Min=Value;
+        }
+    }
+    std::cout << "[" << Min << ", " << Max << "]" << std::endl;
+}
+
 void ResourceStorage::initLandscape()
 {
     // Initialise landscape
@@ -240,7 +311,6 @@ void ResourceStorage::initLandscape()
         for (auto i=-w-b; i<=w+b; i+=1.0f)
         {
             ShapeTop.push_back({i, h - a * float(Boundary.GetValue(double(i), double(h)))});
-            std::cout << float(Boundary.GetValue(double(i), double(h))) << std::endl;
         }
         ShapeTop.push_back({w+b, h+b});
         

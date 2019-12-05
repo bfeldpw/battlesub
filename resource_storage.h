@@ -9,6 +9,7 @@
 #include <Magnum/Trade/MeshData2D.h>
 
 #include "game_object.h"
+#include "world_def.h"
 
 constexpr int DRAWABLE_GROUPS_TYPE_ENUM_SIZE = 2;
 constexpr int GAME_OBJECT_TYPE_ENUM_SIZE = 5;
@@ -32,13 +33,15 @@ class ResourceStorage
         Shaders::Flat2D* getShader() {assert(IsInitialised == true); return Shader_;}
         Scene2D*         getScene() {assert(IsInitialised == true); return Scene_;}
         
-        
         ShapesType* getShapes(GameObjectTypeE t) {assert(IsInitialised == true); return &(Shapes_[int(t)]);}
         MeshesType* getMeshes(GameObjectTypeE t) {assert(IsInitialised == true); return &(Meshes_[int(t)]);}
+        
+        std::vector<float>* getHeightMap() {return &HeightMap_;}
 
     private:
 
         void initDebris();
+        void initHeightMap();
         void initLandscape();
         
         bool IsInitialised = false;
@@ -52,6 +55,8 @@ class ResourceStorage
             {new SceneGraph::DrawableGroup2D, new SceneGraph::DrawableGroup2D};
         std::array<MeshesType, GAME_OBJECT_TYPE_ENUM_SIZE> Meshes_;
         std::array<ShapesType, GAME_OBJECT_TYPE_ENUM_SIZE> Shapes_;
+        
+        std::vector<float> HeightMap_;
         
 };
 

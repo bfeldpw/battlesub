@@ -3,8 +3,13 @@
 
 #include <Corrade/Containers/Reference.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
+#include <Magnum/GL/Context.h>
 #include <Magnum/GL/Shader.h>
+#include <Magnum/GL/Texture.h>
 #include <Magnum/GL/Version.h>
+#include <Magnum/Math/Matrix3.h>
+
+using namespace Magnum;
 
 class DiffusionShader : public GL::AbstractShaderProgram
 {
@@ -33,6 +38,7 @@ class DiffusionShader : public GL::AbstractShaderProgram
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
             setUniform(uniformLocation("u_tex_densities"), TexUnitDensities);
+            setUniform(uniformLocation("u_tex_density_base"), TexUnitDensityBase);
             setUniform(uniformLocation("u_tex_diffusion"), TexUnitDiffusion);
             setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
             TransformationUniform_ = uniformLocation("u_matrix");
@@ -45,10 +51,12 @@ class DiffusionShader : public GL::AbstractShaderProgram
         }
 
         DiffusionShader& bindTextures(GL::Texture2D& TexDensities,
+                                      GL::Texture2D& TexDensityBase,
                                       GL::Texture2D& TexVelocities,
                                       GL::Texture2D& TexDiffusion)
         {
             TexDensities.bind(TexUnitDensities);
+            TexDensityBase.bind(TexUnitDensityBase);
             TexVelocities.bind(TexUnitVelocities);
             TexDiffusion.bind(TexUnitDiffusion);
             return *this;
@@ -59,8 +67,9 @@ class DiffusionShader : public GL::AbstractShaderProgram
         enum: Int
         {
             TexUnitDensities = 0,
-            TexUnitDiffusion = 1,
-            TexUnitVelocities = 2
+            TexUnitDensityBase = 1,
+            TexUnitDiffusion = 2,
+            TexUnitVelocities = 3
         };
 
         Int TransformationUniform_;

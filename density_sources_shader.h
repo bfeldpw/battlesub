@@ -3,8 +3,12 @@
 
 #include <Corrade/Containers/Reference.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
+#include <Magnum/GL/Context.h>
 #include <Magnum/GL/Shader.h>
 #include <Magnum/GL/Version.h>
+#include <Magnum/Math/Matrix3.h>
+
+using namespace Magnum;
 
 class DensitySourcesShader : public GL::AbstractShaderProgram
 {
