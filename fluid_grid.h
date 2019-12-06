@@ -20,6 +20,16 @@
 
 using namespace Magnum;
 
+enum class FluidBufferE : int
+{
+    DENSITY_SOURCES = 0,
+    DENSITY_BASE = 1,
+    VELOCITY_SOURCES = 2,
+    DENSITY_DIFFUSION_FRONT = 3,
+    DENSITY_DIFFUSION_BACK = 4,
+    FINAL_COMPOSITION = 5
+};
+
 class FluidGrid
 {
     public:
@@ -28,7 +38,8 @@ class FluidGrid
         FluidGrid& addVelocity(const float x, const float y, const float Vx, const float Vy);
         FluidGrid& setDensityBase(std::vector<float>* const DensityBase);
         
-        void display(const Matrix3 CameraProjection);
+        void display(const Matrix3 CameraProjection,
+                     const FluidBufferE Buffer = FluidBufferE::FINAL_COMPOSITION);
         void init();
         void process();
         

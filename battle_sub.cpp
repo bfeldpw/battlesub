@@ -286,74 +286,13 @@ void BattleSub::drawEvent()
             FluidGrid_.process();
             IsStepForward_ = false;
         }
-        FluidGrid_.display(Camera_->projectionMatrix()*Camera_->cameraMatrix());
+        FluidGrid_.display(Camera_->projectionMatrix()*Camera_->cameraMatrix(),
+                           FluidBuffer_);
         
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
-        GL::Renderer::enable(GL::Renderer::Feature::Blending);
-        GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
-        GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
-        GL::Renderer::disable(GL::Renderer::Feature::DepthTest);
-        
-        ImGUI_.newFrame();
-        {
-            ImGui::Begin("Debug");
-            
-                ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
-                ImGui::Indent();
-                    ImGui::Text("%.3f ms; (%.1f FPS)",
-                        1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
-                ImGui::Unindent();
-            
-                static int Buffer = 5;
-                ImGui::NewLine();
-                ImGui::TextColored(ImVec4(1,1,0,1), "Buffer Selection");
-                ImGui::Indent();
-                    ImGui::RadioButton("Density Sources", &Buffer, 0);
-                    ImGui::RadioButton("Density Base", &Buffer, 1);
-                    ImGui::RadioButton("Velocity Sources", &Buffer, 2);
-                    ImGui::RadioButton("Density Diffusion Frontbuffer", &Buffer, 3);
-                    ImGui::RadioButton("Density Diffusion Backbuffer", &Buffer, 4);
-                    ImGui::RadioButton("Final Composition", &Buffer, 5);
-                ImGui::Unindent();
-            
-            ImGui::End();
-            
-            ImGui::Begin("Menu");
-            
-                if (ImGui::Button("Graphics")) ;
-                    if (ImGui::IsItemHovered())
-                    {
-                        ImGui::BeginTooltip();
-                            ImGui::Text("Change graphics settings");
-                        ImGui::EndTooltip();
-                    }
-                static std::string Label;
-                if (IsPaused_) Label = "Resume";
-                else Label = "Pause";
-                if (ImGui::Button(Label.c_str())) IsPaused_ ^= 1;
-                    if (ImGui::IsItemHovered())
-                    {
-                        ImGui::BeginTooltip();
-                            ImGui::Text("Pause/Resume the game");
-                        ImGui::EndTooltip();
-                    }
-                if (ImGui::Button("Quit")) IsExitTriggered_ = true;
-                    if (ImGui::IsItemHovered())
-                    {
-                        ImGui::BeginTooltip();
-                            ImGui::Text("Quit BattleSub, exit to desktop");
-                        ImGui::EndTooltip();
-                    }
-
-            ImGui::End();
-        }
-        
-        ImGUI_.drawFrame();
-        
-        GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
-        GL::Renderer::disable(GL::Renderer::Feature::Blending);
+        updateUI();
                 
         swapBuffers();
         redraw();
@@ -447,6 +386,75 @@ void BattleSub::updateGameObjects()
     FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()))
               .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
 }
+
+void BattleSub::updateUI()
+{
+    GL::Renderer::enable(GL::Renderer::Feature::Blending);
+    GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
+    GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
+    GL::Renderer::disable(GL::Renderer::Feature::DepthTest);
+    
+    ImGUI_.newFrame();
+    {
+        ImGui::Begin("Debug");
+        
+            ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
+            ImGui::Indent();
+                ImGui::Text("%.3f ms; (%.1f FPS)",
+                    1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
+            ImGui::Unindent();
+        
+            int Buffer = static_cast<int>(FluidBuffer_);
+            ImGui::NewLine();
+            ImGui::TextColored(ImVec4(1,1,0,1), "Buffer Selection");
+            ImGui::Indent();
+                ImGui::RadioButton("Density Sources", &Buffer, 0);
+                ImGui::RadioButton("Density Base", &Buffer, 1);
+                ImGui::RadioButton("Velocity Sources", &Buffer, 2);
+                ImGui::RadioButton("Density Diffusion Frontbuffer", &Buffer, 3);
+                ImGui::RadioButton("Density Diffusion Backbuffer", &Buffer, 4);
+                ImGui::RadioButton("Final Composition", &Buffer, 5);
+            ImGui::Unindent();
+            FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
+        
+        ImGui::End();
+        
+        ImGui::Begin("Menu");
+        
+            if (ImGui::Button("Graphics")) ;
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::BeginTooltip();
+                        ImGui::Text("Change graphics settings");
+                    ImGui::EndTooltip();
+                }
+            static std::string Label;
+            if (IsPaused_) Label = "Resume";
+            else Label = "Pause";
+            if (ImGui::Button(Label.c_str())) IsPaused_ ^= 1;
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::BeginTooltip();
+                        ImGui::Text("Pause/Resume the game");
+                    ImGui::EndTooltip();
+                }
+            if (ImGui::Button("Quit")) IsExitTriggered_ = true;
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::BeginTooltip();
+                        ImGui::Text("Quit BattleSub, exit to desktop");
+                    ImGui::EndTooltip();
+                }
+
+        ImGui::End();
+    }
+    
+    ImGUI_.drawFrame();
+    
+    GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
+    GL::Renderer::disable(GL::Renderer::Feature::Blending);
+}
+
 
 }
 

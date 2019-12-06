@@ -32,12 +32,50 @@ FluidGrid& FluidGrid::setDensityBase(std::vector<float>* const DensityBase)
     return *this;
 }
 
-void FluidGrid::display(const Matrix3 CameraProjection)
+void FluidGrid::display(const Matrix3 CameraProjection,
+                        const FluidBufferE Buffer)
 {
     GL::defaultFramebuffer.bind();
-    ShaderDensityDisplay_.bindTexture(TexDiffusionFront_);
-    ShaderDensityDisplay_.setTransformation(CameraProjection);
-    MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+    
+    switch (Buffer)
+    {
+        case FluidBufferE::DENSITY_SOURCES:
+        {
+            ShaderDensityDisplay_.bindTexture(TexDensities_);
+            ShaderDensityDisplay_.setTransformation(CameraProjection);
+            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            break;
+        }
+        case FluidBufferE::DENSITY_BASE:
+        {
+            ShaderDensityDisplay_.bindTexture(TexDensityBase_);
+            ShaderDensityDisplay_.setTransformation(CameraProjection);
+            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            break;
+        }
+        case FluidBufferE::DENSITY_DIFFUSION_FRONT:
+        {
+            ShaderDensityDisplay_.bindTexture(TexDiffusionFront_);
+            ShaderDensityDisplay_.setTransformation(CameraProjection);
+            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            break;
+        }
+        case FluidBufferE::DENSITY_DIFFUSION_BACK:
+        {
+            ShaderDensityDisplay_.bindTexture(TexDiffusionBack_);
+            ShaderDensityDisplay_.setTransformation(CameraProjection);
+            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            break;
+        }
+        case FluidBufferE::FINAL_COMPOSITION:
+        {
+            ShaderDensityDisplay_.bindTexture(TexDiffusionFront_);
+            ShaderDensityDisplay_.setTransformation(CameraProjection);
+            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            break;
+        }
+        default: break;
+    }
 }
 
 void FluidGrid::init()

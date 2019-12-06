@@ -32,6 +32,7 @@ class BattleSub : public Platform::Application
         
         void cleanupAndExit();
         void updateGameObjects();
+        void updateUI();
 
         ImGuiIntegration::Context ImGUI_{NoCreate};
         
@@ -46,6 +47,7 @@ class BattleSub : public Platform::Application
         
         ContactListener ContactListener_;
         FluidGrid FluidGrid_;
+        FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
 
         Submarine* PlayerSub_  = nullptr;
         Submarine* PlayerSub2_ = nullptr;
