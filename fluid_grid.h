@@ -15,6 +15,7 @@
 #include "diffusion_shader.h"
 #include "drawable_generic.h"
 #include "global_resources.h"
+#include "velocity_display_shader.h"
 #include "velocity_sources_shader.h"
 #include "world_def.h"
 
@@ -58,6 +59,7 @@ class FluidGrid
         DensityShader ShaderDensityDisplay_{NoCreate};
         DiffusionShader ShaderDiffusion_{NoCreate};
         VelocitySourcesShader ShaderVelocitySources_{NoCreate};
+        VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
         GL::Mesh Mesh_{NoCreate};
         GL::Mesh MeshDensityDisplay_{NoCreate};
         GL::Texture2D TexDensityBase_{NoCreate};    // Heightmap
