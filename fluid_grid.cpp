@@ -34,6 +34,8 @@ FluidGrid& FluidGrid::setDensityBase(std::vector<float>* const DensityBase)
 
 void FluidGrid::display(const Matrix3 CameraProjection)
 {
+    GL::defaultFramebuffer.bind();
+    ShaderDensityDisplay_.bindTexture(TexDiffusionFront_);
     ShaderDensityDisplay_.setTransformation(CameraProjection);
     MeshDensityDisplay_.draw(ShaderDensityDisplay_);
 }
@@ -184,8 +186,7 @@ void FluidGrid::process()
     
     Mesh_.draw(ShaderDiffusion_);
     
-    GL::defaultFramebuffer.bind();
-    ShaderDensityDisplay_.bindTexture(TexDiffusionFront_);
-    
     std::swap(FBODiffusionFront_, FBODiffusionBack_);
+    
+    
 }

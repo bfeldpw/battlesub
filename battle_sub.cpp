@@ -284,8 +284,9 @@ void BattleSub::drawEvent()
         if (!IsPaused_ || IsStepForward_)
         {
             FluidGrid_.process();
-            FluidGrid_.display(Camera_->projectionMatrix()*Camera_->cameraMatrix());
+            IsStepForward_ = false;
         }
+        FluidGrid_.display(Camera_->projectionMatrix()*Camera_->cameraMatrix());
         
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
         Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
@@ -376,6 +377,19 @@ void BattleSub::cleanupAndExit()
 
 void BattleSub::updateGameObjects()
 {
+    // Update physics
+    GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
+
+    // Update object visuals    
+    for(b2Body* Body = GlobalResources::Get.getWorld()->GetBodyList(); Body; Body = Body->GetNext())
+    {
+        if (Body->IsActive() && Body->GetType() != b2_staticBody)
+        {            
+            (*static_cast<GameObject*>(Body->GetUserData())->getVisuals())
+                .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
+                .setRotation(Complex::rotation(Rad(Body->GetAngle())));
+        }
+    }
     for (auto Projectile : GlobalFactories::Projectiles.getEntities())
     {
         Projectile.second->update();
@@ -432,22 +446,6 @@ void BattleSub::updateGameObjects()
     auto Direction = PlayerSub_->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
     FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()))
               .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
-    
-    // Update physics
-    GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
-
-    // Update object visuals    
-    for(b2Body* Body = GlobalResources::Get.getWorld()->GetBodyList(); Body; Body = Body->GetNext())
-    {
-        if (Body->IsActive() && Body->GetType() != b2_staticBody)
-        {            
-            (*static_cast<GameObject*>(Body->GetUserData())->getVisuals())
-                .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
-                .setRotation(Complex::rotation(Rad(Body->GetAngle())));
-        }
-    }
-    
-    IsStepForward_ = false;
 }
 
 }
