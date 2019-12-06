@@ -28,7 +28,7 @@ class DiffusionShader : public GL::AbstractShaderProgram
             GL::Shader Vert{GL::Version::GL330, GL::Shader::Type::Vertex};
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
-            Vert.addFile("diffusion_shader.vert");
+            Vert.addFile("texture_base_shader.vert");
             Frag.addFile("diffusion_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));

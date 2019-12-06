@@ -39,6 +39,8 @@ set(HEADERS
         contact_listener.h
         debris_factory.h
         density_shader.h
+        density_sources_shader.h
+        diffusion_shader.h
         drawable_generic.h
         emitter.h
         emitter_factory.h
@@ -59,6 +61,7 @@ set(HEADERS
         submarine_definition.h
         submarine_factory.h
         timer.h
+        velocity_sources_shader.h
         world_def.h
 )
 
