@@ -16,6 +16,7 @@
 #include "drawable_generic.h"
 #include "global_resources.h"
 #include "velocity_display_shader.h"
+#include "velocity_processing_shader.h"
 #include "velocity_sources_shader.h"
 #include "world_def.h"
 
@@ -26,9 +27,11 @@ enum class FluidBufferE : int
     DENSITY_SOURCES = 0,
     DENSITY_BASE = 1,
     VELOCITY_SOURCES = 2,
-    DENSITY_DIFFUSION_FRONT = 3,
-    DENSITY_DIFFUSION_BACK = 4,
-    FINAL_COMPOSITION = 5
+    VELOCITIES_FRONT = 3,
+    VELOCITIES_BACK = 4,
+    DENSITY_DIFFUSION_FRONT = 5,
+    DENSITY_DIFFUSION_BACK = 6,
+    FINAL_COMPOSITION = 7
 };
 
 class FluidGrid
@@ -53,20 +56,28 @@ class FluidGrid
         GL::Framebuffer* FBODiffusionFront_{nullptr};
         GL::Framebuffer FBODiffusion0_{NoCreate};
         GL::Framebuffer FBODiffusion1_{NoCreate};
-        GL::Framebuffer FBOVelocities_{NoCreate};
+        GL::Framebuffer FBOVelocitySources_{NoCreate};
+        GL::Framebuffer* FBOVelocitiesBack_{nullptr};
+        GL::Framebuffer* FBOVelocitiesFront_{nullptr};
+        GL::Framebuffer FBOVelocities0_{NoCreate};
+        GL::Framebuffer FBOVelocities1_{NoCreate};
         
         DensitySourcesShader ShaderDensitySources_{NoCreate};
         DensityShader ShaderDensityDisplay_{NoCreate};
         DiffusionShader ShaderDiffusion_{NoCreate};
         VelocitySourcesShader ShaderVelocitySources_{NoCreate};
+        VelocityProcessingShader ShaderVelocityProcessing_{NoCreate};
         VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
         GL::Mesh Mesh_{NoCreate};
         GL::Mesh MeshDensityDisplay_{NoCreate};
-        GL::Texture2D TexDensityBase_{NoCreate};    // Heightmap
-        GL::Texture2D TexDensities_{NoCreate};      // Density sources
-        GL::Texture2D TexDiffusionBack_{NoCreate};  // Diffusion buffer
-        GL::Texture2D TexDiffusionFront_{NoCreate}; // Diffusion buffer
-        GL::Texture2D TexVelocities_{NoCreate};     // Velocity sources
+        GL::Mesh MeshVelocities_{NoCreate};
+        GL::Texture2D TexDensityBase_{NoCreate};        // Heightmap
+        GL::Texture2D TexDensities_{NoCreate};          // Density sources
+        GL::Texture2D TexDiffusionBack_{NoCreate};      // Diffusion buffer
+        GL::Texture2D TexDiffusionFront_{NoCreate};     // Diffusion buffer
+        GL::Texture2D TexVelocitySources_{NoCreate};    // Velocity sources
+        GL::Texture2D TexVelocitiesBack_{NoCreate};     // Velocities back buffer
+        GL::Texture2D TexVelocitiesFront_{NoCreate};    // Velocities front buffer
         float Viscosity_ = 1.0f;
         
         std::vector<float>* DensityBase_{nullptr};

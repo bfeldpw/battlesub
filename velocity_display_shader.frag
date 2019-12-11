@@ -10,8 +10,8 @@ void main()
     float y = texture(u_texture, v_tex).g;
     float b = x*y;
     
-    fragmentColor.r = abs(x) * 0.01;
-    fragmentColor.g = abs(y) * 0.01;
-    fragmentColor.b = b * 0.001;
+    fragmentColor.r = abs(x);
+    fragmentColor.g = abs(y);
+    fragmentColor.b = b;
     fragmentColor.a = 1.0;
 }

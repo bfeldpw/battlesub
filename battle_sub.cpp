@@ -350,7 +350,7 @@ void BattleSub::updateGameObjects()
     {
         Debris.second->update();
         auto Pos = Debris.second->getBody()->GetPosition();
-        auto Vel = Debris.second->getBody()->GetLinearVelocity().Length();
+        auto Vel = Debris.second->getBody()->GetLinearVelocity();
         
         if (Debris.second->isSunk())
         {
@@ -359,7 +359,8 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.addDensity(Pos.x, Pos.y, Vel * 10.0f);
+            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
+                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
         }
     }
     
@@ -383,6 +384,7 @@ void BattleSub::updateGameObjects()
     PlayerSub_->update();
     auto Propellor = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
     auto Direction = PlayerSub_->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
+    
     FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()))
               .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
 }
@@ -411,9 +413,11 @@ void BattleSub::updateUI()
                 ImGui::RadioButton("Density Sources", &Buffer, 0);
                 ImGui::RadioButton("Density Base", &Buffer, 1);
                 ImGui::RadioButton("Velocity Sources", &Buffer, 2);
-                ImGui::RadioButton("Density Diffusion Frontbuffer", &Buffer, 3);
-                ImGui::RadioButton("Density Diffusion Backbuffer", &Buffer, 4);
-                ImGui::RadioButton("Final Composition", &Buffer, 5);
+                ImGui::RadioButton("Velocity Buffer Front", &Buffer, 3);
+                ImGui::RadioButton("Velocity Buffer Back", &Buffer, 4);
+                ImGui::RadioButton("Density Diffusion Frontbuffer", &Buffer, 5);
+                ImGui::RadioButton("Density Diffusion Backbuffer", &Buffer, 6);
+                ImGui::RadioButton("Final Composition", &Buffer, 7);
             ImGui::Unindent();
             FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
         

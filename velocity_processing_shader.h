@@ -1,5 +1,5 @@
-#ifndef DIFFUSION_SHADER_H
-#define DIFFUSION_SHADER_H
+#ifndef VELOCITY_PROCESSING_SHADER_H
+#define VELOCITY_PROCESSING_SHADER_H
 
 #include <Corrade/Containers/Reference.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
@@ -11,7 +11,7 @@
 
 using namespace Magnum;
 
-class DiffusionShader : public GL::AbstractShaderProgram
+class VelocityProcessingShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -19,9 +19,9 @@ class DiffusionShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit DiffusionShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit VelocityProcessingShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit DiffusionShader()
+        explicit VelocityProcessingShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -29,7 +29,7 @@ class DiffusionShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile("texture_base_shader.vert");
-            Frag.addFile("diffusion_shader.frag");
+            Frag.addFile("velocity_processing_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -37,10 +37,8 @@ class DiffusionShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-            setUniform(uniformLocation("u_tex_densities"), TexUnitDensities);
-            setUniform(uniformLocation("u_tex_density_base"), TexUnitDensityBase);
-            setUniform(uniformLocation("u_tex_diffusion"), TexUnitDiffusion);
             setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
+            setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
             DeltaTUniform_ = uniformLocation("u_dt");
             GridSizeUniform_ = uniformLocation("u_size");
             TransformationUniform_ = uniformLocation("u_matrix");
@@ -49,33 +47,29 @@ class DiffusionShader : public GL::AbstractShaderProgram
             setUniform(GridSizeUniform_, 2048*1024);
         }
 
-        DiffusionShader& setDeltaT(const Float dt)
+        VelocityProcessingShader& setDeltaT(const Float dt)
         {
             setUniform(DeltaTUniform_, dt);
             return *this;
         }
         
-        DiffusionShader& setGridSize(const Int s)
+        VelocityProcessingShader& setGridSize(const Int s)
         {
             setUniform(GridSizeUniform_, s);
             return *this;
         }
         
-        DiffusionShader& setTransformation(const Matrix3& t)
+        VelocityProcessingShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        DiffusionShader& bindTextures(GL::Texture2D& TexDensities,
-                                      GL::Texture2D& TexDensityBase,
-                                      GL::Texture2D& TexDiffusion,
-                                      GL::Texture2D& TexVelocities)
+        VelocityProcessingShader& bindTextures(GL::Texture2D& TexVelocities,
+                                               GL::Texture2D& TexVelocityBuffer)
         {
-            TexDensities.bind(TexUnitDensities);
-            TexDensityBase.bind(TexUnitDensityBase);
-            TexDiffusion.bind(TexUnitDiffusion);
             TexVelocities.bind(TexUnitVelocities);
+            TexVelocityBuffer.bind(TexUnitVelocityBuffer);
             return *this;
         }
 
@@ -83,10 +77,8 @@ class DiffusionShader : public GL::AbstractShaderProgram
         
         enum: Int
         {
-            TexUnitDensities = 0,
-            TexUnitDensityBase = 1,
-            TexUnitDiffusion = 2,
-            TexUnitVelocities = 3
+            TexUnitVelocities = 0,
+            TexUnitVelocityBuffer = 1
         };
 
         Float   DeltaTUniform_;
@@ -94,4 +86,4 @@ class DiffusionShader : public GL::AbstractShaderProgram
         Int     TransformationUniform_;
 };
 
-#endif // DIFFUSION_SHADER_H
+#endif // VELOCITY_PROCESSING_SHADER_H

@@ -62,6 +62,7 @@ set(HEADERS
         submarine_factory.h
         timer.h
         velocity_display_shader.h
+        velocity_processing_shader.h
         velocity_sources_shader.h
         world_def.h
 )
