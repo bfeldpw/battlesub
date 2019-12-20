@@ -4,17 +4,15 @@
 #include <algorithm>
 #include <vector>
 
-// #include <Magnum/GL/BufferImage.h>
 #include <Magnum/GL/Framebuffer.h>
-// #include <Magnum/GL/Texture.h>
-// #include <Magnum/GL/TextureFormat.h>
-// #include <Magnum/Image.h>
 
+#include "density_advection_shader.h"
 #include "density_shader.h"
 #include "density_sources_shader.h"
 #include "diffusion_shader.h"
 #include "drawable_generic.h"
 #include "global_resources.h"
+#include "velocity_advection_shader.h"
 #include "velocity_display_shader.h"
 #include "velocity_processing_shader.h"
 #include "velocity_sources_shader.h"
@@ -51,33 +49,43 @@ class FluidGrid
         
         int I(const int x, const int y) const {return (y << FLUID_GRID_SIZE_X_BITS) + x;}
         
-        GL::Framebuffer FBODensities_{NoCreate};
         GL::Framebuffer* FBODiffusionBack_{nullptr};
         GL::Framebuffer* FBODiffusionFront_{nullptr};
+        GL::Framebuffer* FBOVelocitiesBack_{nullptr};
+        GL::Framebuffer* FBOVelocitiesFront_{nullptr};
+        GL::Framebuffer FBODensities_{NoCreate};
         GL::Framebuffer FBODiffusion0_{NoCreate};
         GL::Framebuffer FBODiffusion1_{NoCreate};
         GL::Framebuffer FBOVelocitySources_{NoCreate};
-        GL::Framebuffer* FBOVelocitiesBack_{nullptr};
-        GL::Framebuffer* FBOVelocitiesFront_{nullptr};
         GL::Framebuffer FBOVelocities0_{NoCreate};
         GL::Framebuffer FBOVelocities1_{NoCreate};
         
+        DensityAdvectionShader ShaderDensityAdvection_{NoCreate};
         DensitySourcesShader ShaderDensitySources_{NoCreate};
         DensityShader ShaderDensityDisplay_{NoCreate};
         DiffusionShader ShaderDiffusion_{NoCreate};
-        VelocitySourcesShader ShaderVelocitySources_{NoCreate};
-        VelocityProcessingShader ShaderVelocityProcessing_{NoCreate};
+        VelocityAdvectionShader ShaderVelocityAdvection_{NoCreate};
         VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
+        VelocityProcessingShader ShaderVelocityProcessing_{NoCreate};
+        VelocitySourcesShader ShaderVelocitySources_{NoCreate};
+        
         GL::Mesh Mesh_{NoCreate};
+        GL::Mesh MeshDensityAdvection_{NoCreate};
         GL::Mesh MeshDensityDisplay_{NoCreate};
         GL::Mesh MeshVelocities_{NoCreate};
+        GL::Mesh MeshVelocityAdvection_{NoCreate};
+        
+        GL::Texture2D* TexVelocitiesBack_{nullptr};
+        GL::Texture2D* TexVelocitiesFront_{nullptr};
+        GL::Texture2D* TexDensitiesBack_{nullptr};
+        GL::Texture2D* TexDensitiesFront_{nullptr};
         GL::Texture2D TexDensityBase_{NoCreate};        // Heightmap
-        GL::Texture2D TexDensities_{NoCreate};          // Density sources
-        GL::Texture2D TexDiffusionBack_{NoCreate};      // Diffusion buffer
-        GL::Texture2D TexDiffusionFront_{NoCreate};     // Diffusion buffer
+        GL::Texture2D TexDensitySources_{NoCreate};     // Density sources
+        GL::Texture2D TexDensities0_{NoCreate};         // Density buffer
+        GL::Texture2D TexDensities1_{NoCreate};         // Density buffer
         GL::Texture2D TexVelocitySources_{NoCreate};    // Velocity sources
-        GL::Texture2D TexVelocitiesBack_{NoCreate};     // Velocities back buffer
-        GL::Texture2D TexVelocitiesFront_{NoCreate};    // Velocities front buffer
+        GL::Texture2D TexVelocities0_{NoCreate};        // Velocities back buffer
+        GL::Texture2D TexVelocities1_{NoCreate};        // Velocities front buffer
         float Viscosity_ = 1.0f;
         
         std::vector<float>* DensityBase_{nullptr};

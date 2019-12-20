@@ -38,6 +38,7 @@ set(HEADERS
         common.h
         contact_listener.h
         debris_factory.h
+        density_advection_shader.h
         density_shader.h
         density_sources_shader.h
         diffusion_shader.h
@@ -61,6 +62,7 @@ set(HEADERS
         submarine_definition.h
         submarine_factory.h
         timer.h
+        velocity_advection_shader.h
         velocity_display_shader.h
         velocity_processing_shader.h
         velocity_sources_shader.h
