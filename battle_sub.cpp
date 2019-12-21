@@ -199,46 +199,49 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
     MouseDelta_.x() =  Event.relativePosition().x();
     MouseDelta_.y() = -Event.relativePosition().y();
     
-    if (Event.modifiers() & MouseMoveEvent::Modifier::Ctrl)
+    // Only react if not in UI mode
+    if (!ImGUI_.handleMouseMoveEvent(Event))
     {
-        DevCam_ = true;
-        if (Event.buttons() & MouseMoveEvent::Button::Left)
+        if (Event.modifiers() & MouseMoveEvent::Modifier::Ctrl)
         {
-            if (MouseDelta_.y() != 0) Zoom_ *= 1.0f-0.01f*MouseDelta_.y();
-            VPX_ = 100.0f * Zoom_;
-            VPY_ = 100.0f * Zoom_;
+            DevCam_ = true;
+            if (Event.buttons() & MouseMoveEvent::Button::Left)
+            {
+                if (MouseDelta_.y() != 0) Zoom_ *= 1.0f-0.01f*MouseDelta_.y();
+                VPX_ = 100.0f * Zoom_;
+                VPY_ = 100.0f * Zoom_;
+            }
+            else 
+            {
+                Platform::Application::Sdl2Application::setMouseLocked(true);
+                CameraObject_->translate(0.05f*Zoom_*Vector2(MouseDelta_));
+                MouseDelta_ = Vector2i();
+            }
         }
-        else 
+        else
         {
-            Platform::Application::Sdl2Application::setMouseLocked(true);
-            CameraObject_->translate(0.05f*Zoom_*Vector2(MouseDelta_));
-            MouseDelta_ = Vector2i();
+            Platform::Application::Sdl2Application::setMouseLocked(false);
         }
     }
-    else
-    {
-        Platform::Application::Sdl2Application::setMouseLocked(false);
-    }
-    
-    if (ImGUI_.handleMouseMoveEvent(Event)) return;
-    
 }
 
 void BattleSub::mousePressEvent(MouseEvent& Event)
 {
-    if(Event.button() == MouseEvent::Button::Left)
+    // Only react if not in UI mode
+    if (!ImGUI_.handleMousePressEvent(Event))
     {
-        if (!(Event.modifiers() & MouseEvent::Modifier::Ctrl))
+        if(Event.button() == MouseEvent::Button::Left)
         {
-            PlayerSub_->fire(-1.0f);
+            if (!(Event.modifiers() & MouseEvent::Modifier::Ctrl))
+            {
+                PlayerSub_->fire(-1.0f);
+            }
+        }
+        else if (Event.button() == MouseEvent::Button::Right)
+        {
+            PlayerSub_->fire(1.0f);
         }
     }
-    else if (Event.button() == MouseEvent::Button::Right)
-    {
-        PlayerSub_->fire(1.0f);
-    }
-    
-    if (ImGUI_.handleMousePressEvent(Event)) return;
 }
 
 void BattleSub::mouseReleaseEvent(MouseEvent& Event)
@@ -428,7 +431,7 @@ void BattleSub::updateUI()
         
         ImGui::Begin("Menu");
         
-            if (ImGui::Button("Graphics")) ;
+            if (ImGui::Button("Graphics"));
                 if (ImGui::IsItemHovered())
                 {
                     ImGui::BeginTooltip();
