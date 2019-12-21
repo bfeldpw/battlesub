@@ -7,14 +7,14 @@
 #include <Magnum/GL/Framebuffer.h>
 
 #include "density_advection_shader.h"
-#include "density_shader.h"
+#include "density_diffusion_shader.h"
+#include "density_display_shader.h"
 #include "density_sources_shader.h"
-#include "diffusion_shader.h"
 #include "drawable_generic.h"
 #include "global_resources.h"
 #include "velocity_advection_shader.h"
+#include "velocity_diffusion_shader.h"
 #include "velocity_display_shader.h"
-#include "velocity_processing_shader.h"
 #include "velocity_sources_shader.h"
 #include "world_def.h"
 
@@ -49,29 +49,29 @@ class FluidGrid
         
         int I(const int x, const int y) const {return (y << FLUID_GRID_SIZE_X_BITS) + x;}
         
-        GL::Framebuffer* FBODiffusionBack_{nullptr};
-        GL::Framebuffer* FBODiffusionFront_{nullptr};
+        GL::Framebuffer* FBODensitiesBack_{nullptr};
+        GL::Framebuffer* FBODensitiesFront_{nullptr};
         GL::Framebuffer* FBOVelocitiesBack_{nullptr};
         GL::Framebuffer* FBOVelocitiesFront_{nullptr};
-        GL::Framebuffer FBODensities_{NoCreate};
-        GL::Framebuffer FBODiffusion0_{NoCreate};
-        GL::Framebuffer FBODiffusion1_{NoCreate};
+        GL::Framebuffer FBODensitySources_{NoCreate};
+        GL::Framebuffer FBODensities0_{NoCreate};
+        GL::Framebuffer FBODensities1_{NoCreate};
         GL::Framebuffer FBOVelocitySources_{NoCreate};
         GL::Framebuffer FBOVelocities0_{NoCreate};
         GL::Framebuffer FBOVelocities1_{NoCreate};
         
         DensityAdvectionShader ShaderDensityAdvection_{NoCreate};
+        DensityDiffusionShader ShaderDensityDiffusion_{NoCreate};
+        DensityDisplayShader ShaderDensityDisplay_{NoCreate};
         DensitySourcesShader ShaderDensitySources_{NoCreate};
-        DensityShader ShaderDensityDisplay_{NoCreate};
-        DiffusionShader ShaderDiffusion_{NoCreate};
         VelocityAdvectionShader ShaderVelocityAdvection_{NoCreate};
+        VelocityDiffusionShader ShaderVelocityDiffusion_{NoCreate};
         VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
-        VelocityProcessingShader ShaderVelocityProcessing_{NoCreate};
         VelocitySourcesShader ShaderVelocitySources_{NoCreate};
         
-        GL::Mesh Mesh_{NoCreate};
         GL::Mesh MeshDensityAdvection_{NoCreate};
         GL::Mesh MeshDensityDisplay_{NoCreate};
+        GL::Mesh MeshDensityDiffusion_{NoCreate};
         GL::Mesh MeshVelocities_{NoCreate};
         GL::Mesh MeshVelocityAdvection_{NoCreate};
         

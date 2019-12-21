@@ -418,8 +418,8 @@ void BattleSub::updateUI()
                 ImGui::RadioButton("Velocity Sources", &Buffer, 2);
                 ImGui::RadioButton("Velocity Buffer Front", &Buffer, 3);
                 ImGui::RadioButton("Velocity Buffer Back", &Buffer, 4);
-                ImGui::RadioButton("Density Diffusion Frontbuffer", &Buffer, 5);
-                ImGui::RadioButton("Density Diffusion Backbuffer", &Buffer, 6);
+                ImGui::RadioButton("Density Buffer Front", &Buffer, 5);
+                ImGui::RadioButton("Density Buffer Back", &Buffer, 6);
                 ImGui::RadioButton("Final Composition", &Buffer, 7);
             ImGui::Unindent();
             FluidBuffer_ = static_cast<FluidBufferE>(Buffer);

@@ -1,5 +1,5 @@
-#ifndef VELOCITY_PROCESSING_SHADER_H
-#define VELOCITY_PROCESSING_SHADER_H
+#ifndef DENSITY_DIFFUSION_SHADER_H
+#define DENSITY_DIFFUSION_SHADER_H
 
 #include <Corrade/Containers/Reference.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
@@ -11,7 +11,7 @@
 
 using namespace Magnum;
 
-class VelocityProcessingShader : public GL::AbstractShaderProgram
+class DensityDiffusionShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -19,9 +19,9 @@ class VelocityProcessingShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit VelocityProcessingShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit DensityDiffusionShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit VelocityProcessingShader()
+        explicit DensityDiffusionShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -29,7 +29,7 @@ class VelocityProcessingShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile("texture_base_shader.vert");
-            Frag.addFile("velocity_processing_shader.frag");
+            Frag.addFile("density_diffusion_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -37,8 +37,10 @@ class VelocityProcessingShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
+            setUniform(uniformLocation("u_tex_density_sources"), TexUnitDensitySources);
+            setUniform(uniformLocation("u_tex_density_base"), TexUnitDensityBase);
+            setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
             setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
-            setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
             DeltaTUniform_ = uniformLocation("u_dt");
             GridSizeUniform_ = uniformLocation("u_size");
             TransformationUniform_ = uniformLocation("u_matrix");
@@ -47,29 +49,33 @@ class VelocityProcessingShader : public GL::AbstractShaderProgram
             setUniform(GridSizeUniform_, 2048*1024);
         }
 
-        VelocityProcessingShader& setDeltaT(const Float dt)
+        DensityDiffusionShader& setDeltaT(const Float dt)
         {
             setUniform(DeltaTUniform_, dt);
             return *this;
         }
         
-        VelocityProcessingShader& setGridSize(const Int s)
+        DensityDiffusionShader& setGridSize(const Int s)
         {
             setUniform(GridSizeUniform_, s);
             return *this;
         }
         
-        VelocityProcessingShader& setTransformation(const Matrix3& t)
+        DensityDiffusionShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        VelocityProcessingShader& bindTextures(GL::Texture2D& TexVelocities,
-                                               GL::Texture2D& TexVelocityBuffer)
+        DensityDiffusionShader& bindTextures(GL::Texture2D& TexDensitySources,
+                                      GL::Texture2D& TexDensityBase,
+                                      GL::Texture2D& TexDensityBuffer,
+                                      GL::Texture2D& TexVelocities)
         {
+            TexDensitySources.bind(TexUnitDensitySources);
+            TexDensityBase.bind(TexUnitDensityBase);
+            TexDensityBuffer.bind(TexUnitDensityBuffer);
             TexVelocities.bind(TexUnitVelocities);
-            TexVelocityBuffer.bind(TexUnitVelocityBuffer);
             return *this;
         }
 
@@ -77,8 +83,10 @@ class VelocityProcessingShader : public GL::AbstractShaderProgram
         
         enum: Int
         {
-            TexUnitVelocities = 0,
-            TexUnitVelocityBuffer = 1
+            TexUnitDensitySources = 0,
+            TexUnitDensityBase = 1,
+            TexUnitDensityBuffer = 2,
+            TexUnitVelocities = 3
         };
 
         Float   DeltaTUniform_;
@@ -86,4 +94,4 @@ class VelocityProcessingShader : public GL::AbstractShaderProgram
         Int     TransformationUniform_;
 };
 
-#endif // VELOCITY_PROCESSING_SHADER_H
+#endif // DENSITY_DIFFUSION_SHADER_H
