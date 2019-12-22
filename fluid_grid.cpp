@@ -35,8 +35,6 @@ FluidGrid& FluidGrid::setDensityBase(std::vector<float>* const DensityBase)
 void FluidGrid::display(const Matrix3 CameraProjection,
                         const FluidBufferE Buffer)
 {
-    GL::defaultFramebuffer.bind();
-    
     switch (Buffer)
     {
         case FluidBufferE::DENSITY_SOURCES:
@@ -219,7 +217,7 @@ void FluidGrid::init()
     MeshDensityDisplay_.setCount(6)
                        .setPrimitive(GL::MeshPrimitive::Triangles)
                        .addVertexBuffer(std::move(Buffer), 0,
-                                        DensityDiffusionShader::Position{},
+                                        DensityDisplayShader::Position{},
                                         DensityDisplayShader::TextureCoordinates{});
 
     ShaderDensityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))

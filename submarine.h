@@ -64,6 +64,8 @@ class Submarine : public Entity
         float Rudder_   = 0.0f;
         float Throttle_ = 0.0f;
         
+        float HitPoints_ = 1000.0f;
+        
 };
 
 #endif // SUBMARINE_H

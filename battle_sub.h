@@ -4,11 +4,13 @@
 #include <string>
 #include <unordered_map>
 
+#include <Magnum/GL/Framebuffer.h>
 #include <Magnum/ImGuiIntegration/Context.hpp>
 
 #include "common.h"
 #include "contact_listener.h"
 #include "fluid_grid.h"
+#include "main_display_shader.h"
 #include "submarine.h"
 
 namespace BattleSub
@@ -33,17 +35,52 @@ class BattleSub : public Platform::Application
         void cleanupAndExit();
         void updateGameObjects();
         void updateUI();
+        
+        void setupWindow();
+        void setupFrameBuffersMainScreen();
+        void setupPlayerMesh();
+        void setupPlayerMeshLeft();
+        void setupPlayerMeshRight();
+        void setupCameras();
+        void setupGameObjects();
 
         ImGuiIntegration::Context ImGUI_{NoCreate};
         
+        //--- Framebuffer related ---//
+        GL::Framebuffer* FBOCurrentPlayer_{nullptr};
+        GL::Framebuffer* FBOOtherPlayer_{nullptr};
+        GL::Framebuffer FBOPlayer1_{NoCreate};
+        GL::Framebuffer FBOPlayer2_{NoCreate};
+        
+        GL::Texture2D* TexCurrentPlayer_{nullptr};
+        GL::Texture2D* TexOtherPlayer_{nullptr};
+        GL::Texture2D TexPlayer1_{NoCreate};
+        GL::Texture2D TexPlayer2_{NoCreate};
+        
+        MainDisplayShader ShaderMainDisplay_{NoCreate};
+        
+        GL::Mesh* MeshDisplayCurrentPlayer_{nullptr};
+        GL::Mesh* MeshDisplayOtherPlayer_{nullptr};
+        GL::Mesh MeshDisplayPlayer_{NoCreate};
+        GL::Mesh MeshDisplayPlayerLeft_{NoCreate};
+        GL::Mesh MeshDisplayPlayerRight_{NoCreate};
+        
+        //--- Controls ---//
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;
         bool IsExitTriggered_ = false;
         bool IsPaused_ = false;
         bool IsStepForward_ = false;
-                
-        Object2D* CameraObject_;
-        SceneGraph::Camera2D* Camera_;
+        bool IsSplitscreen_ = false;
+        
+        Object2D* CameraObjectCurrentPlayer_{nullptr};
+        Object2D* CameraObjectOtherPlayer_{nullptr};
+        Object2D* CameraObjectPlayer1_;
+        Object2D* CameraObjectPlayer2_;
+        SceneGraph::Camera2D* CameraCurrentPlayer_{nullptr};
+        SceneGraph::Camera2D* CameraOtherPlayer_{nullptr};
+        SceneGraph::Camera2D* CameraPlayer1_;
+        SceneGraph::Camera2D* CameraPlayer2_;
         
         ContactListener ContactListener_;
         FluidGrid FluidGrid_;

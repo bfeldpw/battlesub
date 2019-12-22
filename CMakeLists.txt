@@ -54,6 +54,7 @@ set(HEADERS
         global_factories.h
         global_resources.h
         landscape_factory.h
+        main_display_shader.h
         memory_pool.h
         message_handler.h
         projectile_factory.h

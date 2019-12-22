@@ -6,6 +6,9 @@
 constexpr float WORLD_SIZE_X = 1024.0f;
 constexpr float WORLD_SIZE_Y = 512.0f;
 
+constexpr int WINDOW_RESOLUTION_X = 2000;
+constexpr int WINDOW_RESOLUTION_Y = 1000;
+
 using namespace Magnum;
 
 constexpr GL::SamplerFilter FLUID_GRID_DIFFUSION_FILTER = GL::SamplerFilter::Linear;

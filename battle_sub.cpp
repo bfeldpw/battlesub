@@ -7,6 +7,7 @@
 #include <Magnum/GL/Context.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Renderer.h>
+#include <Magnum/GL/TextureFormat.h>
 #include <Magnum/Math/Color.h>
 
 #include <Magnum/Platform/Sdl2Application.h>
@@ -21,121 +22,24 @@ namespace BattleSub{
 
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
-    /* Try 8x MSAA, fall back to zero samples if not possible. Enable only 2x
-       MSAA if we have enough DPI. */
-    {
-        const Vector2 dpiScaling = this->dpiScaling({});
-        
-        Configuration conf;
-        conf.setSize({int(WORLD_SIZE_X)*2, int(WORLD_SIZE_Y)*2});
-        
-        conf.setTitle("BattleSub")
-            .setSize(conf.size(), dpiScaling);
-        
-        GLConfiguration glConf;
-        glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
-        
-        if (!tryCreate(conf, glConf))
-        {
-            create(conf, glConf.setSampleCount(0));
-        }
-        
-        ImGUI_ = ImGuiIntegration::Context({int(WORLD_SIZE_X)*2, int(WORLD_SIZE_Y)*2},
-        windowSize(), framebufferSize());
-        
-        GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add,
-        GL::Renderer::BlendEquation::Add);
-        GL::Renderer::setBlendFunction(GL::Renderer::BlendFunction::SourceAlpha,
-        GL::Renderer::BlendFunction::OneMinusSourceAlpha);
-    }
+    this->setupWindow();
 
+    this->setupFrameBuffersMainScreen();
+    
+    this->setupPlayerMesh();
+    this->setupPlayerMeshLeft();
+    this->setupPlayerMeshRight();
+    
     GlobalResources::Get.init();
-
-    /* Configure camera */
-    CameraObject_ = new Object2D{GlobalResources::Get.getScene()};
-    Camera_ = new SceneGraph::Camera2D{*CameraObject_};
-    Camera_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
-            .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
-            .setViewport(GL::defaultFramebuffer.viewport().size());
-            
+    
+    this->setupCameras();
+    
     FluidGrid_.setDensityBase(GlobalResources::Get.getHeightMap())
               .init();
-            
-    /* Create the Box2D world with the usual gravity vector */
+    
+    this->setupGameObjects();
+    
     GlobalResources::Get.getWorld()->SetContactListener(&ContactListener_);
-    
-    PlayerSub_ = GlobalFactories::Submarines.create();
-    b2BodyDef BodyDef;
-    BodyDef.type = b2_dynamicBody;
-    BodyDef.active = true;
-    BodyDef.position.Set(0.0f, -20.0f);
-    BodyDef.angularDamping = 0.8f;
-    BodyDef.linearDamping = 0.2f;
-    PlayerSub_->Hull.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
-                    .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
-                    .setScene(GlobalResources::Get.getScene())
-                    .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
-                    .setShader(GlobalResources::Get.getShader())
-                    .setWorld(GlobalResources::Get.getWorld())
-                    .init(GameObjectTypeE::SUBMARINE_HULL, BodyDef);
-    b2BodyDef BodyDefRudder;
-    BodyDefRudder.type = b2_dynamicBody;
-    BodyDefRudder.active = true;
-    BodyDefRudder.position.Set(0.0f, -27.0f);
-    BodyDefRudder.angularDamping = 0.8f;
-    BodyDefRudder.linearDamping = 0.2f;
-    PlayerSub_->Rudder.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
-                      .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_RUDDER))
-                      .setScene(GlobalResources::Get.getScene())
-                      .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_RUDDER))
-                      .setShader(GlobalResources::Get.getShader())
-                      .setWorld(GlobalResources::Get.getWorld())
-                      .init(GameObjectTypeE::SUBMARINE_RUDDER, BodyDef);
-        
-    b2RevoluteJointDef jointDef;
-    jointDef.lowerAngle = -0.25f * b2_pi; // -45 degrees
-    jointDef.upperAngle =  0.25f * b2_pi; // 45 degrees
-    jointDef.enableLimit = true;
-    jointDef.bodyA = PlayerSub_->Hull.getBody();
-    jointDef.localAnchorA = {0.0f, -6.0f};
-    jointDef.bodyB = PlayerSub_->Rudder.getBody();
-    jointDef.localAnchorB = {0.0f,  1.0f};
-    jointDef.maxMotorTorque = 10000.0f;
-    jointDef.motorSpeed = 0.0f;
-    jointDef.enableMotor = true;
-    jointDef.collideConnected = false;
-    PlayerSub_->RudderJoint = static_cast<b2RevoluteJoint*>(GlobalResources::Get.getWorld()->CreateJoint(&jointDef));
-    
-    
-    PlayerSub2_ = GlobalFactories::Submarines.create();
-    b2BodyDef BodyDef2;
-    BodyDef2.type = b2_dynamicBody;
-    BodyDef2.active = true;
-    BodyDef2.position.Set(10.0f, 20.0f);
-    BodyDef2.angle = 3.14159f;
-    BodyDef2.angularDamping = 0.8f;
-    BodyDef2.linearDamping = 0.2f;
-    PlayerSub2_->Hull.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
-                     .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
-                     .setScene(GlobalResources::Get.getScene())
-                     .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
-                     .setShader(GlobalResources::Get.getShader())
-                     .setWorld(GlobalResources::Get.getWorld())
-                     .init(GameObjectTypeE::SUBMARINE_HULL, BodyDef2);
-    
-    CanyonBoundary = GlobalFactories::Landscapes.create();
-    b2BodyDef BodyDef3;
-    BodyDef3.type = b2_staticBody;
-    BodyDef3.active = true;
-    BodyDef3.position.Set(0.0f, 0.0f);
-    CanyonBoundary->setColor({0.2f, 0.2f, 0.3f})
-                   .setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
-                   .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::LANDSCAPE))
-                   .setScene(GlobalResources::Get.getScene())
-                   .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::LANDSCAPE))
-                   .setShader(GlobalResources::Get.getShader())
-                   .setWorld(GlobalResources::Get.getWorld())
-                   .init(GameObjectTypeE::LANDSCAPE, BodyDef3);
     
     if (!setSwapInterval(1))
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
@@ -214,7 +118,7 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
             else 
             {
                 Platform::Application::Sdl2Application::setMouseLocked(true);
-                CameraObject_->translate(0.05f*Zoom_*Vector2(MouseDelta_));
+                CameraObjectPlayer1_->translate(0.05f*Zoom_*Vector2(MouseDelta_));
                 MouseDelta_ = Vector2i();
             }
         }
@@ -254,18 +158,15 @@ void BattleSub::drawEvent()
     if (!IsExitTriggered_)
     {
         GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
-        GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.1f, 1.0f));
+        GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.0f, 1.0f));
+        
         
 //         if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
 //         if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
         if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
         if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
         
-//         Zoom_ = 20.0f + PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
-//         VPX_ = 2.0f * Zoom_;
-//         VPY_ = 2.0f * Zoom_;
-        
-        Camera_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
+        CameraPlayer1_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
         
         if (!IsPaused_ || IsStepForward_)
         {
@@ -273,8 +174,8 @@ void BattleSub::drawEvent()
             if (!DevCam_)
             {
                 auto Pos = PlayerSub_->Hull.getBody()->GetPosition();
-                CameraObject_->resetTransformation();
-                CameraObject_->translate(Vector2(Pos.x, Pos.y));
+                CameraObjectPlayer1_->resetTransformation();
+                CameraObjectPlayer1_->translate(Vector2(Pos.x, Pos.y));
             }
         }
         
@@ -289,11 +190,49 @@ void BattleSub::drawEvent()
             FluidGrid_.process();
             IsStepForward_ = false;
         }
-        FluidGrid_.display(Camera_->projectionMatrix()*Camera_->cameraMatrix(),
-                           FluidBuffer_);
         
-        Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
-        Camera_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+        if (IsSplitscreen_)
+        {
+            MeshDisplayCurrentPlayer_ = &MeshDisplayPlayerLeft_;
+            MeshDisplayOtherPlayer_ = &MeshDisplayPlayerRight_;
+        }
+        else
+        {
+            MeshDisplayCurrentPlayer_ = &MeshDisplayPlayer_;
+            MeshDisplayOtherPlayer_ = &MeshDisplayPlayer_;
+        }
+        
+        FBOCurrentPlayer_->clearColor(0, Color4(0.0f, 0.0f, 0.0f, 1.0f))
+                          .bind();
+                
+        FluidGrid_.display(CameraCurrentPlayer_->projectionMatrix()*CameraCurrentPlayer_->cameraMatrix(),
+                            FluidBuffer_);
+        
+        CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+        CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+        
+        if (IsSplitscreen_)
+        {
+            FBOOtherPlayer_->clearColor(0, Color4(0.0f, 0.0f, 0.0f, 1.0f))
+                            .bind();
+            
+            FluidGrid_.display(CameraOtherPlayer_->projectionMatrix()*CameraOtherPlayer_->cameraMatrix(),
+                               FluidBuffer_);
+            
+            CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+            CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+        }
+        
+        GL::defaultFramebuffer.bind();
+        
+        ShaderMainDisplay_.bindTexture(*TexCurrentPlayer_);
+        MeshDisplayCurrentPlayer_->draw(ShaderMainDisplay_);
+        
+        if (IsSplitscreen_)
+        {
+            ShaderMainDisplay_.bindTexture(*TexOtherPlayer_);
+            MeshDisplayOtherPlayer_->draw(ShaderMainDisplay_);
+        }
 
         updateUI();
                 
@@ -431,11 +370,11 @@ void BattleSub::updateUI()
         
         ImGui::Begin("Menu");
         
-            if (ImGui::Button("Graphics"));
+            ImGui::Checkbox("Split screen", &IsSplitscreen_);
                 if (ImGui::IsItemHovered())
                 {
                     ImGui::BeginTooltip();
-                        ImGui::Text("Change graphics settings");
+                        ImGui::Text("Toggle split screen mode");
                     ImGui::EndTooltip();
                 }
             static std::string Label;
@@ -463,6 +402,254 @@ void BattleSub::updateUI()
     
     GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
     GL::Renderer::disable(GL::Renderer::Feature::Blending);
+}
+
+void BattleSub::setupWindow()
+{
+    /* Try 8x MSAA, fall back to zero samples if not possible. Enable only 2x
+       MSAA if we have enough DPI. */
+    const Vector2 dpiScaling = this->dpiScaling({});
+    
+    Configuration conf;
+    conf.setSize({WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y});
+    
+    conf.setTitle("BattleSub")
+        .setSize(conf.size(), dpiScaling);
+    
+    GLConfiguration glConf;
+    glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
+    
+    if (!tryCreate(conf, glConf))
+    {
+        create(conf, glConf.setSampleCount(0));
+    }
+    
+    // Prepare ImGui
+    ImGUI_ = ImGuiIntegration::Context({WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y},
+    windowSize(), framebufferSize());
+    
+    GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add,
+    GL::Renderer::BlendEquation::Add);
+    GL::Renderer::setBlendFunction(GL::Renderer::BlendFunction::SourceAlpha,
+    GL::Renderer::BlendFunction::OneMinusSourceAlpha);
+}
+
+void BattleSub::setupFrameBuffersMainScreen()
+{
+    FBOPlayer1_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y}}};
+    FBOPlayer2_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y}}};
+    FBOCurrentPlayer_ = &FBOPlayer1_;
+    FBOOtherPlayer_ = &FBOPlayer2_;
+    TexPlayer1_ = GL::Texture2D{};
+    TexPlayer2_ = GL::Texture2D{};
+    TexCurrentPlayer_ = &TexPlayer1_;
+    TexOtherPlayer_ = &TexPlayer2_;
+    
+    TexPlayer1_.setMagnificationFilter(GL::SamplerFilter::Linear)
+               .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
+               .setWrapping(GL::SamplerWrapping::ClampToBorder)
+               .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
+               .setStorage(Math::log2(WINDOW_RESOLUTION_X)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y})
+               .generateMipmap();
+    TexPlayer2_.setMagnificationFilter(GL::SamplerFilter::Linear)
+               .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
+               .setWrapping(GL::SamplerWrapping::ClampToBorder)
+               .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
+               .setStorage(Math::log2(WINDOW_RESOLUTION_X)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y})
+               .generateMipmap();
+    
+    FBOPlayer1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer1_, 0)
+               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+    FBOPlayer2_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer2_, 0)
+               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+               
+    ShaderMainDisplay_ = MainDisplayShader{};
+    ShaderMainDisplay_.setTransformation(Matrix3::projection({WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y}))
+                      .bindTexture(TexPlayer1_);
+}
+
+void BattleSub::setupPlayerMesh()
+{
+    struct Vertex {
+        Vector2 Pos;
+        Vector2 Tex;
+    };
+    
+    constexpr float x = WINDOW_RESOLUTION_X*0.5f;
+    constexpr float y = WINDOW_RESOLUTION_Y*0.5f;
+    Vertex Data[6]{
+        {{-x, -y}, { 0.0f,  0.0f}},
+        {{ x, -y}, { 1.0f,  0.0f}},
+        {{-x,  y}, { 0.0f,  1.0f}},
+        {{-x,  y}, { 0.0f,  1.0f}},
+        {{ x, -y}, { 1.0f,  0.0f}},
+        {{ x,  y}, { 1.0f,  1.0f}}
+    };
+
+    GL::Buffer Buffer;
+    Buffer.setData(Data, GL::BufferUsage::StaticDraw);
+
+    MeshDisplayPlayer_ = GL::Mesh{};
+    MeshDisplayPlayer_.setCount(6)
+                      .setPrimitive(GL::MeshPrimitive::Triangles)
+                      .addVertexBuffer(std::move(Buffer), 0,
+                                       MainDisplayShader::Position{},
+                                       MainDisplayShader::TextureCoordinates{});
+    MeshDisplayCurrentPlayer_ = &MeshDisplayPlayer_;
+    MeshDisplayOtherPlayer_ = &MeshDisplayPlayer_;
+}
+
+void BattleSub::setupPlayerMeshLeft()
+{
+    struct Vertex {
+        Vector2 Pos;
+        Vector2 Tex;
+    };
+    
+    constexpr float x = WINDOW_RESOLUTION_X*0.5f;
+    constexpr float y = WINDOW_RESOLUTION_Y*0.5f;
+    Vertex Data[6]{
+        {{-x, -y}, {0.25f, 0.0f}},
+        {{ 0, -y}, {0.75f, 0.0f}},
+        {{-x,  y}, {0.25f, 1.0f}},
+        {{-x,  y}, {0.25f, 1.0f}},
+        {{ 0, -y}, {0.75f, 0.0f}},
+        {{ 0,  y}, {0.75f, 1.0f}}
+    };
+
+    GL::Buffer Buffer;
+    Buffer.setData(Data, GL::BufferUsage::StaticDraw);
+
+    MeshDisplayPlayerLeft_ = GL::Mesh{};
+    MeshDisplayPlayerLeft_.setCount(6)
+                          .setPrimitive(GL::MeshPrimitive::Triangles)
+                          .addVertexBuffer(std::move(Buffer), 0,
+                                           MainDisplayShader::Position{},
+                                           MainDisplayShader::TextureCoordinates{});
+}
+
+void BattleSub::setupPlayerMeshRight()
+{
+    struct Vertex {
+        Vector2 Pos;
+        Vector2 Tex;
+    };
+    
+    constexpr float x = WINDOW_RESOLUTION_X*0.5f;
+    constexpr float y = WINDOW_RESOLUTION_Y*0.5f;
+    Vertex Data[6]{
+        {{0, -y}, {0.25f, 0.0f}},
+        {{x, -y}, {0.75f, 0.0f}},
+        {{0,  y}, {0.25f, 1.0f}},
+        {{0,  y}, {0.25f, 1.0f}},
+        {{x, -y}, {0.75f, 0.0f}},
+        {{x,  y}, {0.75f, 1.0f}}
+    };
+
+    GL::Buffer Buffer;
+    Buffer.setData(Data, GL::BufferUsage::StaticDraw);
+
+    MeshDisplayPlayerRight_ = GL::Mesh{};
+    MeshDisplayPlayerRight_.setCount(6)
+                           .setPrimitive(GL::MeshPrimitive::Triangles)
+                           .addVertexBuffer(std::move(Buffer), 0,
+                                            MainDisplayShader::Position{},
+                                            MainDisplayShader::TextureCoordinates{});
+}
+
+void BattleSub::setupCameras()
+{
+    CameraObjectPlayer1_ = new Object2D{GlobalResources::Get.getScene()};
+    CameraPlayer1_ = new SceneGraph::Camera2D{*CameraObjectPlayer1_};
+    CameraPlayer1_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
+                   .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
+                   .setViewport(GL::defaultFramebuffer.viewport().size());
+    CameraObjectCurrentPlayer_ = CameraObjectPlayer1_;
+    CameraCurrentPlayer_ = CameraPlayer1_;
+                   
+    CameraObjectPlayer2_ = new Object2D{GlobalResources::Get.getScene()};
+    CameraPlayer2_ = new SceneGraph::Camera2D{*CameraObjectPlayer2_};
+    CameraPlayer2_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
+                   .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
+                   .setViewport(GL::defaultFramebuffer.viewport().size());
+    CameraObjectOtherPlayer_ = CameraObjectPlayer2_;
+    CameraOtherPlayer_ = CameraPlayer2_;
+}
+
+void BattleSub::setupGameObjects()
+{
+    PlayerSub_ = GlobalFactories::Submarines.create();
+    b2BodyDef BodyDef;
+    BodyDef.type = b2_dynamicBody;
+    BodyDef.active = true;
+    BodyDef.position.Set(0.0f, -20.0f);
+    BodyDef.angularDamping = 0.8f;
+    BodyDef.linearDamping = 0.2f;
+    PlayerSub_->Hull.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
+                    .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
+                    .setScene(GlobalResources::Get.getScene())
+                    .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
+                    .setShader(GlobalResources::Get.getShader())
+                    .setWorld(GlobalResources::Get.getWorld())
+                    .init(GameObjectTypeE::SUBMARINE_HULL, BodyDef);
+    b2BodyDef BodyDefRudder;
+    BodyDefRudder.type = b2_dynamicBody;
+    BodyDefRudder.active = true;
+    BodyDefRudder.position.Set(0.0f, -27.0f);
+    BodyDefRudder.angularDamping = 0.8f;
+    BodyDefRudder.linearDamping = 0.2f;
+    PlayerSub_->Rudder.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
+                      .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_RUDDER))
+                      .setScene(GlobalResources::Get.getScene())
+                      .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_RUDDER))
+                      .setShader(GlobalResources::Get.getShader())
+                      .setWorld(GlobalResources::Get.getWorld())
+                      .init(GameObjectTypeE::SUBMARINE_RUDDER, BodyDef);
+        
+    b2RevoluteJointDef jointDef;
+    jointDef.lowerAngle = -0.25f * b2_pi; // -45 degrees
+    jointDef.upperAngle =  0.25f * b2_pi; // 45 degrees
+    jointDef.enableLimit = true;
+    jointDef.bodyA = PlayerSub_->Hull.getBody();
+    jointDef.localAnchorA = {0.0f, -6.0f};
+    jointDef.bodyB = PlayerSub_->Rudder.getBody();
+    jointDef.localAnchorB = {0.0f,  1.0f};
+    jointDef.maxMotorTorque = 10000.0f;
+    jointDef.motorSpeed = 0.0f;
+    jointDef.enableMotor = true;
+    jointDef.collideConnected = false;
+    PlayerSub_->RudderJoint = static_cast<b2RevoluteJoint*>(GlobalResources::Get.getWorld()->CreateJoint(&jointDef));
+    
+    
+    PlayerSub2_ = GlobalFactories::Submarines.create();
+    b2BodyDef BodyDef2;
+    BodyDef2.type = b2_dynamicBody;
+    BodyDef2.active = true;
+    BodyDef2.position.Set(10.0f, 20.0f);
+    BodyDef2.angle = 3.14159f;
+    BodyDef2.angularDamping = 0.8f;
+    BodyDef2.linearDamping = 0.2f;
+    PlayerSub2_->Hull.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
+                     .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
+                     .setScene(GlobalResources::Get.getScene())
+                     .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
+                     .setShader(GlobalResources::Get.getShader())
+                     .setWorld(GlobalResources::Get.getWorld())
+                     .init(GameObjectTypeE::SUBMARINE_HULL, BodyDef2);
+    
+    CanyonBoundary = GlobalFactories::Landscapes.create();
+    b2BodyDef BodyDef3;
+    BodyDef3.type = b2_staticBody;
+    BodyDef3.active = true;
+    BodyDef3.position.Set(0.0f, 0.0f);
+    CanyonBoundary->setColor({0.2f, 0.2f, 0.3f})
+                   .setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
+                   .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::LANDSCAPE))
+                   .setScene(GlobalResources::Get.getScene())
+                   .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::LANDSCAPE))
+                   .setShader(GlobalResources::Get.getShader())
+                   .setWorld(GlobalResources::Get.getWorld())
+                   .init(GameObjectTypeE::LANDSCAPE, BodyDef3);
 }
 
 
