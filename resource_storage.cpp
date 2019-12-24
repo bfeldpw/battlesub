@@ -8,137 +8,8 @@ void ResourceStorage::init()
     this->initDebris();
     this->initHeightMap();
     this->initLandscape();
-    
-    // Initialise projectile
-    {
-        ShapeType Shape;
-        
-        Shape.push_back({-0.02f, 0.0f});
-        Shape.push_back({ 0.02f, 0.0f});
-        Shape.push_back({ 0.02f, 0.05f});
-        Shape.push_back({ 0.0f,  0.15f});
-        Shape.push_back({-0.02f, 0.05f});
-        
-        auto& Shapes = Shapes_[int(GameObjectTypeE::PROJECTILE)];
-        
-        b2FixtureDef Fixture;
-        Fixture.density = 800.0f; // Roughly the density of steel
-        Fixture.friction = 0.5f;
-        Fixture.restitution = 0.0f;
-        Fixture.isSensor = false;
-        
-//         b2Filter Filter;
-//         Filter.maskBits = 0;
-//         Fixture.filter = Filter;
-        
-        Shapes.ShapeDefs.push_back(std::move(Shape));
-        Shapes.FixtureDefs.push_back(std::move(Fixture));
-                
-        GL::Mesh Mesh;
-        GL::Buffer Buffer;
-        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
-        Mesh.setCount(Shapes.ShapeDefs.back().size())
-            .setPrimitive(GL::MeshPrimitive::TriangleFan)
-            .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-        Meshes_[int(GameObjectTypeE::PROJECTILE)].push_back(std::move(Mesh));
-    }
-    // Initialise submarine
-    {
-        {
-            // Hull front
-            ShapeType Shape;
-            
-            Shape.push_back({-1.8f, -5.0f});
-            Shape.push_back({ 1.8f, -5.0f});
-            Shape.push_back({ 2.0f,  6.0f});
-            Shape.push_back({ 1.5f,  8.0f});
-            Shape.push_back({ 0.5f,  9.0f});
-            Shape.push_back({-0.5f,  9.0f});
-            Shape.push_back({-1.5f,  8.0f});
-            Shape.push_back({-2.0f,  6.0f});
-            
-            auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_HULL)];
-            
-            b2FixtureDef Fixture;
-            Fixture.density =  400.0f; // Half of the hull consist of steel (roughly 800kg/m³)
-            Fixture.friction = 0.2f;
-            Fixture.restitution = 0.3f;
-            Fixture.isSensor = false;
-            
-            Shapes.ShapeDefs.push_back(std::move(Shape));
-            Shapes.FixtureDefs.push_back(std::move(Fixture));
-            
-            GL::Mesh Mesh;
-            GL::Buffer Buffer;
-            Buffer.setData(
-                            GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
-                            GL::BufferUsage::StaticDraw
-                          );
-            Mesh.setCount(Shapes.ShapeDefs.back().size())
-                .setPrimitive(GL::MeshPrimitive::TriangleFan)
-                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Mesh));
-        }
-        {
-            // Hull back
-            ShapeType Shape;
-            
-            Shape.push_back({-1.5f, -7.0f});
-            Shape.push_back({ 1.5f, -7.0f});
-            Shape.push_back({ 1.8f, -5.0f});
-            Shape.push_back({-1.8f, -5.0f});
-            
-            auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_HULL)];
-            
-            b2FixtureDef Fixture;
-            Fixture.density =  600.0f; // Half of the hull consist of steel (roughly 800kg/m³) + engine
-            Fixture.friction = 0.2f;
-            Fixture.restitution = 0.3f;
-            Fixture.isSensor = false;
-            
-            Shapes.ShapeDefs.push_back(std::move(Shape));
-            Shapes.FixtureDefs.push_back(std::move(Fixture));
-            
-            GL::Mesh Mesh;
-            GL::Buffer Buffer;
-            Buffer.setData(
-                            GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
-                            GL::BufferUsage::StaticDraw
-                          );
-            Mesh.setCount(Shapes.ShapeDefs.back().size())
-                .setPrimitive(GL::MeshPrimitive::TriangleFan)
-                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Mesh));
-        }
-        {
-            // Rudder
-            ShapeType Shape;
-            
-            Shape.push_back({-0.1f, -1.0f});
-            Shape.push_back({ 0.1f, -1.0f});
-            Shape.push_back({ 0.1f,  1.0f});
-            Shape.push_back({-0.1f,  1.0f});
-            
-            auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_RUDDER)];
-            
-            b2FixtureDef Fixture;
-            Fixture.density =  800.0f;
-            Fixture.friction = 0.2f;
-            Fixture.restitution = 0.3f;
-            Fixture.isSensor = false;
-            
-            Shapes.ShapeDefs.push_back(std::move(Shape));
-            Shapes.FixtureDefs.push_back(std::move(Fixture));
-            
-            GL::Mesh Mesh;
-            GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
-            Mesh.setCount(Shapes.ShapeDefs.back().size())
-                .setPrimitive(GL::MeshPrimitive::TriangleFan)
-                .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-            Meshes_[int(GameObjectTypeE::SUBMARINE_RUDDER)].push_back(std::move(Mesh));
-        }
-    }
+    this->initProjectile();
+    this->initSubmarine();
     
     Shader_ = new Shaders::Flat2D{};
     
@@ -253,7 +124,7 @@ void ResourceStorage::initHeightMap()
         if (OctaveCount < 1) OctaveCount = 1;
         
         HeightmapBillow.SetOctaveCount(OctaveCount);
-        HeightmapBillow.SetSeed(19);
+        HeightmapBillow.SetSeed(239);
     }
     Average.SetSourceModule(0, HeightmapRidge);
     Average.SetSourceModule(1, HeightmapBillow);
@@ -264,7 +135,7 @@ void ResourceStorage::initHeightMap()
     Exponent.SetExponent(2.0);
     Exponent.SetSourceModule(0, FinalTerrain);
     
-    Plateus.SetBounds(-1.0, 0.7);
+    Plateus.SetBounds(-1.0, 0.6);
     Plateus.SetSourceModule(0, Exponent);
     
     float Min = 0.0f;
@@ -279,7 +150,101 @@ void ResourceStorage::initHeightMap()
             if (Value < Min) Min=Value;
         }
     }
-    std::cout << "[" << Min << ", " << Max << "]" << std::endl;
+    
+    for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
+    {
+        for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
+        {
+            if (HeightMap_[y*FLUID_GRID_SIZE_X+x] < 0.6f)
+                HeightMap_[y*FLUID_GRID_SIZE_X+x] = 0.0;
+            else
+                HeightMap_[y*FLUID_GRID_SIZE_X+x] = 1.0;
+        }
+    }
+    
+    HeightMapPlateausBack_ = &HeightMapPlateaus0_;
+    HeightMapPlateausFront_ = &HeightMapPlateaus1_;
+    HeightMapPlateausBack_->resize(FLUID_GRID_ARRAY_SIZE);
+    HeightMapPlateausFront_->resize(FLUID_GRID_ARRAY_SIZE);
+    
+    for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
+    {
+        for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
+        {
+            (*HeightMapPlateausBack_)[y*FLUID_GRID_SIZE_X+x] = HeightMap_[y*FLUID_GRID_SIZE_X+x];
+            (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = HeightMap_[y*FLUID_GRID_SIZE_X+x];
+        }
+    }
+    //--- Erosion and dilation ---//
+    for (auto i=0u; i<2u; ++i)
+    {
+        for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+        {
+            for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+            {
+                float Value = 1.0f;
+                float ValueMin = 1.0f;
+                for (auto m=-1; m<2; ++m)
+                {
+                    for (auto n=-1; n<2; ++n)
+                    {
+                        Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+                        if (Value < ValueMin) ValueMin = Value;
+                    }
+                }
+                (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMin;
+            }
+        }
+        std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+    }
+    for (auto i=0u; i<2u; ++i)
+    {
+        for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+        {
+            for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+            {
+                float Value = 0.0f;
+                float ValueMax = 0.0f;
+                for (auto m=-1; m<2; ++m)
+                {
+                    for (auto n=-1; n<2; ++n)
+                    {
+                        Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+                        if (Value > ValueMax) ValueMax = Value;
+                    }
+                }
+                (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMax;
+            }
+        }
+        std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+    }
+    //--- Kind of Marching Squares ---//
+    std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+    for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+    {
+        for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+        {
+            int NoOnes = 0;
+            for (auto m=-1; m<2; ++m)
+            {
+                for (auto n=-1; n<2; ++n)
+                {
+                    float Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+                    if (1.0f == Value) ++NoOnes;
+                }
+            }
+            if (NoOnes == 0 ||  NoOnes > 1) (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 0.0;
+            else (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 1.0;
+        }
+    }
+    
+    for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
+    {
+        for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
+        {
+            HeightMap_[y*FLUID_GRID_SIZE_X+x] = (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x];
+        }
+    }
 }
 
 void ResourceStorage::initLandscape()
@@ -473,3 +438,137 @@ void ResourceStorage::initLandscape()
         Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
     }
 }
+
+void ResourceStorage::initProjectile()
+{
+    ShapeType Shape;
+    
+    Shape.push_back({-0.02f, 0.0f});
+    Shape.push_back({ 0.02f, 0.0f});
+    Shape.push_back({ 0.02f, 0.05f});
+    Shape.push_back({ 0.0f,  0.15f});
+    Shape.push_back({-0.02f, 0.05f});
+    
+    auto& Shapes = Shapes_[int(GameObjectTypeE::PROJECTILE)];
+    
+    b2FixtureDef Fixture;
+    Fixture.density = 800.0f; // Roughly the density of steel
+    Fixture.friction = 0.5f;
+    Fixture.restitution = 0.0f;
+    Fixture.isSensor = false;
+    
+//         b2Filter Filter;
+//         Filter.maskBits = 0;
+//         Fixture.filter = Filter;
+    
+    Shapes.ShapeDefs.push_back(std::move(Shape));
+    Shapes.FixtureDefs.push_back(std::move(Fixture));
+            
+    GL::Mesh Mesh;
+    GL::Buffer Buffer;
+    Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+    Mesh.setCount(Shapes.ShapeDefs.back().size())
+        .setPrimitive(GL::MeshPrimitive::TriangleFan)
+        .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+    Meshes_[int(GameObjectTypeE::PROJECTILE)].push_back(std::move(Mesh));
+}
+
+void ResourceStorage::initSubmarine()
+{
+    {
+        // Hull front
+        ShapeType Shape;
+        
+        Shape.push_back({-1.8f, -5.0f});
+        Shape.push_back({ 1.8f, -5.0f});
+        Shape.push_back({ 2.0f,  6.0f});
+        Shape.push_back({ 1.5f,  8.0f});
+        Shape.push_back({ 0.5f,  9.0f});
+        Shape.push_back({-0.5f,  9.0f});
+        Shape.push_back({-1.5f,  8.0f});
+        Shape.push_back({-2.0f,  6.0f});
+        
+        auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_HULL)];
+        
+        b2FixtureDef Fixture;
+        Fixture.density =  400.0f; // Half of the hull consist of steel (roughly 800kg/m³)
+        Fixture.friction = 0.2f;
+        Fixture.restitution = 0.3f;
+        Fixture.isSensor = false;
+        
+        Shapes.ShapeDefs.push_back(std::move(Shape));
+        Shapes.FixtureDefs.push_back(std::move(Fixture));
+        
+        GL::Mesh Mesh;
+        GL::Buffer Buffer;
+        Buffer.setData(
+                        GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
+                        GL::BufferUsage::StaticDraw
+                        );
+        Mesh.setCount(Shapes.ShapeDefs.back().size())
+            .setPrimitive(GL::MeshPrimitive::TriangleFan)
+            .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+        Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Mesh));
+    }
+    {
+        // Hull back
+        ShapeType Shape;
+        
+        Shape.push_back({-1.5f, -7.0f});
+        Shape.push_back({ 1.5f, -7.0f});
+        Shape.push_back({ 1.8f, -5.0f});
+        Shape.push_back({-1.8f, -5.0f});
+        
+        auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_HULL)];
+        
+        b2FixtureDef Fixture;
+        Fixture.density =  600.0f; // Half of the hull consist of steel (roughly 800kg/m³) + engine
+        Fixture.friction = 0.2f;
+        Fixture.restitution = 0.3f;
+        Fixture.isSensor = false;
+        
+        Shapes.ShapeDefs.push_back(std::move(Shape));
+        Shapes.FixtureDefs.push_back(std::move(Fixture));
+        
+        GL::Mesh Mesh;
+        GL::Buffer Buffer;
+        Buffer.setData(
+                        GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
+                        GL::BufferUsage::StaticDraw
+                        );
+        Mesh.setCount(Shapes.ShapeDefs.back().size())
+            .setPrimitive(GL::MeshPrimitive::TriangleFan)
+            .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+        Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Mesh));
+    }
+    {
+        // Rudder
+        ShapeType Shape;
+        
+        Shape.push_back({-0.1f, -1.0f});
+        Shape.push_back({ 0.1f, -1.0f});
+        Shape.push_back({ 0.1f,  1.0f});
+        Shape.push_back({-0.1f,  1.0f});
+        
+        auto& Shapes = Shapes_[int(GameObjectTypeE::SUBMARINE_RUDDER)];
+        
+        b2FixtureDef Fixture;
+        Fixture.density =  800.0f;
+        Fixture.friction = 0.2f;
+        Fixture.restitution = 0.3f;
+        Fixture.isSensor = false;
+        
+        Shapes.ShapeDefs.push_back(std::move(Shape));
+        Shapes.FixtureDefs.push_back(std::move(Fixture));
+        
+        GL::Mesh Mesh;
+        GL::Buffer Buffer;
+        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+        Mesh.setCount(Shapes.ShapeDefs.back().size())
+            .setPrimitive(GL::MeshPrimitive::TriangleFan)
+            .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+        Meshes_[int(GameObjectTypeE::SUBMARINE_RUDDER)].push_back(std::move(Mesh));
+    }
+}
+
+

@@ -43,6 +43,8 @@ class ResourceStorage
         void initDebris();
         void initHeightMap();
         void initLandscape();
+        void initProjectile();
+        void initSubmarine();
         
         bool IsInitialised = false;
         
@@ -57,6 +59,10 @@ class ResourceStorage
         std::array<ShapesType, GAME_OBJECT_TYPE_ENUM_SIZE> Shapes_;
         
         std::vector<float> HeightMap_;
+        std::vector<float>* HeightMapPlateausFront_;
+        std::vector<float>* HeightMapPlateausBack_;
+        std::vector<float> HeightMapPlateaus0_;
+        std::vector<float> HeightMapPlateaus1_;
         
 };
 
