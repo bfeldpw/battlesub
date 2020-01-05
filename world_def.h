@@ -11,7 +11,7 @@ constexpr int WINDOW_RESOLUTION_Y = 1000;
 
 using namespace Magnum;
 
-constexpr GL::SamplerFilter FLUID_GRID_DIFFUSION_FILTER = GL::SamplerFilter::Nearest;
+constexpr GL::SamplerFilter FLUID_GRID_DIFFUSION_FILTER = GL::SamplerFilter::Linear;
 constexpr GL::SamplerMipmap FLUID_GRID_DIFFUSION_FILTER_MIP_MAP = GL::SamplerMipmap::Linear;
 
 constexpr int FLUID_GRID_SIZE_X_BITS = 11;

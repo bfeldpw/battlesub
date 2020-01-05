@@ -40,11 +40,13 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
             setUniform(uniformLocation("u_tex_velocity_sources"), TexUnitVelocitySources);
             setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
             DeltaTUniform_ = uniformLocation("u_dt");
-            GridSizeUniform_ = uniformLocation("u_size");
+            GainUniform_ = uniformLocation("u_gain");
+            GridResUniform_ = uniformLocation("u_grid_res");
             TransformationUniform_ = uniformLocation("u_matrix");
             
             setUniform(DeltaTUniform_, 1.0f/60.0f);
-            setUniform(GridSizeUniform_, 2048*1024);
+            setUniform(GainUniform_, 1.0e5f);
+            setUniform(GridResUniform_, 2);
         }
 
         VelocityDiffusionShader& setDeltaT(const Float dt)
@@ -53,9 +55,15 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
             return *this;
         }
         
-        VelocityDiffusionShader& setGridSize(const Int s)
+        VelocityDiffusionShader& setGain(const Float f)
         {
-            setUniform(GridSizeUniform_, s);
+            setUniform(GainUniform_, f);
+            return *this;
+        }
+        
+        VelocityDiffusionShader& setGridRes(const Int r)
+        {
+            setUniform(GridResUniform_, r);
             return *this;
         }
         
@@ -66,7 +74,7 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
         }
 
         VelocityDiffusionShader& bindTextures(GL::Texture2D& TexVelocitySources,
-                                               GL::Texture2D& TexVelocityBuffer)
+                                              GL::Texture2D& TexVelocityBuffer)
         {
             TexVelocitySources.bind(TexUnitVelocitySources);
             TexVelocityBuffer.bind(TexUnitVelocityBuffer);
@@ -82,7 +90,8 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
         };
 
         Float   DeltaTUniform_;
-        Int     GridSizeUniform_;
+        Float   GainUniform_;
+        Int     GridResUniform_;
         Int     TransformationUniform_;
 };
 

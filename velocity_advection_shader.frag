@@ -1,5 +1,6 @@
 uniform sampler2D u_tex_velocity_buffer;
 
+uniform float u_advection_factor;
 uniform float u_dt;
 uniform float u_grid_res;
 
@@ -9,7 +10,8 @@ out vec2 frag_col;
 
 void main()
 {
-    vec2 pos = gl_FragCoord.xy - u_grid_res * u_dt * texelFetch(u_tex_velocity_buffer, ivec2(gl_FragCoord.xy), 0).xy;
+    vec2 pos = gl_FragCoord.xy - u_advection_factor * u_grid_res * u_dt *
+               texelFetch(u_tex_velocity_buffer, ivec2(gl_FragCoord.xy), 0).xy;
 
     // Neighbour indices
     vec4 n;

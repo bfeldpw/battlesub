@@ -151,16 +151,16 @@ void ResourceStorage::initHeightMap()
         }
     }
     
-    for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
-    {
-        for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
-        {
-            if (HeightMap_[y*FLUID_GRID_SIZE_X+x] < 0.6f)
-                HeightMap_[y*FLUID_GRID_SIZE_X+x] = 0.0;
-            else
-                HeightMap_[y*FLUID_GRID_SIZE_X+x] = 1.0;
-        }
-    }
+//     for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
+//     {
+//         for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
+//         {
+//             if (HeightMap_[y*FLUID_GRID_SIZE_X+x] < 0.6f)
+//                 HeightMap_[y*FLUID_GRID_SIZE_X+x] = 0.0;
+//             else
+//                 HeightMap_[y*FLUID_GRID_SIZE_X+x] = 1.0;
+//         }
+//     }
     
     HeightMapPlateausBack_ = &HeightMapPlateaus0_;
     HeightMapPlateausFront_ = &HeightMapPlateaus1_;
@@ -176,67 +176,67 @@ void ResourceStorage::initHeightMap()
         }
     }
     //--- Erosion and dilation ---//
-    for (auto i=0u; i<2u; ++i)
-    {
-        for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
-        {
-            for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
-            {
-                float Value = 1.0f;
-                float ValueMin = 1.0f;
-                for (auto m=-1; m<2; ++m)
-                {
-                    for (auto n=-1; n<2; ++n)
-                    {
-                        Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
-                        if (Value < ValueMin) ValueMin = Value;
-                    }
-                }
-                (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMin;
-            }
-        }
-        std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
-    }
-    for (auto i=0u; i<2u; ++i)
-    {
-        for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
-        {
-            for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
-            {
-                float Value = 0.0f;
-                float ValueMax = 0.0f;
-                for (auto m=-1; m<2; ++m)
-                {
-                    for (auto n=-1; n<2; ++n)
-                    {
-                        Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
-                        if (Value > ValueMax) ValueMax = Value;
-                    }
-                }
-                (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMax;
-            }
-        }
-        std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
-    }
+//     for (auto i=0u; i<2u; ++i)
+//     {
+//         for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+//         {
+//             for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+//             {
+//                 float Value = 1.0f;
+//                 float ValueMin = 1.0f;
+//                 for (auto m=-1; m<2; ++m)
+//                 {
+//                     for (auto n=-1; n<2; ++n)
+//                     {
+//                         Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+//                         if (Value < ValueMin) ValueMin = Value;
+//                     }
+//                 }
+//                 (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMin;
+//             }
+//         }
+//         std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+//     }
+//     for (auto i=0u; i<2u; ++i)
+//     {
+//         for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+//         {
+//             for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+//             {
+//                 float Value = 0.0f;
+//                 float ValueMax = 0.0f;
+//                 for (auto m=-1; m<2; ++m)
+//                 {
+//                     for (auto n=-1; n<2; ++n)
+//                     {
+//                         Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+//                         if (Value > ValueMax) ValueMax = Value;
+//                     }
+//                 }
+//                 (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMax;
+//             }
+//         }
+//         std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+//     }
     //--- Kind of Marching Squares ---//
-    std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
-    for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
-    {
-        for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
-        {
-            int NoOnes = 0;
-            for (auto m=-1; m<2; ++m)
-            {
-                for (auto n=-1; n<2; ++n)
-                {
-                    float Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
-                    if (1.0f == Value) ++NoOnes;
-                }
-            }
-            if (NoOnes == 0 ||  NoOnes > 1) (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 0.0;
-            else (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 1.0;
-        }
-    }
+//     std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+//     for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+//     {
+//         for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+//         {
+//             int NoOnes = 0;
+//             for (auto m=-1; m<2; ++m)
+//             {
+//                 for (auto n=-1; n<2; ++n)
+//                 {
+//                     float Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+//                     if (1.0f == Value) ++NoOnes;
+//                 }
+//             }
+//             if (NoOnes == 0 ||  NoOnes > 1) (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 0.0;
+//             else (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 1.0;
+//         }
+//     }
     
     for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
     {

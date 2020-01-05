@@ -38,12 +38,20 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
             setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
+            AdvectionFactorUniform_ = uniformLocation("u_advection_factor");
             DeltaTUniform_ = uniformLocation("u_dt");
             GridResolutionUniform_ = uniformLocation("u_grid_res");
             TransformationUniform_ = uniformLocation("u_matrix");
             
+            setUniform(AdvectionFactorUniform_, 0.5);
             setUniform(DeltaTUniform_, 1.0f/60.0f);
             setUniform(GridResolutionUniform_, 2.0f);
+        }
+        
+        VelocityAdvectionShader& setAdvectionFactor(const Float a)
+        {
+            setUniform(AdvectionFactorUniform_, a);
+            return *this;
         }
 
         VelocityAdvectionShader& setDeltaT(const Float dt)
@@ -77,6 +85,7 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
             TexUnitVelocityBuffer = 0
         };
 
+        Float   AdvectionFactorUniform_;
         Float   DeltaTUniform_;
         Float   GridResolutionUniform_;
         Int     TransformationUniform_;

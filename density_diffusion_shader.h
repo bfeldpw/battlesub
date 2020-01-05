@@ -40,13 +40,12 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
             setUniform(uniformLocation("u_tex_density_sources"), TexUnitDensitySources);
             setUniform(uniformLocation("u_tex_density_base"), TexUnitDensityBase);
             setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
-            setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
             DeltaTUniform_ = uniformLocation("u_dt");
-            GridSizeUniform_ = uniformLocation("u_size");
+            GridResUniform_ = uniformLocation("u_grid_res");
             TransformationUniform_ = uniformLocation("u_matrix");
             
             setUniform(DeltaTUniform_, 1.0f/60.0f);
-            setUniform(GridSizeUniform_, 2048*1024);
+            setUniform(GridResUniform_, 2);
         }
 
         DensityDiffusionShader& setDeltaT(const Float dt)
@@ -55,9 +54,9 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
             return *this;
         }
         
-        DensityDiffusionShader& setGridSize(const Int s)
+        DensityDiffusionShader& setGridRes(const Int r)
         {
-            setUniform(GridSizeUniform_, s);
+            setUniform(GridResUniform_, r);
             return *this;
         }
         
@@ -69,13 +68,11 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
 
         DensityDiffusionShader& bindTextures(GL::Texture2D& TexDensitySources,
                                       GL::Texture2D& TexDensityBase,
-                                      GL::Texture2D& TexDensityBuffer,
-                                      GL::Texture2D& TexVelocities)
+                                      GL::Texture2D& TexDensityBuffer)
         {
             TexDensitySources.bind(TexUnitDensitySources);
             TexDensityBase.bind(TexUnitDensityBase);
             TexDensityBuffer.bind(TexUnitDensityBuffer);
-            TexVelocities.bind(TexUnitVelocities);
             return *this;
         }
 
@@ -85,12 +82,11 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
         {
             TexUnitDensitySources = 0,
             TexUnitDensityBase = 1,
-            TexUnitDensityBuffer = 2,
-            TexUnitVelocities = 3
+            TexUnitDensityBuffer = 2
         };
 
         Float   DeltaTUniform_;
-        Int     GridSizeUniform_;
+        Int     GridResUniform_;
         Int     TransformationUniform_;
 };
 

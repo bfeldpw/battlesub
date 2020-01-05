@@ -38,6 +38,9 @@ class FluidGrid
         
         FluidGrid& addDensity(const float x, const float y, const float d);
         FluidGrid& addVelocity(const float x, const float y, const float Vx, const float Vy);
+        FluidGrid& setVelocityAdvectionFactor(const float f) {ShaderVelocityAdvection_.setAdvectionFactor(f); return *this;}
+        FluidGrid& setVelocityDiffusionGain(const float f) {ShaderVelocityDiffusion_.setGain(f); return *this;}
+        FluidGrid& setVelocityDisplayScale(const float f) {ShaderVelocityDisplay_.setScale(f); return *this;}
         FluidGrid& setDensityBase(std::vector<float>* const DensityBase);
         
         void display(const Matrix3 CameraProjection,

@@ -43,7 +43,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     
     if (!setSwapInterval(1))
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
-        setMinimalLoopPeriod(1.0f/60.0f);
+        setMinimalLoopPeriod(1.0f/60.0f * 1000.0f);
     #endif
 }
 
@@ -261,8 +261,11 @@ void BattleSub::updateGameObjects()
     // Update physics
     GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
     
-    FluidGrid_.addDensity(10.0, 0.0, 10.0);
-    FluidGrid_.addVelocity(10.0, 0.0, -5.0, -1.0);
+    FluidGrid_.setVelocityAdvectionFactor(VelocityAdvectionFactor_)
+              .setVelocityDiffusionGain(std::pow(10.0f, VelocityDiffusionGain_))
+              .setVelocityDisplayScale(1.0f/VelocityDisplayScale_);
+    FluidGrid_.addDensity(10.0, 0.0, 10.0)
+              .addVelocity(10.0, 0.0, -20.0, 0.0);
 
     // Update object visuals    
     for(b2Body* Body = GlobalResources::Get.getWorld()->GetBodyList(); Body; Body = Body->GetNext())
@@ -329,9 +332,14 @@ void BattleSub::updateGameObjects()
     PlayerSub_->update();
     auto Propellor = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
     auto Direction = PlayerSub_->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
+    auto Front     = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, 8.0f});
     
     FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()))
               .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
+              
+    FluidGrid_.addDensity(Front.x, Front.y, std::abs(PlayerSub_->Hull.getBody()->GetLinearVelocity().Length()))
+              .addVelocity(Front.x, Front.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
+                                             PlayerSub_->Hull.getBody()->GetLinearVelocity().y);
 }
 
 void BattleSub::updateUI()
@@ -365,6 +373,12 @@ void BattleSub::updateUI()
                 ImGui::RadioButton("Final Composition", &Buffer, 7);
             ImGui::Unindent();
             FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
+            
+            ImGui::NewLine();
+            ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
+            ImGui::SliderFloat("Velocity Advection Factor", &VelocityAdvectionFactor_, 0.0f, 2.0f);
+            ImGui::SliderFloat("Velocity Diffusion Gain", &VelocityDiffusionGain_, 0.0f, 10.0f);
+            ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
         
         ImGui::End();
         

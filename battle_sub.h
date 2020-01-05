@@ -85,6 +85,9 @@ class BattleSub : public Platform::Application
         ContactListener ContactListener_;
         FluidGrid FluidGrid_;
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
+        float VelocityAdvectionFactor_ = 0.3f;
+        float VelocityDiffusionGain_ = 5.0f;
+        float VelocityDisplayScale_ = 20.0f;
 
         Submarine* PlayerSub_  = nullptr;
         Submarine* PlayerSub2_ = nullptr;

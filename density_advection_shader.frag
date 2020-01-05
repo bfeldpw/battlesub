@@ -10,7 +10,8 @@ out float frag_col;
 
 void main()
 {
-    vec2 pos = gl_FragCoord.xy - u_grid_res * u_dt * texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy), 0).xy;
+    vec2 vel = 100.0*texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy), 0).xy;
+    vec2 pos = gl_FragCoord.xy - u_grid_res * u_dt * vel;
 
     // Neighbour indices
     vec4 n;
@@ -25,5 +26,5 @@ void main()
 
     vec2 f = pos - n.xy;
 
-    frag_col = mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y);
+    frag_col = 0.9998 * mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y) + 0.0002 * length(vel);
 }
