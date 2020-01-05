@@ -43,6 +43,8 @@ class BattleSub : public Platform::Application
         void setupPlayerMeshRight();
         void setupCameras();
         void setupGameObjects();
+        
+        void showTooltip(const std::string& Tooltip);
 
         ImGuiIntegration::Context ImGUI_{NoCreate};
         
@@ -72,6 +74,7 @@ class BattleSub : public Platform::Application
         bool IsPaused_ = false;
         bool IsStepForward_ = false;
         bool IsSplitscreen_ = false;
+        bool IsTooltipsEnabled_ = true;
         
         Object2D* CameraObjectCurrentPlayer_{nullptr};
         Object2D* CameraObjectOtherPlayer_{nullptr};
@@ -85,9 +88,13 @@ class BattleSub : public Platform::Application
         ContactListener ContactListener_;
         FluidGrid FluidGrid_;
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
-        float VelocityAdvectionFactor_ = 0.3f;
-        float VelocityDiffusionGain_ = 5.0f;
+        float DensityDistortion_ = 200.0f;
+        float VelocityAdvectionFactor_ = 1.0f;
+        float VelocityDiffusionGain_ = 2.0f;
+        float VelocityDiffusionRate_ = 5.0f;
         float VelocityDisplayScale_ = 20.0f;
+        bool  VelocityDisplayShowOnlyMagnitude_ = false;
+        float VelocitySourceBackprojection_ = 0.08f; 
 
         Submarine* PlayerSub_  = nullptr;
         Submarine* PlayerSub2_ = nullptr;

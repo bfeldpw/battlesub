@@ -168,6 +168,13 @@ void BattleSub::drawEvent()
         
         CameraPlayer1_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
         
+        FluidGrid_.setDensityDistortion(DensityDistortion_)
+                  .setVelocityAdvectionFactor(VelocityAdvectionFactor_)
+                  .setVelocityDiffusionGain(VelocityDiffusionGain_)
+                  .setVelocityDiffusionRate(std::pow(10.0f, VelocityDiffusionRate_))
+                  .setVelocityDisplayScale(1.0f/VelocityDisplayScale_)
+                  .setVelocityDisplayShowOnlyMagnitude(VelocityDisplayShowOnlyMagnitude_);
+        
         if (!IsPaused_ || IsStepForward_)
         {
             updateGameObjects();
@@ -261,11 +268,9 @@ void BattleSub::updateGameObjects()
     // Update physics
     GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
     
-    FluidGrid_.setVelocityAdvectionFactor(VelocityAdvectionFactor_)
-              .setVelocityDiffusionGain(std::pow(10.0f, VelocityDiffusionGain_))
-              .setVelocityDisplayScale(1.0f/VelocityDisplayScale_);
     FluidGrid_.addDensity(10.0, 0.0, 10.0)
-              .addVelocity(10.0, 0.0, -20.0, 0.0);
+              .addVelocity(10.0, 0.0, -20.0, 0.0)
+              .addVelocity(10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -20.0, 0.0);
 
     // Update object visuals    
     for(b2Body* Body = GlobalResources::Get.getWorld()->GetBodyList(); Body; Body = Body->GetNext())
@@ -291,7 +296,10 @@ void BattleSub::updateGameObjects()
         else
         {
             FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
-                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
+                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y)
+                      .addVelocity(Pos.x-Vel.x*VelocitySourceBackprojection_,
+                                   Pos.y-Vel.y*VelocitySourceBackprojection_,
+                                   Vel.x, Vel.y);
         }
     }
     for (auto Debris : GlobalFactories::Debris.getEntities())
@@ -307,8 +315,8 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
-                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
+            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f);
+//                       .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
         }
     }
     
@@ -334,12 +342,12 @@ void BattleSub::updateGameObjects()
     auto Direction = PlayerSub_->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
     auto Front     = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, 8.0f});
     
-    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()))
-              .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
+    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()));
+//               .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
               
-    FluidGrid_.addDensity(Front.x, Front.y, std::abs(PlayerSub_->Hull.getBody()->GetLinearVelocity().Length()))
-              .addVelocity(Front.x, Front.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
-                                             PlayerSub_->Hull.getBody()->GetLinearVelocity().y);
+    FluidGrid_.addDensity(Front.x, Front.y, std::abs(PlayerSub_->Hull.getBody()->GetLinearVelocity().Length()));
+//               .addVelocity(Front.x, Front.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
+//                                              PlayerSub_->Hull.getBody()->GetLinearVelocity().y);
 }
 
 void BattleSub::updateUI()
@@ -371,43 +379,48 @@ void BattleSub::updateUI()
                 ImGui::RadioButton("Density Buffer Front", &Buffer, 5);
                 ImGui::RadioButton("Density Buffer Back", &Buffer, 6);
                 ImGui::RadioButton("Final Composition", &Buffer, 7);
+                ImGui::NewLine();
+                ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
+                    showTooltip("Show magnitude or show colour-coded direction, too.");
             ImGui::Unindent();
             FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
             
             ImGui::NewLine();
             ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
+            ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
+                showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
+                            "Base density (background) will be distorted by x * advection, e.g.:\n"
+                            "  Value 200: A velocity of 1m/s will distort by 200m");
             ImGui::SliderFloat("Velocity Advection Factor", &VelocityAdvectionFactor_, 0.0f, 2.0f);
+                showTooltip("Factor for velocity advection.\nA lower value than 1.0 will move the velocity field slower than self-advection.\n"
+                            "A higher value than 1.0 will move the velocity field faster than self-advection.");
             ImGui::SliderFloat("Velocity Diffusion Gain", &VelocityDiffusionGain_, 0.0f, 10.0f);
+                showTooltip("The higher the value, the more the velocity sources will be amplified.");
+            ImGui::SliderFloat("Velocity Diffusion Rate", &VelocityDiffusionRate_, 0.0f, 10.0f);
+                showTooltip("The higher the value, the slower the velocity will diffuse.");
             ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
-        
+                showTooltip("Scale colour values for displaying velocity\n"
+                            "The given value defines the upper bound in m/s, everything above is capped.\n"
+                            "E.g. a value of 20.0 will scale colour values to the interval [0, 20] m/s.");
+            ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
+                showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");
+
         ImGui::End();
         
         ImGui::Begin("Menu");
         
+            ImGui::Checkbox("Tooltips", &IsTooltipsEnabled_);
+                showTooltip("Guess what...");
             ImGui::Checkbox("Split screen", &IsSplitscreen_);
-                if (ImGui::IsItemHovered())
-                {
-                    ImGui::BeginTooltip();
-                        ImGui::Text("Toggle split screen mode");
-                    ImGui::EndTooltip();
-                }
+                showTooltip("Toggle split screen mode");
+                    
             static std::string Label;
             if (IsPaused_) Label = "Resume";
             else Label = "Pause";
             if (ImGui::Button(Label.c_str())) IsPaused_ ^= 1;
-                if (ImGui::IsItemHovered())
-                {
-                    ImGui::BeginTooltip();
-                        ImGui::Text("Pause/Resume the game");
-                    ImGui::EndTooltip();
-                }
+                showTooltip("Pause/Resume the game");
             if (ImGui::Button("Quit")) IsExitTriggered_ = true;
-                if (ImGui::IsItemHovered())
-                {
-                    ImGui::BeginTooltip();
-                        ImGui::Text("Quit BattleSub, exit to desktop");
-                    ImGui::EndTooltip();
-                }
+                showTooltip("Quit BattleSub, exit to desktop");
 
         ImGui::End();
     }
@@ -664,6 +677,19 @@ void BattleSub::setupGameObjects()
                    .setShader(GlobalResources::Get.getShader())
                    .setWorld(GlobalResources::Get.getWorld())
                    .init(GameObjectTypeE::LANDSCAPE, BodyDef3);
+}
+
+void BattleSub::showTooltip(const std::string& Tooltip)
+{
+    if (IsTooltipsEnabled_)
+    {
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+                ImGui::Text("%s", Tooltip.c_str());
+            ImGui::EndTooltip();
+        }
+    }
 }
 
 

@@ -226,6 +226,7 @@ void FluidGrid::init()
                                         DensityDisplayShader::TextureCoordinates{});
 
     ShaderDensityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
+                           .setDistortion(100.0f)
                            .setDeltaT(1.0f/60.0f)
                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_X)
                            .bindTextures(*TexDensitiesBack_, *TexVelocitiesBack_);
@@ -240,13 +241,15 @@ void FluidGrid::init()
                             .bindTexture(*TexVelocitiesBack_);
     ShaderVelocityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
                             .setDeltaT(1.0f/60.0f)
-                            .setGain(1.0e5f)
+                            .setDiff(1.0e5f)
+                            .setGain(1.0f)
                             .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_X)
                             .bindTextures(TexVelocitySources_, *TexVelocitiesBack_);
     ShaderDensitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}));
     ShaderVelocitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}));
     ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_);
     ShaderVelocityDisplay_.setScale(20.0f)
+                          .setShowOnlyMagnitude(false)
                           .bindTexture(*TexVelocitiesFront_);
 }
 
@@ -275,7 +278,7 @@ void FluidGrid::process()
     
     GL::Mesh MeshVelocitySources;
     MeshVelocitySources.setCount(VelocitySources_.size()/4)
-                       .setPrimitive(GL::MeshPrimitive::Points)
+                       .setPrimitive(GL::MeshPrimitive::Lines)
                        .addVertexBuffer(std::move(VelocitySourcesBuffer), 0,
                                         VelocitySourcesShader::Position{},
                                         VelocitySourcesShader::Velocity{});

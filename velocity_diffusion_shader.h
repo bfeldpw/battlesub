@@ -40,18 +40,26 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
             setUniform(uniformLocation("u_tex_velocity_sources"), TexUnitVelocitySources);
             setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
             DeltaTUniform_ = uniformLocation("u_dt");
+            DiffUniform_ = uniformLocation("u_diff");
             GainUniform_ = uniformLocation("u_gain");
             GridResUniform_ = uniformLocation("u_grid_res");
             TransformationUniform_ = uniformLocation("u_matrix");
             
             setUniform(DeltaTUniform_, 1.0f/60.0f);
-            setUniform(GainUniform_, 1.0e5f);
+            setUniform(DiffUniform_, 1.0e5f);
+            setUniform(GainUniform_, 1.0f);
             setUniform(GridResUniform_, 2);
         }
 
         VelocityDiffusionShader& setDeltaT(const Float dt)
         {
             setUniform(DeltaTUniform_, dt);
+            return *this;
+        }
+        
+        VelocityDiffusionShader& setDiff(const Float f)
+        {
+            setUniform(DiffUniform_, f);
             return *this;
         }
         
@@ -90,6 +98,7 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
         };
 
         Float   DeltaTUniform_;
+        Float   DiffUniform_;
         Float   GainUniform_;
         Int     GridResUniform_;
         Int     TransformationUniform_;

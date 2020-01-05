@@ -39,12 +39,19 @@ class VelocityDisplayShader : public GL::AbstractShaderProgram
 
             setUniform(uniformLocation("u_texture"), TextureUnit);
             ScaleUniform_ = uniformLocation("u_scale");
+            ShowOnlyMagnitudeUniform_ = uniformLocation("u_show_only_magnitude");
             TransformationMatrixUniform_ = uniformLocation("u_matrix");
         }
         
         VelocityDisplayShader& setScale(const Float s)
         {
             setUniform(ScaleUniform_, s);
+            return *this;
+        }
+        
+        VelocityDisplayShader& setShowOnlyMagnitude(const bool b)
+        {
+            setUniform(ShowOnlyMagnitudeUniform_, b);
             return *this;
         }
 
@@ -66,6 +73,7 @@ class VelocityDisplayShader : public GL::AbstractShaderProgram
 
         Int TransformationMatrixUniform_;
         Float ScaleUniform_ = 1.0f;
+        GLboolean ShowOnlyMagnitudeUniform_ = false;
 };
 
 #endif // VELOCITY_DISPLAY_SHADER_H

@@ -1,6 +1,7 @@
 uniform sampler2D u_tex_velocity_sources;
 uniform sampler2D u_tex_velocity_buffer;
 
+uniform float u_diff;
 uniform float u_dt;
 uniform float u_gain;
 uniform int   u_grid_res;
@@ -13,9 +14,8 @@ void main()
 {
     const ivec3 o = ivec3(-1,0,1);
 
-    const float gain_sources = 6.0; // Velocites is reduced to 1/6th due to diffusion
-    float f1 = u_gain * u_dt * u_grid_res;
-    float f0 = gain_sources * f1;
+    float f1 = u_diff * u_dt * u_grid_res;
+    float f0 = u_gain * f1;
     float r = 1.0/(f1*5.0+1.0);
     
     ivec2 west  = ivec2(gl_FragCoord.xy)+o.xy;

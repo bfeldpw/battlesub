@@ -39,12 +39,20 @@ class DensityAdvectionShader : public GL::AbstractShaderProgram
 
             setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
             setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
+            DistortionUniform_ = uniformLocation("u_distortion");
             DeltaTUniform_ = uniformLocation("u_dt");
             GridResolutionUniform_ = uniformLocation("u_grid_res");
             TransformationUniform_ = uniformLocation("u_matrix");
             
+            setUniform(DistortionUniform_, 100.0f);
             setUniform(DeltaTUniform_, 1.0f/60.0f);
             setUniform(GridResolutionUniform_, 2.0f);
+        }
+        
+        DensityAdvectionShader& setDistortion(const Float f)
+        {
+            setUniform(DistortionUniform_, f);
+            return *this;
         }
 
         DensityAdvectionShader& setDeltaT(const Float dt)
@@ -81,6 +89,7 @@ class DensityAdvectionShader : public GL::AbstractShaderProgram
             TexUnitVelocities = 1
         };
 
+        Float   DistortionUniform_;
         Float   DeltaTUniform_;
         Float   GridResolutionUniform_;
         Int     TransformationUniform_;
