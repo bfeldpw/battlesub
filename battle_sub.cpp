@@ -269,8 +269,8 @@ void BattleSub::updateGameObjects()
     GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
     
     FluidGrid_.addDensity(10.0, 0.0, 10.0)
-              .addVelocity(10.0, 0.0, -20.0, 0.0)
-              .addVelocity(10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -20.0, 0.0);
+              .addVelocity(10.0, 0.0, -20.0, 0.0,
+                           10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -20.0, 0.0);
 
     // Update object visuals    
     for(b2Body* Body = GlobalResources::Get.getWorld()->GetBodyList(); Body; Body = Body->GetNext())
@@ -296,8 +296,8 @@ void BattleSub::updateGameObjects()
         else
         {
             FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
-                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y)
-                      .addVelocity(Pos.x-Vel.x*VelocitySourceBackprojection_,
+                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
+                                   Pos.x-Vel.x*VelocitySourceBackprojection_,
                                    Pos.y-Vel.y*VelocitySourceBackprojection_,
                                    Vel.x, Vel.y);
         }
@@ -315,8 +315,8 @@ void BattleSub::updateGameObjects()
         }
         else
         {
-            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f);
-//                       .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
+            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
+                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
         }
     }
     
@@ -340,14 +340,17 @@ void BattleSub::updateGameObjects()
     PlayerSub_->update();
     auto Propellor = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
     auto Direction = PlayerSub_->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
-    auto Front     = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, 8.0f});
+    auto Front     = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f,  8.0f});
+    auto Back      = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
     
-    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()));
-//               .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
+    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()))
+              .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
               
-    FluidGrid_.addDensity(Front.x, Front.y, std::abs(PlayerSub_->Hull.getBody()->GetLinearVelocity().Length()));
-//               .addVelocity(Front.x, Front.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
-//                                              PlayerSub_->Hull.getBody()->GetLinearVelocity().y);
+    FluidGrid_.addDensity(Front.x, Front.y, std::abs(PlayerSub_->Hull.getBody()->GetLinearVelocity().Length()))
+              .addVelocity(Front.x, Front.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
+                                             PlayerSub_->Hull.getBody()->GetLinearVelocity().y,
+                           Back.x, Back.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
+                                           PlayerSub_->Hull.getBody()->GetLinearVelocity().y);
 }
 
 void BattleSub::updateUI()

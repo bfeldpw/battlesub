@@ -112,5 +112,5 @@ target_link_libraries(battle_sub PRIVATE
     ${LIB_NOISE_LIBRARY}
 )
 
-# install(TARGETS battle_sub DESTINATION ${MAGNUM_BINARY_INSTALL_DIR})
+install(TARGETS battle_sub DESTINATION bin)
 

@@ -19,10 +19,24 @@ FluidGrid& FluidGrid::addDensity(const float x, const float y, const float d)
 
 FluidGrid& FluidGrid::addVelocity(const float x, const float y, const float Vx, const float Vy)
 {
-    VelocitySources_.push_back(x);
-    VelocitySources_.push_back(y);
-    VelocitySources_.push_back(Vx);
-    VelocitySources_.push_back(Vy);
+    VelocitySourcesPoints_.push_back(x);
+    VelocitySourcesPoints_.push_back(y);
+    VelocitySourcesPoints_.push_back(Vx);
+    VelocitySourcesPoints_.push_back(Vy);
+    return *this;
+}
+
+FluidGrid& FluidGrid::addVelocity(const float x0, const float y0, const float Vx0, const float Vy0,
+                                  const float x1, const float y1, const float Vx1, const float Vy1)
+{
+    VelocitySourcesLines_.push_back(x0);
+    VelocitySourcesLines_.push_back(y0);
+    VelocitySourcesLines_.push_back(Vx0);
+    VelocitySourcesLines_.push_back(Vy0);
+    VelocitySourcesLines_.push_back(x1);
+    VelocitySourcesLines_.push_back(y1);
+    VelocitySourcesLines_.push_back(Vx1);
+    VelocitySourcesLines_.push_back(Vy1);
     return *this;
 }
 
@@ -271,19 +285,30 @@ void FluidGrid::process()
     DensitySources_.clear();
     
     //------------------------------------------------------------------
-    // Create mesh (points) representing velocity sources
+    // Create mesh (points/lines) representing velocity sources
     //------------------------------------------------------------------
-    GL::Buffer VelocitySourcesBuffer;
-    VelocitySourcesBuffer.setData(VelocitySources_, GL::BufferUsage::StreamDraw);
+    GL::Buffer VelocitySourcesBufferPoints;
+    VelocitySourcesBufferPoints.setData(VelocitySourcesPoints_, GL::BufferUsage::StreamDraw);
     
-    GL::Mesh MeshVelocitySources;
-    MeshVelocitySources.setCount(VelocitySources_.size()/4)
-                       .setPrimitive(GL::MeshPrimitive::Lines)
-                       .addVertexBuffer(std::move(VelocitySourcesBuffer), 0,
-                                        VelocitySourcesShader::Position{},
-                                        VelocitySourcesShader::Velocity{});
+    GL::Mesh MeshVelocitySourcesPoints;
+    MeshVelocitySourcesPoints.setCount(VelocitySourcesPoints_.size()/4)
+                             .setPrimitive(GL::MeshPrimitive::Points)
+                             .addVertexBuffer(std::move(VelocitySourcesBufferPoints), 0,
+                                              VelocitySourcesShader::Position{},
+                                              VelocitySourcesShader::Velocity{});
+                             
+    GL::Buffer VelocitySourcesBufferLines;
+    VelocitySourcesBufferLines.setData(VelocitySourcesLines_, GL::BufferUsage::StreamDraw);
+    
+    GL::Mesh MeshVelocitySourcesLines;
+    MeshVelocitySourcesLines.setCount(VelocitySourcesLines_.size()/4)
+                            .setPrimitive(GL::MeshPrimitive::Lines)
+                            .addVertexBuffer(std::move(VelocitySourcesBufferLines), 0,
+                                             VelocitySourcesShader::Position{},
+                                             VelocitySourcesShader::Velocity{});
 
-    VelocitySources_.clear();
+    VelocitySourcesPoints_.clear();
+    VelocitySourcesLines_.clear();
     
     //------------------------------------------------------------------
     // Draw densities
@@ -297,7 +322,8 @@ void FluidGrid::process()
     //------------------------------------------------------------------
     FBOVelocitySources_.clearColor(0, Color4(0.0f,0.0f))
                        .bind();
-    MeshVelocitySources.draw(ShaderVelocitySources_);
+    MeshVelocitySourcesPoints.draw(ShaderVelocitySources_);
+    MeshVelocitySourcesLines.draw(ShaderVelocitySources_);
     
     //------------------------------------------------------------------
     // Diffuse velocities

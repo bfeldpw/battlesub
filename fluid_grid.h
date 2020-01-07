@@ -38,6 +38,8 @@ class FluidGrid
         
         FluidGrid& addDensity(const float x, const float y, const float d);
         FluidGrid& addVelocity(const float x, const float y, const float Vx, const float Vy);
+        FluidGrid& addVelocity(const float x0, const float y0, const float Vx0, const float Vy0,
+                               const float x1, const float y1, const float Vx1, const float Vy1);
         FluidGrid& setDensityDistortion(const float f) {ShaderDensityAdvection_.setDistortion(f); return *this;}
         FluidGrid& setVelocityAdvectionFactor(const float f) {ShaderVelocityAdvection_.setAdvectionFactor(f); return *this;}
         FluidGrid& setVelocityDiffusionGain(const float f) {ShaderVelocityDiffusion_.setGain(f); return *this;}
@@ -96,7 +98,8 @@ class FluidGrid
         
         std::vector<float>* DensityBase_{nullptr};
         std::vector<float> DensitySources_;
-        std::vector<float> VelocitySources_;
+        std::vector<float> VelocitySourcesPoints_;
+        std::vector<float> VelocitySourcesLines_;
         
 };
 
