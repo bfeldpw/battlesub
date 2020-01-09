@@ -63,6 +63,7 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
             KeyPressedMap["p"] = true;
             IsPaused_ ^= true;
             break;
+        case KeyEvent::Key::T: PlayerSub_->setPose(-100.0f, 20.0f, 0.3f); break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = true; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = true; break;
         case KeyEvent::Key::X:
@@ -169,6 +170,7 @@ void BattleSub::drawEvent()
         CameraPlayer1_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
         
         FluidGrid_.setDensityDistortion(DensityDistortion_)
+                  .setGammaCorrection(GammaCorrection_)
                   .setVelocityAdvectionFactor(VelocityAdvectionFactor_)
                   .setVelocityDiffusionGain(VelocityDiffusionGain_)
                   .setVelocityDiffusionRate(std::pow(10.0f, VelocityDiffusionRate_))
@@ -389,7 +391,18 @@ void BattleSub::updateUI()
             FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
             
             ImGui::NewLine();
+            ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");
+            ImGui::NewLine();
+            ImGui::SliderFloat("Gamma Correction", &GammaCorrection_, 0.5f, 5.0f);
+                showTooltip("Gamma correction value for the fluid. Default value of 2.2 should gamma correct monitor defaults.\n"
+                            "Higher value will brighten up the scene.");
+            ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
+                showTooltip("Scale colour values for displaying velocity\n"
+                            "The given value defines the upper bound in m/s, everything above is capped.\n"
+                            "E.g. a value of 20.0 will scale colour values to the interval [0, 20] m/s.");
+            ImGui::NewLine();
             ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
+            ImGui::NewLine();
             ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
                 showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
                             "Base density (background) will be distorted by x * advection, e.g.:\n"
@@ -401,10 +414,7 @@ void BattleSub::updateUI()
                 showTooltip("The higher the value, the more the velocity sources will be amplified.");
             ImGui::SliderFloat("Velocity Diffusion Rate", &VelocityDiffusionRate_, 0.0f, 10.0f);
                 showTooltip("The higher the value, the slower the velocity will diffuse.");
-            ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
-                showTooltip("Scale colour values for displaying velocity\n"
-                            "The given value defines the upper bound in m/s, everything above is capped.\n"
-                            "E.g. a value of 20.0 will scale colour values to the interval [0, 20] m/s.");
+            
             ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
                 showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");
 

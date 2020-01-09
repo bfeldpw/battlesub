@@ -38,12 +38,21 @@ class DensityDisplayShader : public GL::AbstractShaderProgram
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
             setUniform(uniformLocation("u_texture"), TextureUnit);
-            TransformationMatrixUniform = uniformLocation("u_matrix");
+            GammaUniform_ = uniformLocation("u_gamma");
+            TransformationMatrixUniform_ = uniformLocation("u_matrix");
+            
+            setUniform(GammaUniform_, 2.2f);
         }
 
+        DensityDisplayShader& setGamma(const float f)
+        {
+            setUniform(GammaUniform_, f);
+            return *this;
+        }
+        
         DensityDisplayShader& setTransformation(const Matrix3& t)
         {
-            setUniform(TransformationMatrixUniform, t);
+            setUniform(TransformationMatrixUniform_, t);
             return *this;
         }
 
@@ -57,7 +66,8 @@ class DensityDisplayShader : public GL::AbstractShaderProgram
         
         enum: Int { TextureUnit = 0 };
 
-        Int TransformationMatrixUniform;
+        Float GammaUniform_;
+        Int TransformationMatrixUniform_;
 };
 
 #endif // DENSITY_DISPLAY_SHADER_H

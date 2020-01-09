@@ -41,6 +41,7 @@ class FluidGrid
         FluidGrid& addVelocity(const float x0, const float y0, const float Vx0, const float Vy0,
                                const float x1, const float y1, const float Vx1, const float Vy1);
         FluidGrid& setDensityDistortion(const float f) {ShaderDensityAdvection_.setDistortion(f); return *this;}
+        FluidGrid& setGammaCorrection(const float f) {ShaderDensityDisplay_.setGamma(f); return *this;}
         FluidGrid& setVelocityAdvectionFactor(const float f) {ShaderVelocityAdvection_.setAdvectionFactor(f); return *this;}
         FluidGrid& setVelocityDiffusionGain(const float f) {ShaderVelocityDiffusion_.setGain(f); return *this;}
         FluidGrid& setVelocityDiffusionRate(const float f) {ShaderVelocityDiffusion_.setDiff(f); return *this;}
