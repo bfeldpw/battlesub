@@ -18,6 +18,7 @@ else()
     set (BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install/lib/libBox2D.a")
 endif()
 
+find_package(Corrade REQUIRED Main)
 find_package(Magnum REQUIRED
     GL
     MeshTools
@@ -100,6 +101,7 @@ target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/li
 
 target_link_libraries(battle_sub PRIVATE
     OpenGL::GL
+    Corrade::Main
     Magnum::Application
     Magnum::GL
     Magnum::Magnum

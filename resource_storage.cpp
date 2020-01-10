@@ -1,5 +1,14 @@
 #include "resource_storage.h"
 
+#include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/Optional.h>
+#include <Corrade/PluginManager/Manager.h>
+#include <Magnum/Mesh.h>
+#include <Magnum/MeshTools/Compile.h>
+#include <Magnum/Trade/AbstractImporter.h>
+#include <Magnum/Trade/MeshData3D.h>
+
+#include "common.h"
 #include "noise.h"
 #include "world_def.h"
 
@@ -569,6 +578,40 @@ void ResourceStorage::initSubmarine()
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
         Meshes_[int(GameObjectTypeE::SUBMARINE_RUDDER)].push_back(std::move(Mesh));
     }
+    
+//     PluginManager::Manager<Trade::AbstractImporter> SceneManager;
+//     Containers::Pointer<Trade::AbstractImporter> Importer = SceneManager.loadAndInstantiate("AnySceneImporter");
+//     
+//     
+//     if (!Importer) GlobalErrorHandler.reportError("Couldn't instantiate importer plugin AnySceneImporter.");
+// 
+//     std::string Filename = "submarine2.obj";
+//     if (!Importer->openFile(Filename))
+//     {
+//         GlobalErrorHandler.reportError("Couldn't open file "+ Filename);
+//     }
+//     else
+//     {
+//         GlobalMessageHandler.report("Successfully opened file "+ Filename);
+//     }
+//     
+//     Containers::Array<GL::Mesh> Meshes;
+//     Meshes = Containers::Array<GL::Mesh>{Importer->mesh3DCount()};
+//     for(UnsignedInt i = 0; i != Importer->mesh3DCount(); ++i)
+//     {
+//         std::cout << "Importing mesh" << i << Importer->mesh3DName(i) << std::endl;
+// 
+//         Containers::Optional<Trade::MeshData3D> MeshData = Importer->mesh3D(i);
+//         if(!MeshData || !MeshData->hasNormals() || MeshData->primitive() != MeshPrimitive::Triangles)
+//         {
+//             std::cout << "Cannot load the mesh, skipping" << std::endl;
+//         }
+// 
+//         /* Compile the mesh */
+//         Meshes[i] = MeshTools::compile(*MeshData);
+//         Meshes_[int(GameObjectTypeE::SUBMARINE_HULL)].push_back(std::move(Meshes[i]));
+//     }
+    
 }
 
 
