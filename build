@@ -1,0 +1,28 @@
+echo "> cd 3rdparty"
+cd 3rdparty
+
+echo "> git clone https://github.com/planeworld/libnoise2d.git"
+git clone https://github.com/planeworld/libnoise2d.git
+
+echo "> git clone https://github.com/erincatto/box2d.git"
+git clone https://github.com/erincatto/box2d.git
+
+echo "> git clone https://github.com/mosra/corrade.git"
+git clone https://github.com/mosra/corrade.git
+
+echo "> git clone https://github.com/mosra/magnum.git"
+git clone https://github.com/mosra/magnum.git
+
+echo "> mkdir install"
+mkdir install
+echo "> cd corrade"
+cd corrade
+echo "> mkdir build"
+mkdir build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE
+make -j8 install
+
+
