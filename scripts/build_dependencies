@@ -1,5 +1,5 @@
-echo "> cd 3rdparty"
-cd 3rdparty
+echo "> cd ../3rdparty"
+cd ../3rdparty
 
 echo "> git clone https://github.com/planeworld/libnoise2d.git"
 git clone https://github.com/planeworld/libnoise2d.git
