@@ -1,5 +1,8 @@
 #include "resource_storage.h"
 
+#include <atomic>
+#include <thread>
+
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Containers/Optional.h>
 #include <Corrade/PluginManager/Manager.h>
@@ -10,6 +13,7 @@
 
 #include "common.h"
 #include "noise.h"
+#include "timer.h"
 #include "world_def.h"
 
 void ResourceStorage::init()
@@ -147,18 +151,43 @@ void ResourceStorage::initHeightMap()
     Plateus.SetBounds(-1.0, 0.6);
     Plateus.SetSourceModule(0, Exponent);
     
-    float Min = 0.0f;
-    float Max = 0.0f;
-    for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
+    // Fill heightmap, use multithreading
+    HeightMap_.resize(FLUID_GRID_ARRAY_SIZE);
+    
+    auto NoOfThreads = std::thread::hardware_concurrency();
+    
+    GlobalMessageHandler.report("Building height map.");
+    DBLK(
+        GlobalMessageHandler.reportDebug("Number of threads: " + std::to_string(NoOfThreads));
+        Timer HeightMapTimer;
+        HeightMapTimer.start();
+    )
+    
+    std::vector<std::thread> Workers;
+    for (auto i=0u; i<NoOfThreads; ++i)
     {
-        for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
-        {
-            HeightMap_.push_back(float(Plateus.GetValue(double(x), double(y))*0.5+0.5));
-            auto Value = HeightMap_.back();
-            if (Value > Max) Max=Value;
-            if (Value < Min) Min=Value;
-        }
+        Workers.push_back(std::thread(
+            [this, &Plateus, NoOfThreads, i]()
+            {
+                for (auto y =    i *FLUID_GRID_SIZE_Y/NoOfThreads;
+                          y < (i+1)*FLUID_GRID_SIZE_Y/NoOfThreads; ++y)
+                {
+                    for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
+                    {
+                        HeightMap_[(y << FLUID_GRID_SIZE_X_BITS) + x] = float(Plateus.GetValue(double(x), double(y))*0.5+0.5);
+
+                    }
+                }
+            }
+        ));
     }
+    for (auto i=0u; i<NoOfThreads; ++i) Workers[i].join();
+    
+    DBLK(
+        HeightMapTimer.stop();
+        GlobalMessageHandler.reportDebug("Done in " + std::to_string(HeightMapTimer.elapsed()) + "s.");
+    )
+    
     
 //     for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
 //     {
