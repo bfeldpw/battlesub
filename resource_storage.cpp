@@ -151,25 +151,23 @@ void ResourceStorage::initHeightMap()
     Plateus.SetBounds(-1.0, 0.6);
     Plateus.SetSourceModule(0, Exponent);
     
-    Timer HeightMapTimer;
-    HeightMapTimer.start();
-    
     // Fill heightmap, use multithreading
     HeightMap_.resize(FLUID_GRID_ARRAY_SIZE);
-    
-    std::atomic<float> Min; Min = 0.0f;
-    std::atomic<float> Max; Max = 0.0f;
     
     auto NoOfThreads = std::thread::hardware_concurrency();
     
     GlobalMessageHandler.report("Building height map.");
-    DBLK(GlobalMessageHandler.reportDebug("Number of threads: " + std::to_string(NoOfThreads));)
+    DBLK(
+        GlobalMessageHandler.reportDebug("Number of threads: " + std::to_string(NoOfThreads));
+        Timer HeightMapTimer;
+        HeightMapTimer.start();
+    )
     
     std::vector<std::thread> Workers;
     for (auto i=0u; i<NoOfThreads; ++i)
     {
         Workers.push_back(std::thread(
-            [&, i]()
+            [this, &Plateus, NoOfThreads, i]()
             {
                 for (auto y =    i *FLUID_GRID_SIZE_Y/NoOfThreads;
                           y < (i+1)*FLUID_GRID_SIZE_Y/NoOfThreads; ++y)
@@ -177,9 +175,7 @@ void ResourceStorage::initHeightMap()
                     for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
                     {
                         HeightMap_[(y << FLUID_GRID_SIZE_X_BITS) + x] = float(Plateus.GetValue(double(x), double(y))*0.5+0.5);
-                        auto Value = HeightMap_[(y << FLUID_GRID_SIZE_X_BITS) + x];
-                        if (Value > Max) Max=Value;
-                        if (Value < Min) Min=Value;
+
                     }
                 }
             }
@@ -187,8 +183,10 @@ void ResourceStorage::initHeightMap()
     }
     for (auto i=0u; i<NoOfThreads; ++i) Workers[i].join();
     
-    HeightMapTimer.stop();
-    DBLK(GlobalMessageHandler.reportDebug("Done in " + std::to_string(HeightMapTimer.elapsed()) + "s.");)
+    DBLK(
+        HeightMapTimer.stop();
+        GlobalMessageHandler.reportDebug("Done in " + std::to_string(HeightMapTimer.elapsed()) + "s.");
+    )
     
     
 //     for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
