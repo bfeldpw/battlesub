@@ -1,3 +1,6 @@
+#ifndef TIMER_H
+#define TIMER_H
+
 #include <chrono>
 
 using namespace std::chrono;
@@ -18,3 +21,5 @@ class Timer
         HiResClock::time_point Start;
         HiResClock::time_point Stop;
 };
+
+#endif // TIMER_H
