@@ -1,20 +1,56 @@
 echo "> cd ../3rdparty"
 cd ../3rdparty
 
-echo "> git clone https://github.com/planeworld/libnoise2d.git"
-git clone https://github.com/planeworld/libnoise2d.git
+echo "> git config --global advice.detachedHead false"
+git config --global advice.detachedHead false
 
-echo "> git clone https://github.com/erincatto/box2d.git"
-git clone https://github.com/erincatto/box2d.git
+echo "> git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git"
+git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git
 
-echo "> git clone https://github.com/mosra/corrade.git"
-git clone https://github.com/mosra/corrade.git
+echo "> git clone --branch v2.3.1 --depth 1 https://github.com/erincatto/box2d.git"
+git clone --branch v2.3.1 --depth 1 https://github.com/erincatto/box2d.git
 
-echo "> git clone https://github.com/mosra/magnum.git"
-git clone https://github.com/mosra/magnum.git
+echo "> git clone --branch v2019.10 --depth 1 https://github.com/mosra/corrade.git"
+git clone --branch v2019.10 --depth 1 https://github.com/mosra/corrade.git
+
+echo "> git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum.git"
+git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum.git
 
 echo "> mkdir install"
 mkdir install
+
+# Install libnoise2d
+
+echo "> cd libnoise2d"
+cd libnoise2d
+echo "> mkdir build"
+mkdir build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DUSE_XXHASH=ON -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DUSE_XXHASH=ON -DCMAKE_BUILD_TYPE=RELEASE
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
+
+# Install box2d
+
+echo "> cd box2d/Box2D"
+cd box2d/Box2D
+echo "> mkdir build"
+mkdir build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBOX2D_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBOX2D_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=RELEASE
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../../.."
+cd ../../..
+
+# Install corrade
+
 echo "> cd corrade"
 cd corrade
 echo "> mkdir build"
@@ -23,6 +59,22 @@ echo "> cd build"
 cd build
 echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE"
 cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE
+echo "> make -j8 install"
 make -j8 install
+echo "> cd ../.."
+cd ../..
 
+# Install magnum
 
+echo "> cd magnum"
+cd magnum
+echo "> mkdir build"
+mkdir build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../../install -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON"
+cmake .. -DCMAKE_PREFIX_PATH=../../install -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
