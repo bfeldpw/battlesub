@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "> mkdir ../3rdparty"
+mkdir ../3rdparty
+
 echo "> cd ../3rdparty"
 cd ../3rdparty
 
@@ -15,6 +20,12 @@ git clone --branch v2019.10 --depth 1 https://github.com/mosra/corrade.git
 
 echo "> git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum.git"
 git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum.git
+
+echo "> git clone --branch v1.74 --depth 1 https://github.com/ocornut/imgui.git"
+git clone --branch v1.74 --depth 1 https://github.com/ocornut/imgui.git
+
+echo "> git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum-integration.git"
+git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum-integration.git
 
 echo "> mkdir install"
 mkdir install
@@ -78,3 +89,47 @@ echo "> make -j8 install"
 make -j8 install
 echo "> cd ../.."
 cd ../..
+
+# Install imgui
+
+echo "> cd imgui"
+cd imgui
+echo "> cp *.h ../install/include/"
+cp *.h ../install/include/
+echo "> cp *.cpp ../install/include/"
+cp *.cpp ../install/include/
+echo "> cd .."
+cd ..
+
+# Install magnum-integration
+
+echo "> cd magnum-integration"
+cd magnum-integration
+echo "> mkdir build"
+mkdir build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../../install -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_IMGUI=ON -Dimgui_DIR=../../install"
+cmake .. -DCMAKE_PREFIX_PATH=../../install -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_IMGUI=ON -Dimgui_DIR=../../install
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
+
+# Add modules
+echo "> mkdir modules"
+mkdir modules
+echo "> cp magnum-integration/modules/* modules/"
+cp magnum-integration/modules/* modules/
+
+# Install BattleSub
+
+echo "> cd .."
+cd ..
+echo "> mkdir build"
+mkdir build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../3rdparty/install -DCMAKE_INSTALL_PREFIX=../3rdparty/install"
+cmake .. -DCMAKE_PREFIX_PATH=../3rdparty/install -DCMAKE_INSTALL_PREFIX=../3rdparty/install
+make -j8 install

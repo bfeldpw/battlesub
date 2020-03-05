@@ -8,16 +8,11 @@ else()
     add_compile_options(-std=c++14 -mtune=native -Wall -Wextra -pedantic)
 endif()
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/3rdparty/modules/" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/3rdparty/modules" ${CMAKE_MODULE_PATH})
 
-find_package(MagnumIntegration REQUIRED ImGui)
+set (BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/3rdparty/install/lib/libBox2D.a")
 
-if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    set (BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install_debug/lib/libBox2D.a")
-else()
-    set (BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install/lib/libBox2D.a")
-endif()
-
+find_package(Threads)
 find_package(Corrade REQUIRED Main)
 find_package(Magnum REQUIRED
     GL
@@ -27,6 +22,7 @@ find_package(Magnum REQUIRED
     Sdl2Application
     Shaders
     Trade)
+find_package(MagnumIntegration REQUIRED ImGui)
     
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
@@ -90,16 +86,15 @@ set(SOURCES
         submarine.cpp
 )
 
-# add_subdirectory("./3rdparty/Box2D-2.3.1/Box2D")
-
 add_executable(battle_sub ${LIB_NOISE_HEADERS} ${HEADERS} ${SOURCES})
 
 target_include_directories(battle_sub PRIVATE ${MAGNUM_INCLUDE_DIR})
 target_include_directories(battle_sub PRIVATE ${ImGui_INCLUDE_DIR})
-target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/Box2D-2.3.1/install/include")
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/box2d/Box2D/Box2D")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/libnoise2d/src/")
 
 target_link_libraries(battle_sub PRIVATE
+    Threads::Threads
     OpenGL::GL
     Corrade::Main
     Magnum::Application
