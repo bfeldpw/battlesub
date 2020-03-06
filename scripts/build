@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "> cd $(dirname "$0")/.."
+cd $(dirname "$0")/..
+
+# Install BattleSub
+
+echo "> mkdir -p build"
+mkdir -p build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../install -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_PREFIX_PATH=../install -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=RELEASE
+make -j8 install

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cd "$(dirname "$0")"/..
+
+PKGDIR=./install
+export PATH=$PKGDIR/bin:/usr/bin/:$PATH
+export LD_LIBRARY_PATH=$PKGDIR/lib:$LD_LIBRARY_PATH
+export LIBRARY_PATH=$PKGDIR/lib:$LIBRARY_PATH
+
+
+./install/bin/battle_sub

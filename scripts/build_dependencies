@@ -1,10 +1,16 @@
 #!/bin/bash
 
-echo "> mkdir ../3rdparty"
-mkdir ../3rdparty
+echo "> cd $(dirname "$0")/.."
+cd $(dirname "$0")/..
 
-echo "> cd ../3rdparty"
-cd ../3rdparty
+echo "> mkdir -p install"
+mkdir -p install
+
+echo "> mkdir -p 3rdparty"
+mkdir -p 3rdparty
+
+echo "> cd 3rdparty"
+cd 3rdparty
 
 echo "> git config --global advice.detachedHead false"
 git config --global advice.detachedHead false
@@ -27,19 +33,17 @@ git clone --branch v1.74 --depth 1 https://github.com/ocornut/imgui.git
 echo "> git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum-integration.git"
 git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum-integration.git
 
-echo "> mkdir install"
-mkdir install
 
 # Install libnoise2d
 
 echo "> cd libnoise2d"
 cd libnoise2d
-echo "> mkdir build"
-mkdir build
+echo "> mkdir -p build"
+mkdir -p build
 echo "> cd build"
 cd build
-echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DUSE_XXHASH=ON -DCMAKE_BUILD_TYPE=RELEASE"
-cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DUSE_XXHASH=ON -DCMAKE_BUILD_TYPE=RELEASE
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DUSE_XXHASH=ON -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DUSE_XXHASH=ON -DCMAKE_BUILD_TYPE=RELEASE
 echo "> make -j8 install"
 make -j8 install
 echo "> cd ../.."
@@ -49,12 +53,12 @@ cd ../..
 
 echo "> cd box2d/Box2D"
 cd box2d/Box2D
-echo "> mkdir build"
-mkdir build
+echo "> mkdir -p build"
+mkdir -p build
 echo "> cd build"
 cd build
-echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBOX2D_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=RELEASE"
-cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBOX2D_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=RELEASE
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../../install -DBOX2D_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../../install -DBOX2D_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=RELEASE
 echo "> make -j8 install"
 make -j8 install
 echo "> cd ../../.."
@@ -64,12 +68,12 @@ cd ../../..
 
 echo "> cd corrade"
 cd corrade
-echo "> mkdir build"
-mkdir build
+echo "> mkdir -p build"
+mkdir -p build
 echo "> cd build"
 cd build
-echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE"
-cmake .. -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE
 echo "> make -j8 install"
 make -j8 install
 echo "> cd ../.."
@@ -79,12 +83,12 @@ cd ../..
 
 echo "> cd magnum"
 cd magnum
-echo "> mkdir build"
-mkdir build
+echo "> mkdir -p build"
+mkdir -p build
 echo "> cd build"
 cd build
-echo "> cmake .. -DCMAKE_PREFIX_PATH=../../install -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON"
-cmake .. -DCMAKE_PREFIX_PATH=../../install -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON"
+cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON
 echo "> make -j8 install"
 make -j8 install
 echo "> cd ../.."
@@ -94,10 +98,10 @@ cd ../..
 
 echo "> cd imgui"
 cd imgui
-echo "> cp *.h ../install/include/"
-cp *.h ../install/include/
-echo "> cp *.cpp ../install/include/"
-cp *.cpp ../install/include/
+echo "> cp *.h ../../install/include/"
+cp *.h ../../install/include/
+echo "> cp *.cpp ../../install/include/"
+cp *.cpp ../../install/include/
 echo "> cd .."
 cd ..
 
@@ -105,31 +109,21 @@ cd ..
 
 echo "> cd magnum-integration"
 cd magnum-integration
-echo "> mkdir build"
-mkdir build
+echo "> mkdir -p build"
+mkdir -p build
 echo "> cd build"
 cd build
-echo "> cmake .. -DCMAKE_PREFIX_PATH=../../install -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_IMGUI=ON -Dimgui_DIR=../../install"
-cmake .. -DCMAKE_PREFIX_PATH=../../install -DCMAKE_INSTALL_PREFIX=../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_IMGUI=ON -Dimgui_DIR=../../install
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_IMGUI=ON -Dimgui_DIR=../../install"
+cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_IMGUI=ON -Dimgui_DIR=../../install
 echo "> make -j8 install"
 make -j8 install
 echo "> cd ../.."
 cd ../..
 
 # Add modules
-echo "> mkdir modules"
-mkdir modules
+echo "> mkdir -p modules"
+mkdir -p modules
 echo "> cp magnum-integration/modules/* modules/"
 cp magnum-integration/modules/* modules/
-
-# Install BattleSub
-
-echo "> cd .."
-cd ..
-echo "> mkdir build"
-mkdir build
-echo "> cd build"
-cd build
-echo "> cmake .. -DCMAKE_PREFIX_PATH=../3rdparty/install -DCMAKE_INSTALL_PREFIX=../3rdparty/install"
-cmake .. -DCMAKE_PREFIX_PATH=../3rdparty/install -DCMAKE_INSTALL_PREFIX=../3rdparty/install
-make -j8 install
+echo "> cd ../.."
+cd ../..

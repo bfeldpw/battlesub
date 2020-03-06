@@ -10,7 +10,7 @@ endif()
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/3rdparty/modules" ${CMAKE_MODULE_PATH})
 
-set (BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/3rdparty/install/lib/libBox2D.a")
+set (BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/install/lib/libBox2D.a")
 
 find_package(Threads)
 find_package(Corrade REQUIRED Main)
