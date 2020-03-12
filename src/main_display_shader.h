@@ -9,6 +9,8 @@
 #include <Magnum/GL/Version.h>
 #include <Magnum/Math/Matrix3.h>
 
+#include "shader_path.h"
+
 using namespace Magnum;
 
 class MainDisplayShader : public GL::AbstractShaderProgram
@@ -28,8 +30,8 @@ class MainDisplayShader : public GL::AbstractShaderProgram
             GL::Shader Vert{GL::Version::GL330, GL::Shader::Type::Vertex};
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
-            Vert.addFile("texture_base_shader.vert");
-            Frag.addFile("main_display_shader.frag");
+            Vert.addFile(Path_+"texture_base_shader.vert");
+            Frag.addFile(Path_+"main_display_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -56,6 +58,8 @@ class MainDisplayShader : public GL::AbstractShaderProgram
     private:
         
         enum: Int { TextureUnit = 0 };
+
+        std::string Path_{SHADER_PATH};
 
         Int TransformationMatrixUniform;
 };

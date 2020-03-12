@@ -1,6 +1,8 @@
 #ifndef VELOCITY_DIFFUSION_SHADER_H
 #define VELOCITY_DIFFUSION_SHADER_H
 
+#include <string>
+
 #include <Corrade/Containers/Reference.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
 #include <Magnum/GL/Context.h>
@@ -8,6 +10,8 @@
 #include <Magnum/GL/Texture.h>
 #include <Magnum/GL/Version.h>
 #include <Magnum/Math/Matrix3.h>
+
+#include "shader_path.h"
 
 using namespace Magnum;
 
@@ -28,8 +32,8 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
             GL::Shader Vert{GL::Version::GL330, GL::Shader::Type::Vertex};
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
-            Vert.addFile("texture_base_shader.vert");
-            Frag.addFile("velocity_diffusion_shader.frag");
+            Vert.addFile(Path_+"texture_base_shader.vert");
+            Frag.addFile(Path_+"velocity_diffusion_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -96,6 +100,8 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
             TexUnitVelocitySources = 0,
             TexUnitVelocityBuffer = 1
         };
+
+        std::string Path_{SHADER_PATH};
 
         Float   DeltaTUniform_;
         Float   DiffUniform_;

@@ -1,5 +1,7 @@
-#ifndef VELOCITY_SOURCES_SHADER_H
-#define VELOCITY_SOURCES_SHADER_H
+#ifndef DENSITY_SOURCES_SHADER_H
+#define DENSITY_SOURCES_SHADER_H
+
+#include <string>
 
 #include <Corrade/Containers/Reference.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
@@ -8,27 +10,29 @@
 #include <Magnum/GL/Version.h>
 #include <Magnum/Math/Matrix3.h>
 
+#include "shader_path.h"
+
 using namespace Magnum;
 
-class VelocitySourcesShader : public GL::AbstractShaderProgram
+class DensitySourcesShader : public GL::AbstractShaderProgram
 {
 
     public:
         
         typedef GL::Attribute<0, Vector2> Position;
-        typedef GL::Attribute<1, Vector2> Velocity;
+        typedef GL::Attribute<1, float> Amount;
 
-        explicit VelocitySourcesShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit DensitySourcesShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit VelocitySourcesShader()
+        explicit DensitySourcesShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
             GL::Shader Vert{GL::Version::GL330, GL::Shader::Type::Vertex};
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
-            Vert.addFile("velocity_sources_shader.vert");
-            Frag.addFile("velocity_sources_shader.frag");
+            Vert.addFile(Path_+"density_sources_shader.vert");
+            Frag.addFile(Path_+"density_sources_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -39,7 +43,7 @@ class VelocitySourcesShader : public GL::AbstractShaderProgram
             TransformationMatrixUniform_ = uniformLocation("u_matrix");
         }
         
-        VelocitySourcesShader& setTransformation(const Matrix3& t)
+        DensitySourcesShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationMatrixUniform_, t);
             return *this;
@@ -47,8 +51,9 @@ class VelocitySourcesShader : public GL::AbstractShaderProgram
         
     private:
         
+        std::string Path_{SHADER_PATH};
         Int TransformationMatrixUniform_;
 
 };
 
-#endif // VELOCITY_SOURCES_SHADER_H
+#endif // DENSITY_SOURCES_SHADER_H

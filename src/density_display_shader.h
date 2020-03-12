@@ -1,5 +1,7 @@
-#ifndef VELOCITY_DISPLAY_SHADER_H
-#define VELOCITY_DISPLAY_SHADER_H
+#ifndef DENSITY_DISPLAY_SHADER_H
+#define DENSITY_DISPLAY_SHADER_H
+
+#include <string>
 
 #include <Corrade/Containers/Reference.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
@@ -9,9 +11,11 @@
 #include <Magnum/GL/Version.h>
 #include <Magnum/Math/Matrix3.h>
 
+#include "shader_path.h"
+
 using namespace Magnum;
 
-class VelocityDisplayShader : public GL::AbstractShaderProgram
+class DensityDisplayShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -19,17 +23,17 @@ class VelocityDisplayShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit VelocityDisplayShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit DensityDisplayShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit VelocityDisplayShader()
+        explicit DensityDisplayShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
             GL::Shader Vert{GL::Version::GL330, GL::Shader::Type::Vertex};
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
-            Vert.addFile("texture_base_shader.vert");
-            Frag.addFile("velocity_display_shader.frag");
+            Vert.addFile(Path_+"texture_base_shader.vert");
+            Frag.addFile(Path_+"density_display_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -38,30 +42,25 @@ class VelocityDisplayShader : public GL::AbstractShaderProgram
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
             setUniform(uniformLocation("u_texture"), TextureUnit);
-            ScaleUniform_ = uniformLocation("u_scale");
-            ShowOnlyMagnitudeUniform_ = uniformLocation("u_show_only_magnitude");
+            GammaUniform_ = uniformLocation("u_gamma");
             TransformationMatrixUniform_ = uniformLocation("u_matrix");
-        }
-        
-        VelocityDisplayShader& setScale(const Float s)
-        {
-            setUniform(ScaleUniform_, s);
-            return *this;
-        }
-        
-        VelocityDisplayShader& setShowOnlyMagnitude(const bool b)
-        {
-            setUniform(ShowOnlyMagnitudeUniform_, b);
-            return *this;
+            
+            setUniform(GammaUniform_, 2.2f);
         }
 
-        VelocityDisplayShader& setTransformation(const Matrix3& t)
+        DensityDisplayShader& setGamma(const float f)
+        {
+            setUniform(GammaUniform_, f);
+            return *this;
+        }
+        
+        DensityDisplayShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationMatrixUniform_, t);
             return *this;
         }
-        
-        VelocityDisplayShader& bindTexture(GL::Texture2D& Texture)
+
+        DensityDisplayShader& bindTexture(GL::Texture2D& Texture)
         {
             Texture.bind(TextureUnit);
             return *this;
@@ -71,9 +70,10 @@ class VelocityDisplayShader : public GL::AbstractShaderProgram
         
         enum: Int { TextureUnit = 0 };
 
+        std::string Path_{SHADER_PATH};
+
+        Float GammaUniform_;
         Int TransformationMatrixUniform_;
-        Float ScaleUniform_ = 1.0f;
-        GLboolean ShowOnlyMagnitudeUniform_ = false;
 };
 
-#endif // VELOCITY_DISPLAY_SHADER_H
+#endif // DENSITY_DISPLAY_SHADER_H

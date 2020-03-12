@@ -238,6 +238,7 @@ void FluidGrid::init()
                        .addVertexBuffer(std::move(Buffer), 0,
                                         DensityDisplayShader::Position{},
                                         DensityDisplayShader::TextureCoordinates{});
+    const std::string SHADER_PATH = "../share/shaders/";
 
     ShaderDensityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
                            .setDistortion(100.0f)
