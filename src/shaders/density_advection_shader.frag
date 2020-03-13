@@ -27,5 +27,5 @@ void main()
 
     vec2 f = pos - n.xy;
 
-    frag_col = 0.9999 * mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y) + 0.0001 * length(vel);
+    frag_col = 0.99999 * mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y) + 0.00001 * length(vel);
 }

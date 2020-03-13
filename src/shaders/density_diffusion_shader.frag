@@ -32,5 +32,5 @@ void main()
                     f1 * float(texelFetch(u_tex_density_buffer, south, 0).r) +
                     f1 * float(texelFetch(u_tex_density_buffer, north, 0).r)
                    )*r +
-               0.025*float(texelFetch(u_tex_density_base, ivec2(gl_FragCoord.xy), 0));
+               0.25*float(texelFetch(u_tex_density_base, ivec2(gl_FragCoord.xy), 0));
 }
