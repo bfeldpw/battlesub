@@ -90,7 +90,7 @@ class BattleSub : public Platform::Application
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
         float DensityDistortion_ = 200.0f;
         float GammaCorrection_ = 2.2f;
-        float VelocityAdvectionFactor_ = 1.0f;
+        float VelocityAdvectionFactor_ = 0.9f;
         float VelocityDiffusionGain_ = 2.0f;
         float VelocityDiffusionRate_ = 5.0f;
         float VelocityDisplayScale_ = 20.0f;

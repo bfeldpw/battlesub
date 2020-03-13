@@ -120,7 +120,7 @@ void ResourceStorage::initHeightMap()
         if (OctaveCount < 1) OctaveCount = 1;
         
         HeightmapRidge.SetOctaveCount(OctaveCount);
-        HeightmapRidge.SetSeed(19);
+        HeightmapRidge.SetSeed(7);
     }
     {
         double Frequency = 0.01;
@@ -137,7 +137,7 @@ void ResourceStorage::initHeightMap()
         if (OctaveCount < 1) OctaveCount = 1;
         
         HeightmapBillow.SetOctaveCount(OctaveCount);
-        HeightmapBillow.SetSeed(239);
+        HeightmapBillow.SetSeed(23);
     }
     Average.SetSourceModule(0, HeightmapRidge);
     Average.SetSourceModule(1, HeightmapBillow);
