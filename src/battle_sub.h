@@ -88,7 +88,7 @@ class BattleSub : public Platform::Application
         ContactListener ContactListener_;
         FluidGrid FluidGrid_;
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
-        float DensityDistortion_ = 200.0f;
+        float DensityDistortion_ = 1000.0f;
         float GammaCorrection_ = 2.2f;
         float VelocityAdvectionFactor_ = 0.9f;
         float VelocityDiffusionGain_ = 2.0f;

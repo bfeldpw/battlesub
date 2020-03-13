@@ -403,7 +403,7 @@ void BattleSub::updateUI()
             ImGui::NewLine();
             ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
             ImGui::NewLine();
-            ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
+            ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 10000.0f);
                 showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
                             "Base density (background) will be distorted by x * advection, e.g.:\n"
                             "  Value 200: A velocity of 1m/s will distort by 200m");
