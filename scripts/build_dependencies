@@ -100,8 +100,8 @@ echo "> cd imgui"
 cd imgui
 echo "> cp *.h ../../install/include/"
 cp *.h ../../install/include/
-echo "> cp imgui.cpp ../../install/include/"
-cp imgui.cpp ../../install/include/
+echo "> cp *.cpp ../../install/include/"
+cp *.cpp ../../install/include/
 echo "> cd .."
 cd ..
 
