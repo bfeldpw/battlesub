@@ -42,7 +42,6 @@ set(LIB_NOISE_LIBRARY
 
 set(SOURCES
         ${ImGui_INCLUDE_DIR}/imgui.cpp
-        ${ImGui_INCLUDE_DIR}/imgui_draw.cpp
         battle_sub.cpp
         emitter.cpp
         entity.cpp
