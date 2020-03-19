@@ -13,6 +13,7 @@ set(HEADERS
         entity.h
         entity_factory.h
         error_handler.h
+        fluid_final_composition_shader.h
         fluid_grid.h
         game_object.h
         global_emitter_factory.h

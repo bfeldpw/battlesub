@@ -11,6 +11,7 @@
 #include "density_display_shader.h"
 #include "density_sources_shader.h"
 #include "drawable_generic.h"
+#include "fluid_final_composition_shader.h"
 #include "global_resources.h"
 #include "velocity_advection_shader.h"
 #include "velocity_diffusion_shader.h"
@@ -65,6 +66,7 @@ class FluidGrid
         GL::Framebuffer FBODensitySources_{NoCreate};
         GL::Framebuffer FBODensities0_{NoCreate};
         GL::Framebuffer FBODensities1_{NoCreate};
+        GL::Framebuffer FBOFluidFinalComposition_{NoCreate};
         GL::Framebuffer FBOVelocitySources_{NoCreate};
         GL::Framebuffer FBOVelocities0_{NoCreate};
         GL::Framebuffer FBOVelocities1_{NoCreate};
@@ -73,6 +75,7 @@ class FluidGrid
         DensityDiffusionShader ShaderDensityDiffusion_{NoCreate};
         DensityDisplayShader ShaderDensityDisplay_{NoCreate};
         DensitySourcesShader ShaderDensitySources_{NoCreate};
+        FluidFinalCompositionShader ShaderFluidFinalComposition_{NoCreate};
         VelocityAdvectionShader ShaderVelocityAdvection_{NoCreate};
         VelocityDiffusionShader ShaderVelocityDiffusion_{NoCreate};
         VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
@@ -81,6 +84,7 @@ class FluidGrid
         GL::Mesh MeshDensityAdvection_{NoCreate};
         GL::Mesh MeshDensityDisplay_{NoCreate};
         GL::Mesh MeshDensityDiffusion_{NoCreate};
+        GL::Mesh MeshFluidFinalComposition_{NoCreate};
         GL::Mesh MeshVelocities_{NoCreate};
         GL::Mesh MeshVelocityAdvection_{NoCreate};
         
@@ -92,6 +96,7 @@ class FluidGrid
         GL::Texture2D TexDensitySources_{NoCreate};     // Density sources
         GL::Texture2D TexDensities0_{NoCreate};         // Density buffer
         GL::Texture2D TexDensities1_{NoCreate};         // Density buffer
+        GL::Texture2D TexFluidFinalComposition_{NoCreate};
         GL::Texture2D TexVelocitySources_{NoCreate};    // Velocity sources
         GL::Texture2D TexVelocities0_{NoCreate};        // Velocities back buffer
         GL::Texture2D TexVelocities1_{NoCreate};        // Velocities front buffer

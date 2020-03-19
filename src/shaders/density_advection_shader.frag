@@ -27,8 +27,5 @@ void main()
 
     vec2 f = pos - n.xy;
 
-    frag_col = 0.4 * mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y) +
-               0.599999 * texelFetch(u_tex_density_buffer, ivec2(gl_FragCoord.xy), 0).x +
-               0.000001 * length(vel);
-    
+    frag_col = mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y);
 }

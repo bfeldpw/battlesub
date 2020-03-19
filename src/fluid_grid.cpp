@@ -102,7 +102,7 @@ void FluidGrid::display(const Matrix3 CameraProjection,
         }
         case FluidBufferE::FINAL_COMPOSITION:
         {
-            ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_);
+            ShaderDensityDisplay_.bindTexture(TexFluidFinalComposition_);
             ShaderDensityDisplay_.setTransformation(CameraProjection);
             MeshDensityDisplay_.draw(ShaderDensityDisplay_);
             break;
@@ -117,6 +117,7 @@ void FluidGrid::init()
     TexDensitySources_ = GL::Texture2D{};
     TexDensities0_ = GL::Texture2D{};
     TexDensities1_ = GL::Texture2D{};
+    TexFluidFinalComposition_ = GL::Texture2D{};
     TexVelocitySources_ = GL::Texture2D{};
     TexVelocities0_ = GL::Texture2D{};
     TexVelocities1_ = GL::Texture2D{};
@@ -124,6 +125,7 @@ void FluidGrid::init()
     ShaderDensityDiffusion_ = DensityDiffusionShader();
     ShaderDensityDisplay_ = DensityDisplayShader();
     ShaderDensitySources_ = DensitySourcesShader();
+    ShaderFluidFinalComposition_ = FluidFinalCompositionShader();
     ShaderVelocityAdvection_ = VelocityAdvectionShader();
     ShaderVelocityDiffusion_ = VelocityDiffusionShader();
     ShaderVelocityDisplay_ = VelocityDisplayShader();
@@ -150,6 +152,11 @@ void FluidGrid::init()
                   .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
                   .setStorage(1/*Math::log2(FLUID_GRID_SIZE_X)+1*/, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
                     //.generateMipmap();
+    TexFluidFinalComposition_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
+                             .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
+                             .setWrapping(GL::SamplerWrapping::ClampToEdge)
+                             .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
+                             .setStorage(1/*Math::log2(FLUID_GRID_SIZE_X)+1*/, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexVelocitySources_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                        .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
     TexVelocities0_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
@@ -171,6 +178,9 @@ void FluidGrid::init()
     FBODensities1_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBODensities1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexDensities1_, 0)
                   .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+    FBOFluidFinalComposition_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
+    FBOFluidFinalComposition_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexFluidFinalComposition_, 0)
+                             .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
     FBOVelocitySources_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBOVelocitySources_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexVelocitySources_, 0)
                        .clearColor(0, Color4(0.0f, 0.0f));
@@ -217,7 +227,14 @@ void FluidGrid::init()
                          .addVertexBuffer(Buffer, 0,
                                           DensityDiffusionShader::Position{},
                                           DensityDiffusionShader::TextureCoordinates{});
-         
+
+    MeshFluidFinalComposition_= GL::Mesh{};
+    MeshFluidFinalComposition_.setCount(6)
+                              .setPrimitive(GL::MeshPrimitive::Triangles)
+                              .addVertexBuffer(Buffer, 0,
+                                          FluidFinalCompositionShader::Position{},
+                                          FluidFinalCompositionShader::TextureCoordinates{});
+
     MeshVelocityAdvection_ = GL::Mesh{};
     MeshVelocityAdvection_.setCount(6)
                           .setPrimitive(GL::MeshPrimitive::Triangles)
@@ -238,6 +255,7 @@ void FluidGrid::init()
                        .addVertexBuffer(std::move(Buffer), 0,
                                         DensityDisplayShader::Position{},
                                         DensityDisplayShader::TextureCoordinates{});
+
     const std::string SHADER_PATH = "../share/shaders/";
 
     ShaderDensityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
@@ -266,6 +284,8 @@ void FluidGrid::init()
     ShaderVelocityDisplay_.setScale(20.0f)
                           .setShowOnlyMagnitude(false)
                           .bindTexture(*TexVelocitiesFront_);
+    ShaderFluidFinalComposition_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
+                                .bindTextures(TexDensityBase_, *TexDensitiesFront_, *TexVelocitiesBack_);
 }
 
 void FluidGrid::process()
@@ -369,4 +389,13 @@ void FluidGrid::process()
     ShaderDensityAdvection_.bindTextures(*TexDensitiesBack_, *TexVelocitiesFront_);
     
     MeshDensityAdvection_.draw(ShaderDensityAdvection_);
+
+    //-----------------------------------------------------------------------
+    // Final composition of density base, advected densities, and velocities
+    //-----------------------------------------------------------------------
+    FBOFluidFinalComposition_.bind();
+
+    ShaderFluidFinalComposition_.bindTextures(TexDensityBase_, *TexDensitiesFront_, *TexVelocitiesFront_);
+
+    MeshFluidFinalComposition_.draw(ShaderFluidFinalComposition_);
 }
