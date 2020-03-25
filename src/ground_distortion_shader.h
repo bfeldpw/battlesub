@@ -1,5 +1,5 @@
-#ifndef DENSITY_ADVECTION_SHADER_H
-#define DENSITY_ADVECTION_SHADER_H
+#ifndef GROUND_DISTORTION_SHADER_H
+#define GROUND_DISTORTION_SHADER_H
 
 #include <string>
 
@@ -15,7 +15,7 @@
 
 using namespace Magnum;
 
-class DensityAdvectionShader : public GL::AbstractShaderProgram
+class GroundDistortionShader: public GL::AbstractShaderProgram
 {
 
     public:
@@ -23,9 +23,9 @@ class DensityAdvectionShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit DensityAdvectionShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit GroundDistortionShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit DensityAdvectionShader()
+        explicit GroundDistortionShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -33,7 +33,7 @@ class DensityAdvectionShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile(Path_+"texture_base_shader.vert");
-            Frag.addFile(Path_+"density_advection_shader.frag");
+            Frag.addFile(Path_+"ground_distortion_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -41,46 +41,46 @@ class DensityAdvectionShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-            setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
+            setUniform(uniformLocation("u_tex_ground"), TexUnitGround);
             setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
-            AdvectionFactorUniform_ = uniformLocation("u_advection_factor");
+            DistortionUniform_ = uniformLocation("u_distortion");
             DeltaTUniform_ = uniformLocation("u_dt");
             GridResolutionUniform_ = uniformLocation("u_grid_res");
             TransformationUniform_ = uniformLocation("u_matrix");
             
-            setUniform(AdvectionFactorUniform_, 100.0f);
+            setUniform(DistortionUniform_, 100.0f);
             setUniform(DeltaTUniform_, 1.0f/60.0f);
             setUniform(GridResolutionUniform_, 2.0f);
         }
 
-        DensityAdvectionShader& setAdvectionFactor(const Float f)
+        GroundDistortionShader& setDistortion(const Float f)
         {
-            setUniform(AdvectionFactorUniform_, f);
+            setUniform(DistortionUniform_, f);
             return *this;
         }
 
-        DensityAdvectionShader& setDeltaT(const Float dt)
+        GroundDistortionShader& setDeltaT(const Float dt)
         {
             setUniform(DeltaTUniform_, dt);
             return *this;
         }
         
-        DensityAdvectionShader& setGridRes(const Float r)
+        GroundDistortionShader& setGridRes(const Float r)
         {
             setUniform(GridResolutionUniform_, r);
             return *this;
         }
         
-        DensityAdvectionShader& setTransformation(const Matrix3& t)
+        GroundDistortionShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        DensityAdvectionShader& bindTextures(GL::Texture2D& TexDensityBuffer,
+        GroundDistortionShader& bindTextures(GL::Texture2D& TexGround,
                                              GL::Texture2D& TexVelocities)
         {
-            TexDensityBuffer.bind(TexUnitDensityBuffer);
+            TexGround.bind(TexUnitGround);
             TexVelocities.bind(TexUnitVelocities);
             return *this;
         }
@@ -89,16 +89,16 @@ class DensityAdvectionShader : public GL::AbstractShaderProgram
         
         enum: Int
         {
-            TexUnitDensityBuffer = 0,
+            TexUnitGround = 0,
             TexUnitVelocities = 1
         };
 
         std::string Path_{SHADER_PATH};
 
-        Float   AdvectionFactorUniform_;
+        Float   DistortionUniform_;
         Float   DeltaTUniform_;
         Float   GridResolutionUniform_;
         Int     TransformationUniform_;
 };
 
-#endif // DENSITY_ADVECTION_SHADER_H
+#endif // GROUND_DISTORTION_SHADER_H

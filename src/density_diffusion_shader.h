@@ -42,7 +42,6 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
             setUniform(uniformLocation("u_tex_density_sources"), TexUnitDensitySources);
-            setUniform(uniformLocation("u_tex_density_base"), TexUnitDensityBase);
             setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
             DeltaTUniform_ = uniformLocation("u_dt");
             GridResUniform_ = uniformLocation("u_grid_res");
@@ -71,11 +70,9 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
         }
 
         DensityDiffusionShader& bindTextures(GL::Texture2D& TexDensitySources,
-                                      GL::Texture2D& TexDensityBase,
-                                      GL::Texture2D& TexDensityBuffer)
+                                             GL::Texture2D& TexDensityBuffer)
         {
             TexDensitySources.bind(TexUnitDensitySources);
-            TexDensityBase.bind(TexUnitDensityBase);
             TexDensityBuffer.bind(TexUnitDensityBuffer);
             return *this;
         }
@@ -85,8 +82,7 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
         enum: Int
         {
             TexUnitDensitySources = 0,
-            TexUnitDensityBase = 1,
-            TexUnitDensityBuffer = 2
+            TexUnitDensityBuffer = 1
         };
 
         std::string Path_{SHADER_PATH};

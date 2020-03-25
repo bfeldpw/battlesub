@@ -345,10 +345,10 @@ void BattleSub::updateGameObjects()
     auto Front     = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f,  8.0f});
     auto Back      = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
     
-    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(PlayerSub_->getThrottle()))
+    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.001f*std::abs(PlayerSub_->getThrottle()))
               .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
               
-    FluidGrid_.addDensity(Front.x, Front.y, std::abs(PlayerSub_->Hull.getBody()->GetLinearVelocity().Length()))
+    FluidGrid_.addDensity(Front.x, Front.y, std::abs(PlayerSub_->Hull.getBody()->GetLinearVelocity().Length())*1.0f)
               .addVelocity(Front.x, Front.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
                                              PlayerSub_->Hull.getBody()->GetLinearVelocity().y,
                            Back.x, Back.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 

@@ -13,6 +13,7 @@
 #include "drawable_generic.h"
 #include "fluid_final_composition_shader.h"
 #include "global_resources.h"
+#include "ground_distortion_shader.h"
 #include "velocity_advection_shader.h"
 #include "velocity_diffusion_shader.h"
 #include "velocity_display_shader.h"
@@ -41,7 +42,7 @@ class FluidGrid
         FluidGrid& addVelocity(const float x, const float y, const float Vx, const float Vy);
         FluidGrid& addVelocity(const float x0, const float y0, const float Vx0, const float Vy0,
                                const float x1, const float y1, const float Vx1, const float Vy1);
-        FluidGrid& setDensityDistortion(const float f) {ShaderDensityAdvection_.setDistortion(f); return *this;}
+        FluidGrid& setDensityDistortion(const float f) {ShaderGroundDistortion_.setDistortion(f); return *this;}
         FluidGrid& setGammaCorrection(const float f) {ShaderDensityDisplay_.setGamma(f); return *this;}
         FluidGrid& setVelocityAdvectionFactor(const float f) {ShaderVelocityAdvection_.setAdvectionFactor(f); return *this;}
         FluidGrid& setVelocityDiffusionGain(const float f) {ShaderVelocityDiffusion_.setGain(f); return *this;}
@@ -67,6 +68,7 @@ class FluidGrid
         GL::Framebuffer FBODensities0_{NoCreate};
         GL::Framebuffer FBODensities1_{NoCreate};
         GL::Framebuffer FBOFluidFinalComposition_{NoCreate};
+        GL::Framebuffer FBOGroundDistorted_{NoCreate};
         GL::Framebuffer FBOVelocitySources_{NoCreate};
         GL::Framebuffer FBOVelocities0_{NoCreate};
         GL::Framebuffer FBOVelocities1_{NoCreate};
@@ -75,6 +77,7 @@ class FluidGrid
         DensityDiffusionShader ShaderDensityDiffusion_{NoCreate};
         DensityDisplayShader ShaderDensityDisplay_{NoCreate};
         DensitySourcesShader ShaderDensitySources_{NoCreate};
+        GroundDistortionShader ShaderGroundDistortion_{NoCreate};
         FluidFinalCompositionShader ShaderFluidFinalComposition_{NoCreate};
         VelocityAdvectionShader ShaderVelocityAdvection_{NoCreate};
         VelocityDiffusionShader ShaderVelocityDiffusion_{NoCreate};
@@ -85,6 +88,7 @@ class FluidGrid
         GL::Mesh MeshDensityDisplay_{NoCreate};
         GL::Mesh MeshDensityDiffusion_{NoCreate};
         GL::Mesh MeshFluidFinalComposition_{NoCreate};
+        GL::Mesh MeshGroundDistorted_{NoCreate};
         GL::Mesh MeshVelocities_{NoCreate};
         GL::Mesh MeshVelocityAdvection_{NoCreate};
         
@@ -97,6 +101,7 @@ class FluidGrid
         GL::Texture2D TexDensities0_{NoCreate};         // Density buffer
         GL::Texture2D TexDensities1_{NoCreate};         // Density buffer
         GL::Texture2D TexFluidFinalComposition_{NoCreate};
+        GL::Texture2D TexGroundDistorted_{NoCreate};
         GL::Texture2D TexVelocitySources_{NoCreate};    // Velocity sources
         GL::Texture2D TexVelocities0_{NoCreate};        // Velocities back buffer
         GL::Texture2D TexVelocities1_{NoCreate};        // Velocities front buffer

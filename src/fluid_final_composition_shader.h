@@ -43,6 +43,7 @@ class FluidFinalCompositionShader : public GL::AbstractShaderProgram
 
             setUniform(uniformLocation("u_tex_density_base"), TexUnitDensityBase);
             setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
+            setUniform(uniformLocation("u_tex_ground_distorted"), TexUnitGroundDistorted);
             setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
             TransformationUniform_ = uniformLocation("u_matrix");
         }
@@ -55,10 +56,12 @@ class FluidFinalCompositionShader : public GL::AbstractShaderProgram
 
         FluidFinalCompositionShader& bindTextures(GL::Texture2D& TexDensityBase,
                                                   GL::Texture2D& TexDensityBuffer,
+                                                  GL::Texture2D& TexGroundDistorted,
                                                   GL::Texture2D& TexVelocities)
         {
             TexDensityBase.bind(TexUnitDensityBase);
             TexDensityBuffer.bind(TexUnitDensityBuffer);
+            TexGroundDistorted.bind(TexUnitGroundDistorted);
             TexVelocities.bind(TexUnitVelocities);
             return *this;
         }
@@ -69,7 +72,8 @@ class FluidFinalCompositionShader : public GL::AbstractShaderProgram
         {
             TexUnitDensityBase = 0,
             TexUnitDensityBuffer = 1,
-            TexUnitVelocities = 2
+            TexUnitGroundDistorted = 2,
+            TexUnitVelocities = 3
         };
 
         std::string Path_{SHADER_PATH};
