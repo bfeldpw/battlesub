@@ -310,7 +310,7 @@ void FluidGrid::init()
                                 .bindTextures(TexDensityBase_, *TexDensitiesFront_, TexGroundDistorted_, *TexVelocitiesBack_);
 }
 
-void FluidGrid::process()
+void FluidGrid::process(const double SimTime)
 {
     //------------------------------------------------------------------
     // Create mesh (points) representing density sources
@@ -394,7 +394,8 @@ void FluidGrid::process()
     // Distort ground
     //------------------------------------------------------------------
     FBOGroundDistorted_.bind();
-    ShaderGroundDistortion_.bindTextures(TexDensityBase_, *TexVelocitiesFront_);
+    ShaderGroundDistortion_.bindTextures(TexDensityBase_, *TexVelocitiesFront_)
+                           .setTime(SimTime);
 
     MeshGroundDistorted_.draw(ShaderGroundDistortion_);
 

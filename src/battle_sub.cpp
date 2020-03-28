@@ -45,6 +45,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
         setMinimalLoopPeriod(1.0f/60.0f * 1000.0f);
     #endif
+
+    SimTime_.start();
 }
 
 void BattleSub::keyPressEvent(KeyEvent& Event)
@@ -196,7 +198,7 @@ void BattleSub::drawEvent()
         // Draw the scene
         if (!IsPaused_ || IsStepForward_)
         {
-            FluidGrid_.process();
+            FluidGrid_.process(SimTime_.time());
             IsStepForward_ = false;
         }
         
@@ -403,7 +405,7 @@ void BattleSub::updateUI()
             ImGui::NewLine();
             ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
             ImGui::NewLine();
-            ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 10000.0f);
+            ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
                 showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
                             "Base density (background) will be distorted by x * advection, e.g.:\n"
                             "  Value 200: A velocity of 1m/s will distort by 200m");

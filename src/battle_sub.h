@@ -12,6 +12,7 @@
 #include "fluid_grid.h"
 #include "main_display_shader.h"
 #include "submarine.h"
+#include "timer.h"
 
 namespace BattleSub
 {
@@ -47,6 +48,7 @@ class BattleSub : public Platform::Application
         void showTooltip(const std::string& Tooltip);
 
         ImGuiIntegration::Context ImGUI_{NoCreate};
+        Timer SimTime_;
         
         //--- Framebuffer related ---//
         GL::Framebuffer* FBOCurrentPlayer_{nullptr};
@@ -88,7 +90,7 @@ class BattleSub : public Platform::Application
         ContactListener ContactListener_;
         FluidGrid FluidGrid_;
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
-        float DensityDistortion_ = 1000.0f;
+        float DensityDistortion_ = 300.0f;
         float GammaCorrection_ = 2.2f;
         float VelocityAdvectionFactor_ = 0.9f;
         float VelocityDiffusionGain_ = 2.0f;

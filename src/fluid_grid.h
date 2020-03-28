@@ -54,7 +54,7 @@ class FluidGrid
         void display(const Matrix3 CameraProjection,
                      const FluidBufferE Buffer = FluidBufferE::FINAL_COMPOSITION);
         void init();
-        void process();
+        void process(const double);
         
     private:
         

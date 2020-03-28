@@ -15,7 +15,8 @@ class Timer
         void    restart()   {stop(); start();}
         double  elapsed()   {return duration<double>(Stop-Start).count();}
         double  split()     {return duration<double>(HiResClock::now() - Start).count();}
-    
+        double  time()      {return duration<double>(HiResClock::now() - Start).count();}
+
     private:
         
         HiResClock::time_point Start;

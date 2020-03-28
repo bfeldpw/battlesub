@@ -46,11 +46,13 @@ class GroundDistortionShader: public GL::AbstractShaderProgram
             DistortionUniform_ = uniformLocation("u_distortion");
             DeltaTUniform_ = uniformLocation("u_dt");
             GridResolutionUniform_ = uniformLocation("u_grid_res");
+            TimeUniform_ = uniformLocation("u_time");
             TransformationUniform_ = uniformLocation("u_matrix");
             
             setUniform(DistortionUniform_, 100.0f);
             setUniform(DeltaTUniform_, 1.0f/60.0f);
             setUniform(GridResolutionUniform_, 2.0f);
+            setUniform(TimeUniform_, 0.0f);
         }
 
         GroundDistortionShader& setDistortion(const Float f)
@@ -70,7 +72,13 @@ class GroundDistortionShader: public GL::AbstractShaderProgram
             setUniform(GridResolutionUniform_, r);
             return *this;
         }
-        
+
+        GroundDistortionShader& setTime(const Float t)
+        {
+            setUniform(TimeUniform_, t);
+            return *this;
+        }
+
         GroundDistortionShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
@@ -98,6 +106,7 @@ class GroundDistortionShader: public GL::AbstractShaderProgram
         Float   DistortionUniform_;
         Float   DeltaTUniform_;
         Float   GridResolutionUniform_;
+        Float   TimeUniform_;
         Int     TransformationUniform_;
 };
 
