@@ -1,6 +1,8 @@
 # battlesub
 Two player 2D submarine game with some fluid dynamics.
 
+[![Build Status](https://travis-ci.com/bfeldpw/battlesub.svg?branch=master)](https://travis-ci.com/bfeldpw/battlesub)
+
 At the moment, there is just code cleanup. A proper readme will be written soon.
 To build and install after cloning run
 ```bash
