@@ -1,0 +1,12 @@
+dist: bionic
+sudo: required
+language: cpp
+
+git:
+  strategy: clone
+  depth: 1
+  quiet: false
+
+install:
+  - ./scripts/build_dependencies
+  - ./scripts/build
