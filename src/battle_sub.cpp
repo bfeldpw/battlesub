@@ -385,7 +385,8 @@ void BattleSub::updateUI()
                 ImGui::RadioButton("Velocity Buffer Back", &Buffer, 4);
                 ImGui::RadioButton("Density Buffer Front", &Buffer, 5);
                 ImGui::RadioButton("Density Buffer Back", &Buffer, 6);
-                ImGui::RadioButton("Final Composition", &Buffer, 7);
+                ImGui::RadioButton("Ground Distorted", &Buffer, 7);
+                ImGui::RadioButton("Final Composition", &Buffer, 8);
                 ImGui::NewLine();
                 ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
                     showTooltip("Show magnitude or show colour-coded direction, too.");

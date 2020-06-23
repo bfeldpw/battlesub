@@ -10,17 +10,12 @@ in vec2 v_tex;
 
 out float frag_col;
 
-float rand(vec2 co)
-{
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
 void main()
 {
-    vec2 vel = u_distortion*texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy), 0).xy;
-    vec2 pos = gl_FragCoord.xy - u_grid_res * u_dt * vel *
-               (1.0 + (0.1 + (0.00005*length(vel)+ 0.1*rand(gl_FragCoord.xy))*sin(u_time*length(0.003*vel))));
-    //vec2 pos = gl_FragCoord.xy - (1.0+rand(vel)) * u_grid_res * u_dt * vel;
+    vec2  vel   = texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy), 0).xy;
+    float vel_v = length(vel);
+    vec2  pos   = gl_FragCoord.xy - u_grid_res * u_dt * 0.2 * u_distortion *
+                  (vel_v  * sin(u_time*0.1*vel_v));
 
     // Neighbour indices
     vec4 n;

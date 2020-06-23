@@ -63,7 +63,6 @@ class ResourceStorage
         std::vector<float>* HeightMapPlateausBack_;
         std::vector<float> HeightMapPlateaus0_;
         std::vector<float> HeightMapPlateaus1_;
-        
 };
 
 #endif // RESOURCE_STORAGE_H

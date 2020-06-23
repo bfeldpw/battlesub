@@ -290,7 +290,7 @@ void ResourceStorage::initLandscape()
     // Initialise landscape
     noise::module::Perlin Boundary;
     
-    Boundary.SetFrequency(0.008);
+    Boundary.SetFrequency(0.008*5.0);
     Boundary.SetPersistence(0.47317);
     Boundary.SetLacunarity(1.9731);
     Boundary.SetNoiseQuality(noise::QUALITY_BEST);
@@ -303,10 +303,10 @@ void ResourceStorage::initLandscape()
     Boundary.SetSeed(19);
     
     {
-        constexpr float b = 50.0f;  // Boundary
+        constexpr float b = 10.0f;  // Boundary
         constexpr float w = WORLD_SIZE_X * 0.5f-b; // Half width
         constexpr float h = WORLD_SIZE_Y * 0.5f-b; // Half height
-        constexpr float a = 50.0f;  // Amplitude
+        constexpr float a = 10.0f;  // Amplitude
         
         // Top
         ShapeType ShapeTop;
@@ -448,6 +448,7 @@ void ResourceStorage::initLandscape()
         )
     }
     {
+        Boundary.SetFrequency(0.008);
         ShapeType Shape;
         for (auto i=0.0f; i<2.0*b2_pi; i+=2.0*b2_pi/100.0)
         {

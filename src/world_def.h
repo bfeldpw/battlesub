@@ -3,8 +3,8 @@
 
 #include <Magnum/GL/Texture.h>
 
-constexpr float WORLD_SIZE_X = 1024.0f;
-constexpr float WORLD_SIZE_Y = 512.0f;
+constexpr float WORLD_SIZE_X = 512.0f;
+constexpr float WORLD_SIZE_Y = 256.0f;
 
 constexpr int WINDOW_RESOLUTION_X = 2000;
 constexpr int WINDOW_RESOLUTION_Y = 1000;

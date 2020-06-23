@@ -31,7 +31,8 @@ enum class FluidBufferE : int
     VELOCITIES_BACK = 4,
     DENSITY_DIFFUSION_FRONT = 5,
     DENSITY_DIFFUSION_BACK = 6,
-    FINAL_COMPOSITION = 7
+    GROUND_DISTORTED = 7,
+    FINAL_COMPOSITION = 8
 };
 
 class FluidGrid

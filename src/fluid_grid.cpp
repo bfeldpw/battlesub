@@ -76,6 +76,7 @@ void FluidGrid::display(const Matrix3 CameraProjection,
         {
             ShaderVelocityDisplay_.bindTexture(*TexVelocitiesBack_);
             ShaderVelocityDisplay_.setTransformation(CameraProjection);
+
             MeshDensityDisplay_.draw(ShaderVelocityDisplay_);
             break;
         }
@@ -96,6 +97,13 @@ void FluidGrid::display(const Matrix3 CameraProjection,
         case FluidBufferE::DENSITY_DIFFUSION_BACK:
         {
             ShaderDensityDisplay_.bindTexture(*TexDensitiesBack_);
+            ShaderDensityDisplay_.setTransformation(CameraProjection);
+            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            break;
+        }
+        case FluidBufferE::GROUND_DISTORTED:
+        {
+            ShaderDensityDisplay_.bindTexture(TexGroundDistorted_);
             ShaderDensityDisplay_.setTransformation(CameraProjection);
             MeshDensityDisplay_.draw(ShaderDensityDisplay_);
             break;
