@@ -13,3 +13,4 @@ from battlesub directory.
 
 If successful, run battle sub using `./run` or e.g. `./scripts/run` if in another directory.
 
+![alt text](https://github.com/bfeldpw/battlesub/blob/master/Screenshot_20200628_211604.png?raw=true)
