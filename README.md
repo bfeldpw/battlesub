@@ -15,5 +15,5 @@ If successful, run battle sub using `./run` or e.g. `./scripts/run` if in anothe
 
 # Screenshots
 
-Running BattleSub, using Magnum Graphics:
+Running BattleSub, using Magnum Graphics, ImGUI, and Box2D:
 ![alt text](https://github.com/bfeldpw/battlesub/blob/master/Screenshot_20200628_211604.png?raw=true)
