@@ -1,5 +1,5 @@
-# battlesub
-Two player 2D submarine game with some fluid dynamics.
+# BattleSub
+Will eventually become a two player 2D submarine game with some fluid dynamics.
 
 [![Build Status](https://travis-ci.com/bfeldpw/battlesub.svg?branch=master)](https://travis-ci.com/bfeldpw/battlesub)
 
@@ -9,11 +9,11 @@ To build and install after cloning run
 cd scripts
 ./build_dependencies && ./build
 ```
-from battlesub directory.
+from BattleSub directory.
 
-If successful, run battle sub using `./run` or e.g. `./scripts/run` if in another directory.
+If successful, run BattleSub using `./run` or `/<path>/<to>/scripts/run` if in another directory.
 
-# Screenshots
+# screenshots
 
-Running BattleSub, using Magnum Graphics, ImGUI, and Box2D:
+Developing BattleSub, using Magnum Graphics, ImGUI, and Box2D:
 ![alt text](https://github.com/bfeldpw/battlesub/blob/master/Screenshot_20200628_211604.png?raw=true)
