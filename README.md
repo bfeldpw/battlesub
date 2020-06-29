@@ -13,7 +13,7 @@ from BattleSub directory.
 
 If successful, run BattleSub using `./run` or `/<path>/<to>/scripts/run` if in another directory.
 
-# screenshots
+# Screenshots
 
 Developing BattleSub, using Magnum Graphics, ImGUI, and Box2D:
 ![alt text](https://github.com/bfeldpw/battlesub/blob/master/Screenshot_20200628_211604.png?raw=true)
