@@ -12,6 +12,8 @@
 #include <Magnum/Trade/MeshData3D.h>
 
 #include "common.h"
+
+
 #include "noise.h"
 #include "timer.h"
 #include "world_def.h"
@@ -304,8 +306,8 @@ void ResourceStorage::initLandscape()
     
     {
         constexpr float b = 10.0f;  // Boundary
-        constexpr float w = WORLD_SIZE_X * 0.5f-b; // Half width
-        constexpr float h = WORLD_SIZE_Y * 0.5f-b; // Half height
+        constexpr float w = WORLD_SIZE_DEFAULT_X * 0.5f-b; // Half width
+        constexpr float h = WORLD_SIZE_DEFAULT_Y * 0.5f-b; // Half height
         constexpr float a = 10.0f;  // Amplitude
         
         // Top

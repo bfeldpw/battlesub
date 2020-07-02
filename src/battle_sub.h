@@ -32,6 +32,7 @@ class BattleSub : public Platform::Application
         void mouseMoveEvent(MouseMoveEvent& Event) override;
         void mousePressEvent(MouseEvent& Event) override;
         void mouseReleaseEvent(MouseEvent& Event) override;
+        void viewportEvent(ViewportEvent& Evend) override;
         
         void cleanupAndExit();
         void updateGameObjects();
@@ -49,7 +50,11 @@ class BattleSub : public Platform::Application
 
         ImGuiIntegration::Context ImGUI_{NoCreate};
         Timer SimTime_;
-        
+
+        //--- World ---//
+        int   WindowResolutionX_ = WINDOW_RESOLUTION_DEFAULT_X;
+        int   WindowResolutionY_ = WINDOW_RESOLUTION_DEFAULT_Y;
+
         //--- Framebuffer related ---//
         GL::Framebuffer* FBOCurrentPlayer_{nullptr};
         GL::Framebuffer* FBOOtherPlayer_{nullptr};
@@ -103,8 +108,7 @@ class BattleSub : public Platform::Application
         Submarine* PlayerSub2_ = nullptr;
         GameObject* CanyonBoundary = nullptr;
         
-        float VPX_ = 100.0f;
-        float VPY_ = 100.0f;
+        float VisRes_ = 10.0f; // Visual Resolution in pixels per meter
         float Zoom_ = 1.0f;
         bool DevCam_ = false;
 

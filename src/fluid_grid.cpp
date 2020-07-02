@@ -218,8 +218,8 @@ void FluidGrid::init()
         Vector2 Pos;
         Vector2 Tex;
     };
-    constexpr float x = WORLD_SIZE_X*0.5f;
-    constexpr float y = WORLD_SIZE_Y*0.5f;
+    constexpr float x = WORLD_SIZE_DEFAULT_X*0.5f;
+    constexpr float y = WORLD_SIZE_DEFAULT_Y*0.5f;
     Vertex Data[6]{
         {{-x, -y}, { 0.0f,  0.0f}},
         {{ x, -y}, { 1.0f,  0.0f}},
@@ -283,38 +283,38 @@ void FluidGrid::init()
 
     const std::string SHADER_PATH = "../share/shaders/";
 
-    ShaderDensityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
+    ShaderDensityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                            .setAdvectionFactor(0.8f)
                            .setDeltaT(1.0f/60.0f)
-                           .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_X)
+                           .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                            .bindTextures(*TexDensitiesBack_, *TexVelocitiesBack_);
-    ShaderDensityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
+    ShaderDensityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                            .setDeltaT(1.0f/60.0f)
-                           .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_X)
+                           .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                            .bindTextures(TexDensitySources_, *TexDensitiesBack_);
-    ShaderGroundDistortion_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
+    ShaderGroundDistortion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                            .setDistortion(100.0f)
                            .setDeltaT(1.0f/60.0f)
-                           .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_X)
+                           .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                            .bindTextures(TexDensityBase_, *TexVelocitiesBack_);
-    ShaderVelocityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
+    ShaderVelocityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                             .setAdvectionFactor(0.5)
                             .setDeltaT(1.0f/60.0f)
-                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_X)
+                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                             .bindTexture(*TexVelocitiesBack_);
-    ShaderVelocityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
+    ShaderVelocityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                             .setDeltaT(1.0f/60.0f)
                             .setDiff(1.0e5f)
                             .setGain(1.0f)
-                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_X)
+                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                             .bindTextures(TexVelocitySources_, *TexVelocitiesBack_);
-    ShaderDensitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}));
-    ShaderVelocitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}));
+    ShaderDensitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}));
+    ShaderVelocitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}));
     ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_);
     ShaderVelocityDisplay_.setScale(20.0f)
                           .setShowOnlyMagnitude(false)
                           .bindTexture(*TexVelocitiesFront_);
-    ShaderFluidFinalComposition_.setTransformation(Matrix3::projection({WORLD_SIZE_X, WORLD_SIZE_Y}))
+    ShaderFluidFinalComposition_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                                 .bindTextures(TexDensityBase_, *TexDensitiesFront_, TexGroundDistorted_, *TexVelocitiesBack_);
 }
 

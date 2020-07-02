@@ -115,8 +115,8 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
             if (Event.buttons() & MouseMoveEvent::Button::Left)
             {
                 if (MouseDelta_.y() != 0) Zoom_ *= 1.0f-0.01f*MouseDelta_.y();
-                VPX_ = 100.0f * Zoom_;
-                VPY_ = 100.0f * Zoom_;
+//                CamRes_ = 100.0f * Zoom_;
+//                CamRes_ = 100.0f * Zoom_;
             }
             else 
             {
@@ -156,6 +156,35 @@ void BattleSub::mouseReleaseEvent(MouseEvent& Event)
     if (ImGUI_.handleMouseReleaseEvent(Event)) return;
 }
 
+void BattleSub::viewportEvent(ViewportEvent& Event)
+{
+    WindowResolutionX_ = Event.framebufferSize().x();
+    WindowResolutionY_ = Event.framebufferSize().y();
+
+    GL::defaultFramebuffer.setViewport({{}, Event.framebufferSize()});
+
+//    TexPlayer1_ = GL::Texture2D{};
+//    TexPlayer2_ = GL::Texture2D{};
+//    TexPlayer1_.setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WindowResolutionX_, WindowResolutionY_});
+//    TexPlayer2_.setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WindowResolutionX_, WindowResolutionY_});
+//    FBOPlayer1_.setViewport({{}, Event.framebufferSize()});
+//    FBOPlayer2_.setViewport({{}, Event.framebufferSize()});
+
+//    FBOPlayer1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer1_, 0)
+//               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+//    FBOPlayer2_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer2_, 0)
+//               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+
+//    ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}));
+
+    CameraPlayer1_->setViewport(Event.framebufferSize());
+
+
+//    this->setupFrameBuffersMainScreen();
+
+    ImGUI_.relayout(Vector2(Event.windowSize()), Event.windowSize(), Event.framebufferSize());
+}
+
 void BattleSub::drawEvent()
 {
     if (!IsExitTriggered_)
@@ -169,7 +198,7 @@ void BattleSub::drawEvent()
         if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
         if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
         
-        CameraPlayer1_->setProjectionMatrix(Matrix3::projection({VPX_, VPY_}));
+        CameraPlayer1_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_, WindowResolutionY_/VisRes_*Zoom_}));
         
         FluidGrid_.setDensityDistortion(DensityDistortion_)
                   .setGammaCorrection(GammaCorrection_)
@@ -454,10 +483,12 @@ void BattleSub::setupWindow()
     const Vector2 dpiScaling = this->dpiScaling({});
     
     Configuration conf;
-    conf.setSize({WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y});
+    conf.setSize({WindowResolutionX_, WindowResolutionY_});
     
     conf.setTitle("BattleSub")
-        .setSize(conf.size(), dpiScaling);
+        .setSize(conf.size(), dpiScaling)
+        .setWindowFlags(Configuration::WindowFlag::Resizable);
+
     
     GLConfiguration glConf;
     glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
@@ -468,7 +499,7 @@ void BattleSub::setupWindow()
     }
     
     // Prepare ImGui
-    ImGUI_ = ImGuiIntegration::Context({WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y},
+    ImGUI_ = ImGuiIntegration::Context({float(WindowResolutionX_), float(WindowResolutionY_)},
     windowSize(), framebufferSize());
     
     GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add,
@@ -479,8 +510,10 @@ void BattleSub::setupWindow()
 
 void BattleSub::setupFrameBuffersMainScreen()
 {
-    FBOPlayer1_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y}}};
-    FBOPlayer2_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y}}};
+    FBOPlayer1_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y}}};
+    FBOPlayer2_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y}}};
+    FBOPlayer1_.setViewport({{}, {WindowResolutionX_, WindowResolutionY_}});
+    FBOPlayer2_.setViewport({{}, {WindowResolutionX_, WindowResolutionY_}});
     FBOCurrentPlayer_ = &FBOPlayer1_;
     FBOOtherPlayer_ = &FBOPlayer2_;
     TexPlayer1_ = GL::Texture2D{};
@@ -492,13 +525,13 @@ void BattleSub::setupFrameBuffersMainScreen()
                .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
                .setWrapping(GL::SamplerWrapping::ClampToBorder)
                .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-               .setStorage(Math::log2(WINDOW_RESOLUTION_X)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y})
+               .setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y})
                .generateMipmap();
     TexPlayer2_.setMagnificationFilter(GL::SamplerFilter::Linear)
                .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
                .setWrapping(GL::SamplerWrapping::ClampToBorder)
                .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-               .setStorage(Math::log2(WINDOW_RESOLUTION_X)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y})
+               .setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y})
                .generateMipmap();
     
     FBOPlayer1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer1_, 0)
@@ -507,7 +540,7 @@ void BattleSub::setupFrameBuffersMainScreen()
                .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
                
     ShaderMainDisplay_ = MainDisplayShader{};
-    ShaderMainDisplay_.setTransformation(Matrix3::projection({WINDOW_RESOLUTION_X, WINDOW_RESOLUTION_Y}))
+    ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}))
                       .bindTexture(TexPlayer1_);
 }
 
@@ -518,15 +551,15 @@ void BattleSub::setupPlayerMesh()
         Vector2 Tex;
     };
     
-    constexpr float x = WINDOW_RESOLUTION_X*0.5f;
-    constexpr float y = WINDOW_RESOLUTION_Y*0.5f;
+    float x = WindowResolutionX_*0.5f;
+    float y = WindowResolutionY_*0.5f;
     Vertex Data[6]{
         {{-x, -y}, { 0.0f,  0.0f}},
-        {{ x, -y}, { 1.0f,  0.0f}},
-        {{-x,  y}, { 0.0f,  1.0f}},
-        {{-x,  y}, { 0.0f,  1.0f}},
-        {{ x, -y}, { 1.0f,  0.0f}},
-        {{ x,  y}, { 1.0f,  1.0f}}
+        {{ x, -y}, { 0.5f,  0.0f}},
+        {{-x,  y}, { 0.0f,  0.5f}},
+        {{-x,  y}, { 0.0f,  0.5f}},
+        {{ x, -y}, { 0.5f,  0.0f}},
+        {{ x,  y}, { 0.5f,  0.5f}}
     };
 
     GL::Buffer Buffer;
@@ -549,8 +582,8 @@ void BattleSub::setupPlayerMeshLeft()
         Vector2 Tex;
     };
     
-    constexpr float x = WINDOW_RESOLUTION_X*0.5f;
-    constexpr float y = WINDOW_RESOLUTION_Y*0.5f;
+    float x = WindowResolutionX_*0.5f;
+    float y = WindowResolutionY_*0.5f;
     Vertex Data[6]{
         {{-x, -y}, {0.25f, 0.0f}},
         {{ 0, -y}, {0.75f, 0.0f}},
@@ -578,8 +611,8 @@ void BattleSub::setupPlayerMeshRight()
         Vector2 Tex;
     };
     
-    constexpr float x = WINDOW_RESOLUTION_X*0.5f;
-    constexpr float y = WINDOW_RESOLUTION_Y*0.5f;
+    float x = WindowResolutionX_*0.5f;
+    float y = WindowResolutionY_*0.5f;
     Vertex Data[6]{
         {{0, -y}, {0.25f, 0.0f}},
         {{x, -y}, {0.75f, 0.0f}},
@@ -605,7 +638,7 @@ void BattleSub::setupCameras()
     CameraObjectPlayer1_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer1_ = new SceneGraph::Camera2D{*CameraObjectPlayer1_};
     CameraPlayer1_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
-                   .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
+        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_, WindowResolutionY_/VisRes_*Zoom_}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectCurrentPlayer_ = CameraObjectPlayer1_;
     CameraCurrentPlayer_ = CameraPlayer1_;
@@ -613,7 +646,7 @@ void BattleSub::setupCameras()
     CameraObjectPlayer2_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer2_ = new SceneGraph::Camera2D{*CameraObjectPlayer2_};
     CameraPlayer2_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
-                   .setProjectionMatrix(Matrix3::projection({100.0f, 100.0f}))
+                   .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_, WindowResolutionY_/VisRes_*Zoom_}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectOtherPlayer_ = CameraObjectPlayer2_;
     CameraOtherPlayer_ = CameraPlayer2_;
