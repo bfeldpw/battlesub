@@ -78,5 +78,8 @@ target_link_libraries(battle_sub PRIVATE
     ${LIB_NOISE_LIBRARY}
 )
 
+
+set_property(TARGET battle_sub PROPERTY CXX_STANDARD 17)
+
 install(TARGETS battle_sub DESTINATION bin)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/src/shaders/" DESTINATION "${PROJECT_SOURCE_DIR}/install/share/shaders/")

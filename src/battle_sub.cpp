@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <entt/entt.hpp>
 #include <Box2D/Box2D.h>
 #include <Corrade/Utility/Arguments.h>
 #include <Corrade/Utility/ConfigurationValue.h>
@@ -22,6 +23,8 @@ namespace BattleSub{
 
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
+    entt::registry Registry;
+
     this->setupWindow();
 
     this->setupFrameBuffersMainScreen();
@@ -115,8 +118,6 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
             if (Event.buttons() & MouseMoveEvent::Button::Left)
             {
                 if (MouseDelta_.y() != 0) Zoom_ *= 1.0f-0.01f*MouseDelta_.y();
-//                CamRes_ = 100.0f * Zoom_;
-//                CamRes_ = 100.0f * Zoom_;
             }
             else 
             {
@@ -525,13 +526,13 @@ void BattleSub::setupFrameBuffersMainScreen()
                .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
                .setWrapping(GL::SamplerWrapping::ClampToBorder)
                .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-               .setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y})
+               .setStorage(Math::log2(WINDOW_RESOLUTION_MAX_X)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y})
                .generateMipmap();
     TexPlayer2_.setMagnificationFilter(GL::SamplerFilter::Linear)
                .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
                .setWrapping(GL::SamplerWrapping::ClampToBorder)
                .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-               .setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y})
+               .setStorage(Math::log2(WINDOW_RESOLUTION_MAX_X)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y})
                .generateMipmap();
     
     FBOPlayer1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer1_, 0)
@@ -559,9 +560,7 @@ void BattleSub::setupPlayerMesh()
         {{-x,  y}, { 0.0f,  0.5f}},
         {{-x,  y}, { 0.0f,  0.5f}},
         {{ x, -y}, { 0.5f,  0.0f}},
-        {{ x,  y}, { 0.5f,  0.5f}}
-    };
-
+        {{ x,  y}, { 0.5f,  0.5f}}};
     GL::Buffer Buffer;
     Buffer.setData(Data, GL::BufferUsage::StaticDraw);
 
