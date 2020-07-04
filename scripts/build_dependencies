@@ -21,17 +21,17 @@ git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git
 echo "> git clone --branch v2.3.1 --depth 1 https://github.com/erincatto/box2d.git"
 git clone --branch v2.3.1 --depth 1 https://github.com/erincatto/box2d.git
 
-echo "> git clone --branch v2019.10 --depth 1 https://github.com/mosra/corrade.git"
-git clone --branch v2019.10 --depth 1 https://github.com/mosra/corrade.git
+echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git"
+git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git
 
-echo "> git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum.git"
-git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum.git
+echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum.git"
+git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum.git
 
-echo "> git clone --branch v1.74 --depth 1 https://github.com/ocornut/imgui.git"
-git clone --branch v1.74 --depth 1 https://github.com/ocornut/imgui.git
+echo "> git clone --branch v1.77 --depth 1 https://github.com/ocornut/imgui.git"
+git clone --branch v1.77 --depth 1 https://github.com/ocornut/imgui.git
 
-echo "> git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum-integration.git"
-git clone --branch v2019.10 --depth 1 https://github.com/mosra/magnum-integration.git
+echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum-integration.git"
+git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum-integration.git
 
 
 # Install libnoise2d
