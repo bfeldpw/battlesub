@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include <entt/entt.hpp>
 #include <Box2D/Box2D.h>
 #include <Corrade/Utility/Arguments.h>
 #include <Corrade/Utility/ConfigurationValue.h>
@@ -23,8 +22,6 @@ namespace BattleSub{
 
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
-    entt::registry Registry;
-
     this->setupWindow();
 
     this->setupFrameBuffersMainScreen();
