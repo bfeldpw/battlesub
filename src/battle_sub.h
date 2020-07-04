@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 
+#include <entt/entt.hpp>
 #include <Magnum/GL/Framebuffer.h>
 #include <Magnum/ImGuiIntegration/Context.hpp>
 
@@ -44,7 +45,7 @@ class BattleSub : public Platform::Application
         void setupPlayerMeshLeft();
         void setupPlayerMeshRight();
         void setupCameras();
-        void setupGameObjects();
+        void setupGameObjects(entt::registry& Reg);
         
         void showTooltip(const std::string& Tooltip);
 

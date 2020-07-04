@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include <entt/entt.hpp>
 #include <Box2D/Box2D.h>
 #include <Corrade/Utility/Arguments.h>
 #include <Corrade/Utility/ConfigurationValue.h>
@@ -40,7 +39,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     FluidGrid_.setDensityBase(GlobalResources::Get.getHeightMap())
               .init();
     
-    this->setupGameObjects();
+    this->setupGameObjects(Registry);
     
     GlobalResources::Get.getWorld()->SetContactListener(&ContactListener_);
     
@@ -651,8 +650,11 @@ void BattleSub::setupCameras()
     CameraOtherPlayer_ = CameraPlayer2_;
 }
 
-void BattleSub::setupGameObjects()
+void BattleSub::setupGameObjects(entt::registry& Reg)
 {
+    auto PlayerSub1 = Reg.create();
+    auto PlayerSub2 = Reg.create();
+
     PlayerSub_ = GlobalFactories::Submarines.create();
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
