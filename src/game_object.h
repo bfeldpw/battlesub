@@ -11,7 +11,7 @@
 #include "entity.h"
 #include "timer.h"
 
-constexpr float SINKING_SCALE_FACTOR = 0.995f;
+constexpr float SINKING_SCALE_FACTOR = 0.998f;
 constexpr float SINKING_SCALE_FACTOR_COLOR = 0.998f;
 constexpr float SINKING_SCALE_MIN    = 0.01f;
 

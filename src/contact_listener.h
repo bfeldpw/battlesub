@@ -50,6 +50,7 @@ class ContactListener : public b2ContactListener
                 {
                     b2Vec2 POC = WorldManifold.points[0];
                     b2Vec2 Velocity = Body->GetLinearVelocityFromWorldPoint(POC);
+                    float  Mass = Body->GetMass();
 
                     float Angle = 2.0f * std::atan2(WorldManifold.normal.y, WorldManifold.normal.x) - (std::atan2(Velocity.y, Velocity.x)+b2_pi);
 
@@ -57,9 +58,11 @@ class ContactListener : public b2ContactListener
                     DebrisEmitter->setOrigin(POC.x+WorldManifold.normal.x*0.2f, POC.y+WorldManifold.normal.y*0.2f)
                                   .setAngle(Angle)
                                   .setAngleStdDev(1.0f)
-                                  .setNumber(5)
-                                  .setVelocity(Velocity.Length()*0.05f)
-                                  .setVelocityStdDev(Velocity.Length()*0.005f);
+                                  .setNumber(20)
+                                  .setScale(Velocity.Length()*0.1+Mass*0.0001f)
+                                  .setScaleStdDev(Velocity.Length()*0.05+Mass*0.0001)
+                                  .setVelocity(Velocity.Length()*0.1f+1.0f)
+                                  .setVelocityStdDev(Velocity.Length()*0.05f);
                 }
             }
             

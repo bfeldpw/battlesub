@@ -19,7 +19,7 @@ class Emitter : public Entity
         void emit()
         {
             std::normal_distribution<float> DistAngle(Angle_, AngleStdDev_);
-            std::normal_distribution<float> DistScale(1.5f, 1.3f);
+            std::normal_distribution<float> DistScale(Scale_, ScaleStdDev_);
             
             for (auto i=0; i<Number_; ++i)
             {
@@ -75,6 +75,16 @@ class Emitter : public Entity
             OriginY_ = y;
             return *this;
         }
+        Emitter& setScale(float s)
+        {
+            Scale_ = s;
+            return *this;
+        }
+        Emitter& setScaleStdDev(float s)
+        {
+            ScaleStdDev_ = s;
+            return *this;
+        }
         Emitter& setVelocity(float v)
         {
             Velocity_ = v;
@@ -97,6 +107,8 @@ class Emitter : public Entity
         int    Number_ = 1;
         float  OriginX_ = 0.0f;
         float  OriginY_ = 0.0f;
+        float  Scale_ = 1.0f;
+        float  ScaleStdDev_ = 0.0f;
         float  Velocity_ = 1.0f;
         float  VelocityStdDev_ = 0.0f;
 };
