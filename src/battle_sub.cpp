@@ -118,14 +118,14 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
             }
             else 
             {
-                Platform::Application::Sdl2Application::setMouseLocked(true);
+                Platform::Application::Sdl2Application::setCursor(Cursor::HiddenLocked);
                 CameraObjectPlayer1_->translate(0.05f*Zoom_*Vector2(MouseDelta_));
                 MouseDelta_ = Vector2i();
             }
         }
         else
         {
-            Platform::Application::Sdl2Application::setMouseLocked(false);
+            Platform::Application::Sdl2Application::setCursor(Cursor::Arrow);
         }
     }
 }
