@@ -87,8 +87,8 @@ echo "> mkdir -p build"
 mkdir -p build
 echo "> cd build"
 cd build
-echo "> cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON"
-cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON -DBUILD_DEPRECATED=ON"
+cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_SDL2APPLICATION=ON -DBUILD_DEPRECATED=ON
 echo "> make -j8 install"
 make -j8 install
 echo "> cd ../.."
