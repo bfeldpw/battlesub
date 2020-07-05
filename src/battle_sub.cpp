@@ -71,6 +71,9 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
         case KeyEvent::Key::X:
             PlayerSub_->fullStop();
             break;
+        case KeyEvent::Key::LeftCtrl:
+            DevCam_ = true;
+            break;
         case KeyEvent::Key::Esc:
         {
             IsExitTriggered_ = true;
@@ -97,6 +100,9 @@ void BattleSub::keyReleaseEvent(KeyEvent& Event)
             break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = false; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = false; break;
+        case KeyEvent::Key::LeftCtrl:
+            DevCam_ = false;
+            break;
         default: break;
     }
 }
@@ -111,7 +117,6 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
     {
         if (Event.modifiers() & MouseMoveEvent::Modifier::Ctrl)
         {
-            DevCam_ = true;
             if (Event.buttons() & MouseMoveEvent::Button::Left)
             {
                 if (MouseDelta_.y() != 0) Zoom_ *= 1.0f-0.01f*MouseDelta_.y();
@@ -276,8 +281,6 @@ void BattleSub::drawEvent()
                 
         swapBuffers();
         redraw();
-        
-        DevCam_ = false;
     }
     else
     {
