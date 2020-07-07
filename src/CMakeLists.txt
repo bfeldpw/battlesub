@@ -1,5 +1,6 @@
 set(HEADERS
         battle_sub.h
+        camera_dynamics.h
         common.h
         contact_listener.h
         debris_factory.h
