@@ -1,0 +1,62 @@
+#include "camera_dynamics.h" 
+
+void CameraZoom::increaseByMultiplication(const float f)
+{
+    if (!IsAuto)
+    {
+        Auto = 0.0f;
+        Base_ *= f;
+        if (Value() < Min_) Base_ = Min_;
+        if (Value() > Max_) Base_ = Max_;
+    }
+}
+
+void CameraZoom::interpolate(float Target)
+{
+    if (IsAuto)
+    {
+        constexpr float Epsilon = 0.001f;
+        Base_ = 0.2f;
+
+        if (Base_+Target > Max_) Target = Max_ - Base_;
+        // if (Base_+Target < Min_) Target = Min_ - Base_;
+        // Will never be reached, since Base_ is larger than Min_ and
+        // Target is always positive.
+
+        if (Target != Target_)
+        {
+            Phase_ = Speed;
+            Target_ = Target;
+        }
+        else
+        {
+            Phase_ += Speed;
+        }
+        To_.point() = Target;
+        To_.inTangent() = 0.0f;
+        To_.outTangent() = 0.0f;
+
+        // Test for values near zero to fix oscillations
+        if (std::abs(Target- Last0_) < Epsilon && Target < Epsilon)
+        {
+            Last0_ = Target;
+            Last1_ = Target;
+            From_.point() = Target;
+            From_.inTangent() = 0.0f;
+            From_.outTangent() = 0.0f;
+        }
+        else
+        {
+            From_.point() = Last0_;
+            From_.inTangent() = (Last0_ - Last1_) / Speed;
+            From_.outTangent() = (Last0_ - Last1_) / Speed;
+            Auto = Magnum::Math::splerp<float, float>(From_, To_, Phase_);
+            if (Base_+Auto > Max_) Auto = Max_ - Base_;
+            Last1_ = Last0_;
+            Last0_ = Auto;
+        }
+
+        Values.push_front(Base_+Auto);
+        if (Values.size() > 2000) Values.pop_back();
+    }
+}

@@ -45,6 +45,7 @@ set(LIB_NOISE_LIBRARY
 set(SOURCES
         ${ImGui_INCLUDE_DIR}/imgui.cpp
         battle_sub.cpp
+        camera_dynamics.cpp
         emitter.cpp
         entity.cpp
         fluid_grid.cpp
