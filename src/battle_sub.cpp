@@ -222,10 +222,10 @@ void BattleSub::drawEvent()
             {
                 auto Pos = PlayerSub_->Hull.getBody()->GetPosition();
                 auto Vel = PlayerSub_->Hull.getBody()->GetLinearVelocity();
-                CameraObjectPlayer1_->resetTransformation();
-                CameraObjectPlayer1_->translate(Vector2(Pos.x+0.0f*Zoom_.Value()*Vel.x,
-                                                        Pos.y+0.0f*Zoom_.Value()*Vel.y));
 
+                CameraObjectPlayer1_->resetTransformation();
+                CameraObjectPlayer1_->translate(Vector2(Pos.x+CamMoveAhead_.Value()[0],
+                                                        Pos.y+CamMoveAhead_.Value()[1]));
             }
         }
         
@@ -283,7 +283,10 @@ void BattleSub::drawEvent()
             ShaderMainDisplay_.bindTexture(*TexOtherPlayer_);
             MeshDisplayOtherPlayer_->draw(ShaderMainDisplay_);
         }
-        float s = 0.075f*PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
+        Vector2 vs{PlayerSub_->Hull.getBody()->GetLinearVelocity().x,
+                   PlayerSub_->Hull.getBody()->GetLinearVelocity().y};
+        float s = PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
+        CamMoveAhead_.interpolate(vs*vs*Math::sign(vs));
         Zoom_.interpolate(s*s);
 
         updateUI();
@@ -462,20 +465,46 @@ void BattleSub::updateUI()
 
         ImGui::End();
 
-        ImGui::Begin("Zoom Debug");
-            std::vector<float> Vals;
-            for (const auto Val : Zoom_.Values) {Vals.push_back(Val);}
-            ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
-            ImGui::SliderFloat("Speed", &Zoom_.Speed, 0.01f, 0.5f);
+        ImGui::Begin("Camera Dynamics Debug");
+            ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
+            ImGui::Indent();
+                ImGui::Checkbox("Enable AutoZoom", &Zoom_.IsAuto);
+                    showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
+                                "Zoom out when accelerating, zooms in when decelerating");
+                std::vector<float> Vals;
+                for (const auto Val : Zoom_.Values) {Vals.push_back(Val);}
+                ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
+                    showTooltip("Zoom history, 600 frames = 10s");
+                ImGui::SliderFloat("AutoZoom Speed", &Zoom_.Speed, 0.01f, 0.5f);
+                    showTooltip("Speed to adapt to new target value, lower is more dampened");
+                ImGui::SliderFloat("AutoZoom Strength", &Zoom_.Strength, 0.0f, 0.02f);
+                    showTooltip("Amplitude of AutoZoom, lower is less zooming");
+            ImGui::Unindent();
+            ImGui::NewLine();
+            ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
+            ImGui::Indent();
+                ImGui::Checkbox("Enable AutoMove", &CamMoveAhead_.IsAuto);
+                    showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
+                                "Moves in velocity direction when accelerating, moves back when decelerating");
+                std::vector<float> ValsMoveX;
+                std::vector<float> ValsMoveY;
+                for (const auto ValMove : CamMoveAhead_.Values) {ValsMoveX.push_back(ValMove[0]);
+                                                                ValsMoveY.push_back(ValMove[1]);}
+                ImGui::PlotLines("Move X", ValsMoveX.data(), ValsMoveX.size());
+                    showTooltip("AutoMove history, 600 frames = 10s, x component");
+                ImGui::PlotLines("Move Y", ValsMoveY.data(), ValsMoveY.size());
+                    showTooltip("AutoMove history, 600 frames = 10s, y component");
+                ImGui::SliderFloat("AutoMove Speed", &CamMoveAhead_.Speed, 0.01f, 0.5f);
+                    showTooltip("Speed to adapt to new target value, lower is more dampened");
+                ImGui::SliderFloat("AutoMove Strength", &CamMoveAhead_.Strength, 0.0f, 1.0f);
+                    showTooltip("Amplitude of AutoMove, lower is less movement");
+            ImGui::Unindent();
         ImGui::End();
         
         ImGui::Begin("Menu");
         
             ImGui::Checkbox("Tooltips", &IsTooltipsEnabled_);
                 showTooltip("Guess what...");
-            ImGui::Checkbox("Camera AutoZoom", &Zoom_.IsAuto);
-                showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
-                            "Zooms out when accelerating, zooms in when decelerating");
             ImGui::Checkbox("Split screen", &IsSplitscreen_);
                 showTooltip("Toggle split screen mode");
                     
