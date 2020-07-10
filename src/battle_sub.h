@@ -111,8 +111,9 @@ class BattleSub : public Platform::Application
         GameObject* CanyonBoundary = nullptr;
         
         float VisRes_ = 10.0f; // Visual Resolution in pixels per meter
-        CameraMovement CamMoveAhead_;
-        CameraZoom Zoom_;
+        CameraDynamics CamMoveAheadX_;
+        CameraDynamics CamMoveAheadY_;
+        CameraDynamics Zoom_;
         bool DevCam_ = false;
 
 };

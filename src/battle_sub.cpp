@@ -224,8 +224,8 @@ void BattleSub::drawEvent()
                 auto Vel = PlayerSub_->Hull.getBody()->GetLinearVelocity();
 
                 CameraObjectPlayer1_->resetTransformation();
-                CameraObjectPlayer1_->translate(Vector2(Pos.x+CamMoveAhead_.Value()[0],
-                                                        Pos.y+CamMoveAhead_.Value()[1]));
+                CameraObjectPlayer1_->translate(Vector2(Pos.x+CamMoveAheadX_.Value(),
+                                                        Pos.y+CamMoveAheadY_.Value()));
             }
         }
         
@@ -286,7 +286,10 @@ void BattleSub::drawEvent()
         Vector2 vs{PlayerSub_->Hull.getBody()->GetLinearVelocity().x,
                    PlayerSub_->Hull.getBody()->GetLinearVelocity().y};
         float s = PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
-        CamMoveAhead_.interpolate(vs*vs*Math::sign(vs));
+        float s_x = PlayerSub_->Hull.getBody()->GetLinearVelocity().x;
+        float s_y = PlayerSub_->Hull.getBody()->GetLinearVelocity().y;
+        CamMoveAheadX_.interpolate(s_x*s_x*Math::sign(s_x));
+        CamMoveAheadY_.interpolate(s_y*s_y*Math::sign(s_y));
         Zoom_.interpolate(s*s);
 
         updateUI();
@@ -466,11 +469,13 @@ void BattleSub::updateUI()
         ImGui::End();
 
         ImGui::Begin("Camera Dynamics Debug");
+
             ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
             ImGui::Indent();
                 ImGui::Checkbox("Enable AutoZoom", &Zoom_.IsAuto);
                     showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
                                 "Zoom out when accelerating, zooms in when decelerating");
+                    if (Zoom_.IsAuto) Zoom_.Base = 0.2f;
                 std::vector<float> Vals;
                 for (const auto Val : Zoom_.Values) {Vals.push_back(Val);}
                 ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
@@ -480,25 +485,43 @@ void BattleSub::updateUI()
                 ImGui::SliderFloat("AutoZoom Strength", &Zoom_.Strength, 0.0f, 0.02f);
                     showTooltip("Amplitude of AutoZoom, lower is less zooming");
             ImGui::Unindent();
+
             ImGui::NewLine();
+
             ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
             ImGui::Indent();
-                ImGui::Checkbox("Enable AutoMove", &CamMoveAhead_.IsAuto);
+                static bool CamMoveAheadIsAuto_s = true;
+
+                ImGui::Checkbox("Enable AutoMove", &CamMoveAheadIsAuto_s);
                     showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
                                 "Moves in velocity direction when accelerating, moves back when decelerating");
+
+                CamMoveAheadX_.IsAuto = CamMoveAheadIsAuto_s;
+                CamMoveAheadY_.IsAuto = CamMoveAheadIsAuto_s;
+
                 std::vector<float> ValsMoveX;
                 std::vector<float> ValsMoveY;
-                for (const auto ValMove : CamMoveAhead_.Values) {ValsMoveX.push_back(ValMove[0]);
-                                                                ValsMoveY.push_back(ValMove[1]);}
+                for (const auto ValMove : CamMoveAheadX_.Values) ValsMoveX.push_back(ValMove);
+                for (const auto ValMove : CamMoveAheadY_.Values) ValsMoveY.push_back(ValMove);
                 ImGui::PlotLines("Move X", ValsMoveX.data(), ValsMoveX.size());
                     showTooltip("AutoMove history, 600 frames = 10s, x component");
                 ImGui::PlotLines("Move Y", ValsMoveY.data(), ValsMoveY.size());
                     showTooltip("AutoMove history, 600 frames = 10s, y component");
-                ImGui::SliderFloat("AutoMove Speed", &CamMoveAhead_.Speed, 0.01f, 0.5f);
+
+                static float CamMoveAheadSpeed_s = 0.1f;
+                static float CamMoveAheadStrength_s = 0.25f;
+
+                ImGui::SliderFloat("AutoMove Speed", &CamMoveAheadSpeed_s, 0.01f, 0.5f);
                     showTooltip("Speed to adapt to new target value, lower is more dampened");
-                ImGui::SliderFloat("AutoMove Strength", &CamMoveAhead_.Strength, 0.0f, 1.0f);
+                ImGui::SliderFloat("AutoMove Strength", &CamMoveAheadStrength_s, 0.0f, 1.0f);
                     showTooltip("Amplitude of AutoMove, lower is less movement");
+
+                CamMoveAheadX_.Speed = CamMoveAheadSpeed_s;
+                CamMoveAheadY_.Speed = CamMoveAheadSpeed_s;
+                CamMoveAheadX_.Strength = CamMoveAheadStrength_s;
+                CamMoveAheadY_.Strength = CamMoveAheadStrength_s;
             ImGui::Unindent();
+
         ImGui::End();
         
         ImGui::Begin("Menu");
@@ -699,6 +722,16 @@ void BattleSub::setupCameras()
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectOtherPlayer_ = CameraObjectPlayer2_;
     CameraOtherPlayer_ = CameraPlayer2_;
+
+    Zoom_.Base = 0.2f;
+    Zoom_.Speed = 0.1f;
+    Zoom_.Strength = 0.005f;
+    CamMoveAheadX_.Base = 0.0f;
+    CamMoveAheadX_.Speed = 0.1f;
+    CamMoveAheadX_.Strength = 0.25f;
+    CamMoveAheadY_.Base = 0.0f;
+    CamMoveAheadY_.Speed = 0.1f;
+    CamMoveAheadY_.Strength = 0.25f;
 }
 
 void BattleSub::setupGameObjects()
