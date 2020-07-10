@@ -22,8 +22,6 @@ namespace BattleSub{
 
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
-    entt::registry Registry;
-
     this->setupWindow();
 
     this->setupFrameBuffersMainScreen();
@@ -73,6 +71,9 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
         case KeyEvent::Key::X:
             PlayerSub_->fullStop();
             break;
+        case KeyEvent::Key::LeftCtrl:
+            DevCam_ = true;
+            break;
         case KeyEvent::Key::Esc:
         {
             IsExitTriggered_ = true;
@@ -99,6 +100,9 @@ void BattleSub::keyReleaseEvent(KeyEvent& Event)
             break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = false; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = false; break;
+        case KeyEvent::Key::LeftCtrl:
+            DevCam_ = false;
+            break;
         default: break;
     }
 }
@@ -113,21 +117,23 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
     {
         if (Event.modifiers() & MouseMoveEvent::Modifier::Ctrl)
         {
-            DevCam_ = true;
             if (Event.buttons() & MouseMoveEvent::Button::Left)
             {
-                if (MouseDelta_.y() != 0) Zoom_ *= 1.0f-0.01f*MouseDelta_.y();
+                if (MouseDelta_.y() != 0)
+                {
+                    Zoom_.increaseByMultiplication(1.0f-0.01f*MouseDelta_.y());
+                }
             }
             else 
             {
-                Platform::Application::Sdl2Application::setMouseLocked(true);
-                CameraObjectPlayer1_->translate(0.05f*Zoom_*Vector2(MouseDelta_));
+                Platform::Application::Sdl2Application::setCursor(Cursor::HiddenLocked);
+                CameraObjectPlayer1_->translate(0.05f*Zoom_.Value()*Vector2(MouseDelta_));
                 MouseDelta_ = Vector2i();
             }
         }
         else
         {
-            Platform::Application::Sdl2Application::setMouseLocked(false);
+            Platform::Application::Sdl2Application::setCursor(Cursor::Arrow);
         }
     }
 }
@@ -198,7 +204,8 @@ void BattleSub::drawEvent()
         if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
         if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
         
-        CameraPlayer1_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_, WindowResolutionY_/VisRes_*Zoom_}));
+        CameraPlayer1_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_.Value(),
+                                                                 WindowResolutionY_/VisRes_*Zoom_.Value()}));
         
         FluidGrid_.setDensityDistortion(DensityDistortion_)
                   .setGammaCorrection(GammaCorrection_)
@@ -214,8 +221,11 @@ void BattleSub::drawEvent()
             if (!DevCam_)
             {
                 auto Pos = PlayerSub_->Hull.getBody()->GetPosition();
+                auto Vel = PlayerSub_->Hull.getBody()->GetLinearVelocity();
+
                 CameraObjectPlayer1_->resetTransformation();
-                CameraObjectPlayer1_->translate(Vector2(Pos.x, Pos.y));
+                CameraObjectPlayer1_->translate(Vector2(Pos.x+CamMoveAhead_.Value()[0],
+                                                        Pos.y+CamMoveAhead_.Value()[1]));
             }
         }
         
@@ -273,13 +283,16 @@ void BattleSub::drawEvent()
             ShaderMainDisplay_.bindTexture(*TexOtherPlayer_);
             MeshDisplayOtherPlayer_->draw(ShaderMainDisplay_);
         }
+        Vector2 vs{PlayerSub_->Hull.getBody()->GetLinearVelocity().x,
+                   PlayerSub_->Hull.getBody()->GetLinearVelocity().y};
+        float s = PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
+        CamMoveAhead_.interpolate(vs*vs*Math::sign(vs));
+        Zoom_.interpolate(s*s);
 
         updateUI();
                 
         swapBuffers();
         redraw();
-        
-        DevCam_ = false;
     }
     else
     {
@@ -450,6 +463,42 @@ void BattleSub::updateUI()
             ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
                 showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");
 
+        ImGui::End();
+
+        ImGui::Begin("Camera Dynamics Debug");
+            ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
+            ImGui::Indent();
+                ImGui::Checkbox("Enable AutoZoom", &Zoom_.IsAuto);
+                    showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
+                                "Zoom out when accelerating, zooms in when decelerating");
+                std::vector<float> Vals;
+                for (const auto Val : Zoom_.Values) {Vals.push_back(Val);}
+                ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
+                    showTooltip("Zoom history, 600 frames = 10s");
+                ImGui::SliderFloat("AutoZoom Speed", &Zoom_.Speed, 0.01f, 0.5f);
+                    showTooltip("Speed to adapt to new target value, lower is more dampened");
+                ImGui::SliderFloat("AutoZoom Strength", &Zoom_.Strength, 0.0f, 0.02f);
+                    showTooltip("Amplitude of AutoZoom, lower is less zooming");
+            ImGui::Unindent();
+            ImGui::NewLine();
+            ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
+            ImGui::Indent();
+                ImGui::Checkbox("Enable AutoMove", &CamMoveAhead_.IsAuto);
+                    showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
+                                "Moves in velocity direction when accelerating, moves back when decelerating");
+                std::vector<float> ValsMoveX;
+                std::vector<float> ValsMoveY;
+                for (const auto ValMove : CamMoveAhead_.Values) {ValsMoveX.push_back(ValMove[0]);
+                                                                ValsMoveY.push_back(ValMove[1]);}
+                ImGui::PlotLines("Move X", ValsMoveX.data(), ValsMoveX.size());
+                    showTooltip("AutoMove history, 600 frames = 10s, x component");
+                ImGui::PlotLines("Move Y", ValsMoveY.data(), ValsMoveY.size());
+                    showTooltip("AutoMove history, 600 frames = 10s, y component");
+                ImGui::SliderFloat("AutoMove Speed", &CamMoveAhead_.Speed, 0.01f, 0.5f);
+                    showTooltip("Speed to adapt to new target value, lower is more dampened");
+                ImGui::SliderFloat("AutoMove Strength", &CamMoveAhead_.Strength, 0.0f, 1.0f);
+                    showTooltip("Amplitude of AutoMove, lower is less movement");
+            ImGui::Unindent();
         ImGui::End();
         
         ImGui::Begin("Menu");
@@ -636,7 +685,8 @@ void BattleSub::setupCameras()
     CameraObjectPlayer1_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer1_ = new SceneGraph::Camera2D{*CameraObjectPlayer1_};
     CameraPlayer1_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
-        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_, WindowResolutionY_/VisRes_*Zoom_}))
+        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_.Value(),
+                                                  WindowResolutionY_/VisRes_*Zoom_.Value()}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectCurrentPlayer_ = CameraObjectPlayer1_;
     CameraCurrentPlayer_ = CameraPlayer1_;
@@ -644,7 +694,8 @@ void BattleSub::setupCameras()
     CameraObjectPlayer2_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer2_ = new SceneGraph::Camera2D{*CameraObjectPlayer2_};
     CameraPlayer2_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
-                   .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_, WindowResolutionY_/VisRes_*Zoom_}))
+        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_.Value(),
+                                                  WindowResolutionY_/VisRes_*Zoom_.Value()}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectOtherPlayer_ = CameraObjectPlayer2_;
     CameraOtherPlayer_ = CameraPlayer2_;

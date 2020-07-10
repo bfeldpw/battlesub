@@ -1,5 +1,6 @@
 set(HEADERS
         battle_sub.h
+        camera_dynamics.h
         common.h
         contact_listener.h
         debris_factory.h
@@ -44,6 +45,7 @@ set(LIB_NOISE_LIBRARY
 set(SOURCES
         ${ImGui_INCLUDE_DIR}/imgui.cpp
         battle_sub.cpp
+        camera_dynamics.cpp
         emitter.cpp
         entity.cpp
         fluid_grid.cpp

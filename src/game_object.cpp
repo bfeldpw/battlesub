@@ -105,7 +105,8 @@ void GameObject::sink()
     Visuals_->setScaling({ScaleX_, ScaleY_});
     
     Drawable->setColorScale(ScaleSinkColor);
-        
+
+    if (ScaleX_ < 0.8f || ScaleY_ < 0.8f)
     Body_->SetActive(false);
 }
         

@@ -8,6 +8,7 @@
 #include <Magnum/GL/Framebuffer.h>
 #include <Magnum/ImGuiIntegration/Context.hpp>
 
+#include "camera_dynamics.h"
 #include "common.h"
 #include "contact_listener.h"
 #include "fluid_grid.h"
@@ -15,9 +16,10 @@
 #include "submarine.h"
 #include "timer.h"
 
+
 namespace BattleSub
 {
-    
+
 class BattleSub : public Platform::Application
 {
 
@@ -110,7 +112,8 @@ class BattleSub : public Platform::Application
         GameObject* CanyonBoundary = nullptr;
         
         float VisRes_ = 10.0f; // Visual Resolution in pixels per meter
-        float Zoom_ = 1.0f;
+        CameraMovement CamMoveAhead_;
+        CameraZoom Zoom_;
         bool DevCam_ = false;
 
 };
