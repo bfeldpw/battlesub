@@ -7,7 +7,6 @@
 #include <Magnum/GL/Shader.h>
 #include <Magnum/GL/Texture.h>
 #include <Magnum/GL/Version.h>
-#include <Magnum/Math/Matrix3.h>
 
 #include "shader_path.h"
 
@@ -30,7 +29,7 @@ class MainDisplayShader : public GL::AbstractShaderProgram
             GL::Shader Vert{GL::Version::GL330, GL::Shader::Type::Vertex};
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
-            Vert.addFile(Path_+"texture_base_shader.vert");
+            Vert.addFile(Path_+"texture_base_unit_shader.vert");
             Frag.addFile(Path_+"main_display_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
@@ -40,15 +39,7 @@ class MainDisplayShader : public GL::AbstractShaderProgram
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
             setUniform(uniformLocation("u_texture"), TextureUnit);
-            TransformationMatrixUniform = uniformLocation("u_matrix");
         }
-
-        MainDisplayShader& setTransformation(const Matrix3& t)
-        {
-            setUniform(TransformationMatrixUniform, t);
-            return *this;
-        }
-
         MainDisplayShader& bindTexture(GL::Texture2D& Texture)
         {
             Texture.bind(TextureUnit);
@@ -60,8 +51,6 @@ class MainDisplayShader : public GL::AbstractShaderProgram
         enum: Int { TextureUnit = 0 };
 
         std::string Path_{SHADER_PATH};
-
-        Int TransformationMatrixUniform;
 };
 
 #endif // MAIN_DISPLAY_SHADER_H

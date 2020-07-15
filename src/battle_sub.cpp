@@ -181,7 +181,7 @@ void BattleSub::viewportEvent(ViewportEvent& Event)
 //    FBOPlayer2_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer2_, 0)
 //               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
 
-//    ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}));
+    // ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}));
 
     CameraPlayer1_->setViewport(Event.framebufferSize());
 
@@ -263,6 +263,13 @@ void BattleSub::drawEvent()
         
         if (IsSplitscreen_)
         {
+            //--- Todo: To be called on toggle:
+            FBOCurrentPlayer_->setViewport({{}, {WindowResolutionX_/2, WindowResolutionY_}});
+            CameraCurrentPlayer_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/2/VisRes_*Zoom_.Value(),
+                                                                           WindowResolutionY_/VisRes_*Zoom_.Value()}))
+                .setViewport({WindowResolutionX_/2, WindowResolutionY_});
+            //---
+
             FBOOtherPlayer_->clearColor(0, Color4(0.0f, 0.0f, 0.0f, 1.0f))
                             .bind();
             
@@ -612,8 +619,7 @@ void BattleSub::setupFrameBuffersMainScreen()
                .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
                
     ShaderMainDisplay_ = MainDisplayShader{};
-    ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}))
-                      .bindTexture(TexPlayer1_);
+    ShaderMainDisplay_.bindTexture(TexPlayer1_);
 }
 
 void BattleSub::setupPlayerMesh()
@@ -623,20 +629,16 @@ void BattleSub::setupPlayerMesh()
         Vector2 Tex;
     };
     
-    float x = WindowResolutionX_*0.5f;
-    float y = WindowResolutionY_*0.5f;
-    Vertex Data[6]{
-        {{-x, -y}, { 0.0f,  0.0f}},
-        {{ x, -y}, { 0.5f,  0.0f}},
-        {{-x,  y}, { 0.0f,  0.5f}},
-        {{-x,  y}, { 0.0f,  0.5f}},
-        {{ x, -y}, { 0.5f,  0.0f}},
-        {{ x,  y}, { 0.5f,  0.5f}}};
+    Vertex Data[3]{
+        {{-1.0f, -1.0f}, { 0.0f,  0.0f}},
+        {{ 3.0f, -1.0f}, { 2.0f,  0.0f}},
+        {{-1.0f,  3.0f}, { 0.0f,  2.0f}}};
+
     GL::Buffer Buffer;
     Buffer.setData(Data, GL::BufferUsage::StaticDraw);
 
     MeshDisplayPlayer_ = GL::Mesh{};
-    MeshDisplayPlayer_.setCount(6)
+    MeshDisplayPlayer_.setCount(3)
                       .setPrimitive(GL::MeshPrimitive::Triangles)
                       .addVertexBuffer(std::move(Buffer), 0,
                                        MainDisplayShader::Position{},
@@ -652,8 +654,8 @@ void BattleSub::setupPlayerMeshLeft()
         Vector2 Tex;
     };
     
-    float x = WindowResolutionX_*0.5f;
-    float y = WindowResolutionY_*0.5f;
+    float x = 1.0f;//WindowResolutionX_*0.5f;
+    float y = 1.0f;//WindowResolutionY_*0.5f;
     Vertex Data[6]{
         {{-x, -y}, {0.25f, 0.0f}},
         {{ 0, -y}, {0.75f, 0.0f}},
@@ -681,8 +683,8 @@ void BattleSub::setupPlayerMeshRight()
         Vector2 Tex;
     };
     
-    float x = WindowResolutionX_*0.5f;
-    float y = WindowResolutionY_*0.5f;
+    float x = 1.0f;//WindowResolutionX_*0.5f;
+    float y = 1.0f;//WindowResolutionY_*0.5f;
     Vertex Data[6]{
         {{0, -y}, {0.25f, 0.0f}},
         {{x, -y}, {0.75f, 0.0f}},
