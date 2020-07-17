@@ -17,9 +17,6 @@ class MainDisplayShader : public GL::AbstractShaderProgram
 
     public:
         
-        typedef GL::Attribute<0, Vector2> Position;
-        typedef GL::Attribute<1, Vector2> TextureCoordinates;
-
         explicit MainDisplayShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
         explicit MainDisplayShader()
@@ -38,8 +35,20 @@ class MainDisplayShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
+            TexScaleUniformX_ = uniformLocation("u_tex_scale_x");
+            TexScaleUniformY_ = uniformLocation("u_tex_scale_y");
+
             setUniform(uniformLocation("u_texture"), TextureUnit);
+            setUniform(TexScaleUniformX_, 1.0f);
         }
+
+        MainDisplayShader& setTexScale(const float TexScaleX, const float TexScaleY)
+        {
+            setUniform(TexScaleUniformX_, TexScaleX);
+            setUniform(TexScaleUniformY_, TexScaleY);
+            return *this;
+        }
+
         MainDisplayShader& bindTexture(GL::Texture2D& Texture)
         {
             Texture.bind(TextureUnit);
@@ -49,6 +58,9 @@ class MainDisplayShader : public GL::AbstractShaderProgram
     private:
         
         enum: Int { TextureUnit = 0 };
+
+        Float TexScaleUniformX_ = 1.0f;
+        Float TexScaleUniformY_ = 1.0f;
 
         std::string Path_{SHADER_PATH};
 };
