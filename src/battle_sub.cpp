@@ -275,7 +275,7 @@ void BattleSub::drawEvent()
                                          {std::min(WindowResolutionX_, WINDOW_RESOLUTION_MAX_X),
                                           std::min(WindowResolutionY_, WINDOW_RESOLUTION_MAX_Y)}});
             CameraOtherPlayer_->setProjectionMatrix(Matrix3::projection({WindowResX/VisRes_,
-                                                                         WindowResolutionY_/VisRes_}));
+                                                                         WindowResolutionY_/VisRes_}))
                                .setViewport({WindowResX, WindowResolutionY_});
 
             FluidGrid_.display(CameraOtherPlayer_->projectionMatrix()*CameraOtherPlayer_->cameraMatrix(),
