@@ -43,9 +43,7 @@ class BattleSub : public Platform::Application
         
         void setupWindow();
         void setupFrameBuffersMainScreen();
-        void setupPlayerMesh();
-        void setupPlayerMeshLeft();
-        void setupPlayerMeshRight();
+        void setupMainDisplayMesh();
         void setupCameras();
         void setupGameObjects(entt::registry& Reg);
         
@@ -55,28 +53,15 @@ class BattleSub : public Platform::Application
         Timer SimTime_;
 
         //--- World ---//
-        int   WindowResolutionX_ = WINDOW_RESOLUTION_DEFAULT_X;
-        int   WindowResolutionY_ = WINDOW_RESOLUTION_DEFAULT_Y;
+        int   WindowResolutionX_ = WINDOW_RESOLUTION_MAX_X;
+        int   WindowResolutionY_ = WINDOW_RESOLUTION_MAX_Y;
 
         //--- Framebuffer related ---//
-        GL::Framebuffer* FBOCurrentPlayer_{nullptr};
-        GL::Framebuffer* FBOOtherPlayer_{nullptr};
-        GL::Framebuffer FBOPlayer1_{NoCreate};
-        GL::Framebuffer FBOPlayer2_{NoCreate};
-        
-        GL::Texture2D* TexCurrentPlayer_{nullptr};
-        GL::Texture2D* TexOtherPlayer_{nullptr};
-        GL::Texture2D TexPlayer1_{NoCreate};
-        GL::Texture2D TexPlayer2_{NoCreate};
-        
+        GL::Framebuffer FBOMainDisplay_{NoCreate};
+        GL::Mesh MeshMainDisplay_{NoCreate};
+        GL::Texture2D TexMainDisplay_{NoCreate};
         MainDisplayShader ShaderMainDisplay_{NoCreate};
-        
-        GL::Mesh* MeshDisplayCurrentPlayer_{nullptr};
-        GL::Mesh* MeshDisplayOtherPlayer_{nullptr};
-        GL::Mesh MeshDisplayPlayer_{NoCreate};
-        GL::Mesh MeshDisplayPlayerLeft_{NoCreate};
-        GL::Mesh MeshDisplayPlayerRight_{NoCreate};
-        
+       
         //--- Controls ---//
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;
@@ -112,8 +97,9 @@ class BattleSub : public Platform::Application
         GameObject* CanyonBoundary = nullptr;
         
         float VisRes_ = 10.0f; // Visual Resolution in pixels per meter
-        CameraMovement CamMoveAhead_;
-        CameraZoom Zoom_;
+        CameraDynamics CamMoveAheadX_;
+        CameraDynamics CamMoveAheadY_;
+        CameraDynamics Zoom_;
         bool DevCam_ = false;
 
 };

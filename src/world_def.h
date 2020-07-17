@@ -9,9 +9,6 @@ constexpr float WORLD_SIZE_DEFAULT_Y = 256.0f;
 constexpr int WINDOW_RESOLUTION_MAX_X = 4096;
 constexpr int WINDOW_RESOLUTION_MAX_Y = 2048;
 
-constexpr int WINDOW_RESOLUTION_DEFAULT_X = 2048;
-constexpr int WINDOW_RESOLUTION_DEFAULT_Y = 1024;
-
 using namespace Magnum;
 
 constexpr GL::SamplerFilter FLUID_GRID_DIFFUSION_FILTER = GL::SamplerFilter::Linear;

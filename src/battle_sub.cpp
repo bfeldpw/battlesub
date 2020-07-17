@@ -23,13 +23,9 @@ namespace BattleSub{
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
     this->setupWindow();
-
     this->setupFrameBuffersMainScreen();
-    
-    this->setupPlayerMesh();
-    this->setupPlayerMeshLeft();
-    this->setupPlayerMeshRight();
-    
+    this->setupMainDisplayMesh();
+
     GlobalResources::Get.init();
     
     this->setupCameras();
@@ -169,21 +165,21 @@ void BattleSub::viewportEvent(ViewportEvent& Event)
 
     GL::defaultFramebuffer.setViewport({{}, Event.framebufferSize()});
 
-//    TexPlayer1_ = GL::Texture2D{};
+//    TexMainDisplay_ = GL::Texture2D{};
 //    TexPlayer2_ = GL::Texture2D{};
-//    TexPlayer1_.setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WindowResolutionX_, WindowResolutionY_});
+//    TexMainDisplay_.setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WindowResolutionX_, WindowResolutionY_});
 //    TexPlayer2_.setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WindowResolutionX_, WindowResolutionY_});
-//    FBOPlayer1_.setViewport({{}, Event.framebufferSize()});
+//    FBOMainDisplay_.setViewport({{}, Event.framebufferSize()});
 //    FBOPlayer2_.setViewport({{}, Event.framebufferSize()});
 
-//    FBOPlayer1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer1_, 0)
+//    FBOMainDisplay_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexMainDisplay_, 0)
 //               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
 //    FBOPlayer2_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer2_, 0)
 //               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
 
-//    ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}));
+    // ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}));
 
-    CameraPlayer1_->setViewport(Event.framebufferSize());
+    // CameraPlayer1_->setViewport(Event.framebufferSize());
 
 
 //    this->setupFrameBuffersMainScreen();
@@ -224,8 +220,8 @@ void BattleSub::drawEvent()
                 auto Vel = PlayerSub_->Hull.getBody()->GetLinearVelocity();
 
                 CameraObjectPlayer1_->resetTransformation();
-                CameraObjectPlayer1_->translate(Vector2(Pos.x+CamMoveAhead_.Value()[0],
-                                                        Pos.y+CamMoveAhead_.Value()[1]));
+                CameraObjectPlayer1_->translate(Vector2(Pos.x+CamMoveAheadX_.Value(),
+                                                        Pos.y+CamMoveAheadY_.Value()));
             }
         }
         
@@ -240,53 +236,72 @@ void BattleSub::drawEvent()
             FluidGrid_.process(SimTime_.time());
             IsStepForward_ = false;
         }
-        
+
+        //----------------------------------
+        // Adjust viewports and projections
+        //----------------------------------
+        // FBO viewport may not exceed maximum size of underlying texture. Above
+        // this size, texture won't be pixel perfect but interpolated
+        //
+        auto WindowResX = WindowResolutionX_;
+        auto WindowResMaxX = WINDOW_RESOLUTION_MAX_X;
         if (IsSplitscreen_)
         {
-            MeshDisplayCurrentPlayer_ = &MeshDisplayPlayerLeft_;
-            MeshDisplayOtherPlayer_ = &MeshDisplayPlayerRight_;
+            WindowResX /= 2;
+            WindowResMaxX /= 2;
         }
-        else
-        {
-            MeshDisplayCurrentPlayer_ = &MeshDisplayPlayer_;
-            MeshDisplayOtherPlayer_ = &MeshDisplayPlayer_;
-        }
-        
-        FBOCurrentPlayer_->clearColor(0, Color4(0.0f, 0.0f, 0.0f, 1.0f))
-                          .bind();
-                
+
+        FBOMainDisplay_.clearColor(0, Color4(0.2f, 0.2f, 0.3f, 1.0f))
+                       .setViewport({{0, 0}, {std::min(WindowResX, WindowResMaxX),
+                                              std::min(WindowResolutionY_, WINDOW_RESOLUTION_MAX_Y)}})
+                       .bind();
+        // Camera projection and viewport have to use the full resolution, even
+        // if above texture size, in order to render with the correct aspect ratio
+        CameraCurrentPlayer_->setProjectionMatrix(Matrix3::projection({WindowResX/VisRes_*Zoom_.Value(),
+                                                                       WindowResolutionY_/VisRes_*Zoom_.Value()}))
+                             .setViewport({{WindowResX, WindowResolutionY_}});
+
         FluidGrid_.display(CameraCurrentPlayer_->projectionMatrix()*CameraCurrentPlayer_->cameraMatrix(),
                             FluidBuffer_);
         
         CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
         CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
-        
+
+        // In case of splitscreen, also render the second view
         if (IsSplitscreen_)
         {
-            FBOOtherPlayer_->clearColor(0, Color4(0.0f, 0.0f, 0.0f, 1.0f))
-                            .bind();
-            
+            //--- Todo: To be called on toggle:
+            FBOMainDisplay_.setViewport({{std::min(WindowResX, WindowResMaxX), 0},
+                                         {std::min(WindowResolutionX_, WINDOW_RESOLUTION_MAX_X),
+                                          std::min(WindowResolutionY_, WINDOW_RESOLUTION_MAX_Y)}});
+            CameraOtherPlayer_->setProjectionMatrix(Matrix3::projection({WindowResX/VisRes_,
+                                                                         WindowResolutionY_/VisRes_}))
+                               .setViewport({WindowResX, WindowResolutionY_});
+
             FluidGrid_.display(CameraOtherPlayer_->projectionMatrix()*CameraOtherPlayer_->cameraMatrix(),
                                FluidBuffer_);
             
             CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
             CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
         }
-        
+
+        //-----------------------------------------------------------------------
+        // Render final scene, i.e. render FBOMainDisplay to default framebuffer
+        //-----------------------------------------------------------------------
         GL::defaultFramebuffer.bind();
         
-        ShaderMainDisplay_.bindTexture(*TexCurrentPlayer_);
-        MeshDisplayCurrentPlayer_->draw(ShaderMainDisplay_);
+        ShaderMainDisplay_.bindTexture(TexMainDisplay_)
+                          .setTexScale(std::min(1.0f, float(WindowResolutionX_)/WINDOW_RESOLUTION_MAX_X),
+                                       std::min(1.0f, float(WindowResolutionY_)/WINDOW_RESOLUTION_MAX_Y));
+        MeshMainDisplay_.draw(ShaderMainDisplay_);
         
-        if (IsSplitscreen_)
-        {
-            ShaderMainDisplay_.bindTexture(*TexOtherPlayer_);
-            MeshDisplayOtherPlayer_->draw(ShaderMainDisplay_);
-        }
         Vector2 vs{PlayerSub_->Hull.getBody()->GetLinearVelocity().x,
                    PlayerSub_->Hull.getBody()->GetLinearVelocity().y};
         float s = PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
-        CamMoveAhead_.interpolate(vs*vs*Math::sign(vs));
+        float s_x = PlayerSub_->Hull.getBody()->GetLinearVelocity().x;
+        float s_y = PlayerSub_->Hull.getBody()->GetLinearVelocity().y;
+        CamMoveAheadX_.interpolate(s_x*s_x*Math::sign(s_x));
+        CamMoveAheadY_.interpolate(s_y*s_y*Math::sign(s_y));
         Zoom_.interpolate(s*s);
 
         updateUI();
@@ -466,11 +481,13 @@ void BattleSub::updateUI()
         ImGui::End();
 
         ImGui::Begin("Camera Dynamics Debug");
+
             ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
             ImGui::Indent();
                 ImGui::Checkbox("Enable AutoZoom", &Zoom_.IsAuto);
                     showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
                                 "Zoom out when accelerating, zooms in when decelerating");
+                    if (Zoom_.IsAuto) Zoom_.Base = 0.2f;
                 std::vector<float> Vals;
                 for (const auto Val : Zoom_.Values) {Vals.push_back(Val);}
                 ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
@@ -480,25 +497,43 @@ void BattleSub::updateUI()
                 ImGui::SliderFloat("AutoZoom Strength", &Zoom_.Strength, 0.0f, 0.02f);
                     showTooltip("Amplitude of AutoZoom, lower is less zooming");
             ImGui::Unindent();
+
             ImGui::NewLine();
+
             ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
             ImGui::Indent();
-                ImGui::Checkbox("Enable AutoMove", &CamMoveAhead_.IsAuto);
+                static bool CamMoveAheadIsAuto_s = true;
+
+                ImGui::Checkbox("Enable AutoMove", &CamMoveAheadIsAuto_s);
                     showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
                                 "Moves in velocity direction when accelerating, moves back when decelerating");
+
+                CamMoveAheadX_.IsAuto = CamMoveAheadIsAuto_s;
+                CamMoveAheadY_.IsAuto = CamMoveAheadIsAuto_s;
+
                 std::vector<float> ValsMoveX;
                 std::vector<float> ValsMoveY;
-                for (const auto ValMove : CamMoveAhead_.Values) {ValsMoveX.push_back(ValMove[0]);
-                                                                ValsMoveY.push_back(ValMove[1]);}
+                for (const auto ValMove : CamMoveAheadX_.Values) ValsMoveX.push_back(ValMove);
+                for (const auto ValMove : CamMoveAheadY_.Values) ValsMoveY.push_back(ValMove);
                 ImGui::PlotLines("Move X", ValsMoveX.data(), ValsMoveX.size());
                     showTooltip("AutoMove history, 600 frames = 10s, x component");
                 ImGui::PlotLines("Move Y", ValsMoveY.data(), ValsMoveY.size());
                     showTooltip("AutoMove history, 600 frames = 10s, y component");
-                ImGui::SliderFloat("AutoMove Speed", &CamMoveAhead_.Speed, 0.01f, 0.5f);
+
+                static float CamMoveAheadSpeed_s = 0.1f;
+                static float CamMoveAheadStrength_s = 0.25f;
+
+                ImGui::SliderFloat("AutoMove Speed", &CamMoveAheadSpeed_s, 0.01f, 0.5f);
                     showTooltip("Speed to adapt to new target value, lower is more dampened");
-                ImGui::SliderFloat("AutoMove Strength", &CamMoveAhead_.Strength, 0.0f, 1.0f);
+                ImGui::SliderFloat("AutoMove Strength", &CamMoveAheadStrength_s, 0.0f, 1.0f);
                     showTooltip("Amplitude of AutoMove, lower is less movement");
+
+                CamMoveAheadX_.Speed = CamMoveAheadSpeed_s;
+                CamMoveAheadY_.Speed = CamMoveAheadSpeed_s;
+                CamMoveAheadX_.Strength = CamMoveAheadStrength_s;
+                CamMoveAheadY_.Strength = CamMoveAheadStrength_s;
             ImGui::Unindent();
+
         ImGui::End();
         
         ImGui::Begin("Menu");
@@ -559,132 +594,35 @@ void BattleSub::setupWindow()
 
 void BattleSub::setupFrameBuffersMainScreen()
 {
-    FBOPlayer1_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y}}};
-    FBOPlayer2_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y}}};
-    FBOPlayer1_.setViewport({{}, {WindowResolutionX_, WindowResolutionY_}});
-    FBOPlayer2_.setViewport({{}, {WindowResolutionX_, WindowResolutionY_}});
-    FBOCurrentPlayer_ = &FBOPlayer1_;
-    FBOOtherPlayer_ = &FBOPlayer2_;
-    TexPlayer1_ = GL::Texture2D{};
-    TexPlayer2_ = GL::Texture2D{};
-    TexCurrentPlayer_ = &TexPlayer1_;
-    TexOtherPlayer_ = &TexPlayer2_;
-    
-    TexPlayer1_.setMagnificationFilter(GL::SamplerFilter::Linear)
-               .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
-               .setWrapping(GL::SamplerWrapping::ClampToBorder)
-               .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-               .setStorage(Math::log2(WINDOW_RESOLUTION_MAX_X)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y})
-               .generateMipmap();
-    TexPlayer2_.setMagnificationFilter(GL::SamplerFilter::Linear)
-               .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
-               .setWrapping(GL::SamplerWrapping::ClampToBorder)
-               .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-               .setStorage(Math::log2(WINDOW_RESOLUTION_MAX_X)+1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y})
-               .generateMipmap();
-    
-    FBOPlayer1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer1_, 0)
-               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
-    FBOPlayer2_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer2_, 0)
-               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
-               
+    FBOMainDisplay_ = GL::Framebuffer{{{0, 0},{WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y}}};
+    TexMainDisplay_ = GL::Texture2D{};
+
+    TexMainDisplay_.setMagnificationFilter(GL::SamplerFilter::Linear)
+                   .setMinificationFilter(GL::SamplerFilter::Linear, GL::SamplerMipmap::Linear)
+                   .setWrapping(GL::SamplerWrapping::ClampToBorder)
+                   .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
+                   .setStorage(1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y});
+
+    FBOMainDisplay_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexMainDisplay_, 0)
+                   .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+              
     ShaderMainDisplay_ = MainDisplayShader{};
-    ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}))
-                      .bindTexture(TexPlayer1_);
+    ShaderMainDisplay_.bindTexture(TexMainDisplay_);
+                      // .setTexScale(1.5f);
 }
 
-void BattleSub::setupPlayerMesh()
+void BattleSub::setupMainDisplayMesh()
 {
-    struct Vertex {
-        Vector2 Pos;
-        Vector2 Tex;
-    };
-    
-    float x = WindowResolutionX_*0.5f;
-    float y = WindowResolutionY_*0.5f;
-    Vertex Data[6]{
-        {{-x, -y}, { 0.0f,  0.0f}},
-        {{ x, -y}, { 0.5f,  0.0f}},
-        {{-x,  y}, { 0.0f,  0.5f}},
-        {{-x,  y}, { 0.0f,  0.5f}},
-        {{ x, -y}, { 0.5f,  0.0f}},
-        {{ x,  y}, { 0.5f,  0.5f}}};
-    GL::Buffer Buffer;
-    Buffer.setData(Data, GL::BufferUsage::StaticDraw);
-
-    MeshDisplayPlayer_ = GL::Mesh{};
-    MeshDisplayPlayer_.setCount(6)
-                      .setPrimitive(GL::MeshPrimitive::Triangles)
-                      .addVertexBuffer(std::move(Buffer), 0,
-                                       MainDisplayShader::Position{},
-                                       MainDisplayShader::TextureCoordinates{});
-    MeshDisplayCurrentPlayer_ = &MeshDisplayPlayer_;
-    MeshDisplayOtherPlayer_ = &MeshDisplayPlayer_;
-}
-
-void BattleSub::setupPlayerMeshLeft()
-{
-    struct Vertex {
-        Vector2 Pos;
-        Vector2 Tex;
-    };
-    
-    float x = WindowResolutionX_*0.5f;
-    float y = WindowResolutionY_*0.5f;
-    Vertex Data[6]{
-        {{-x, -y}, {0.25f, 0.0f}},
-        {{ 0, -y}, {0.75f, 0.0f}},
-        {{-x,  y}, {0.25f, 1.0f}},
-        {{-x,  y}, {0.25f, 1.0f}},
-        {{ 0, -y}, {0.75f, 0.0f}},
-        {{ 0,  y}, {0.75f, 1.0f}}
-    };
-
-    GL::Buffer Buffer;
-    Buffer.setData(Data, GL::BufferUsage::StaticDraw);
-
-    MeshDisplayPlayerLeft_ = GL::Mesh{};
-    MeshDisplayPlayerLeft_.setCount(6)
-                          .setPrimitive(GL::MeshPrimitive::Triangles)
-                          .addVertexBuffer(std::move(Buffer), 0,
-                                           MainDisplayShader::Position{},
-                                           MainDisplayShader::TextureCoordinates{});
-}
-
-void BattleSub::setupPlayerMeshRight()
-{
-    struct Vertex {
-        Vector2 Pos;
-        Vector2 Tex;
-    };
-    
-    float x = WindowResolutionX_*0.5f;
-    float y = WindowResolutionY_*0.5f;
-    Vertex Data[6]{
-        {{0, -y}, {0.25f, 0.0f}},
-        {{x, -y}, {0.75f, 0.0f}},
-        {{0,  y}, {0.25f, 1.0f}},
-        {{0,  y}, {0.25f, 1.0f}},
-        {{x, -y}, {0.75f, 0.0f}},
-        {{x,  y}, {0.75f, 1.0f}}
-    };
-
-    GL::Buffer Buffer;
-    Buffer.setData(Data, GL::BufferUsage::StaticDraw);
-
-    MeshDisplayPlayerRight_ = GL::Mesh{};
-    MeshDisplayPlayerRight_.setCount(6)
-                           .setPrimitive(GL::MeshPrimitive::Triangles)
-                           .addVertexBuffer(std::move(Buffer), 0,
-                                            MainDisplayShader::Position{},
-                                            MainDisplayShader::TextureCoordinates{});
+    MeshMainDisplay_ = GL::Mesh{};
+    MeshMainDisplay_.setCount(3)
+                    .setPrimitive(GL::MeshPrimitive::Triangles);
 }
 
 void BattleSub::setupCameras()
 {
     CameraObjectPlayer1_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer1_ = new SceneGraph::Camera2D{*CameraObjectPlayer1_};
-    CameraPlayer1_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
+    CameraPlayer1_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::NotPreserved)
         .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_.Value(),
                                                   WindowResolutionY_/VisRes_*Zoom_.Value()}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
@@ -693,12 +631,22 @@ void BattleSub::setupCameras()
                    
     CameraObjectPlayer2_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer2_ = new SceneGraph::Camera2D{*CameraObjectPlayer2_};
-    CameraPlayer2_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
+    CameraPlayer2_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::NotPreserved)
         .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_.Value(),
                                                   WindowResolutionY_/VisRes_*Zoom_.Value()}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectOtherPlayer_ = CameraObjectPlayer2_;
     CameraOtherPlayer_ = CameraPlayer2_;
+
+    Zoom_.Base = 0.2f;
+    Zoom_.Speed = 0.1f;
+    Zoom_.Strength = 0.005f;
+    CamMoveAheadX_.Base = 0.0f;
+    CamMoveAheadX_.Speed = 0.1f;
+    CamMoveAheadX_.Strength = 0.25f;
+    CamMoveAheadY_.Base = 0.0f;
+    CamMoveAheadY_.Speed = 0.1f;
+    CamMoveAheadY_.Strength = 0.25f;
 }
 
 void BattleSub::setupGameObjects(entt::registry& Reg)
