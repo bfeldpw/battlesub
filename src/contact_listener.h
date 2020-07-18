@@ -59,8 +59,8 @@ class ContactListener : public b2ContactListener
                                   .setAngle(Angle)
                                   .setAngleStdDev(1.0f)
                                   .setNumber(20)
-                                  .setScale(Velocity.Length()*0.1+Mass*0.0001f)
-                                  .setScaleStdDev(Velocity.Length()*0.05+Mass*0.0001)
+                                  .setScale(Velocity.Length()*0.1f+Mass*0.0001f)
+                                  .setScaleStdDev(Velocity.Length()*0.05f+Mass*0.0001f)
                                   .setVelocity(Velocity.Length()*0.1f+1.0f)
                                   .setVelocityStdDev(Velocity.Length()*0.05f);
                 }

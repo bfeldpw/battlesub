@@ -452,7 +452,7 @@ void ResourceStorage::initLandscape()
     {
         Boundary.SetFrequency(0.008);
         ShapeType Shape;
-        for (auto i=0.0f; i<2.0*b2_pi; i+=2.0*b2_pi/100.0)
+        for (auto i=0.0f; i<2.0f*b2_pi; i+=2.0f*b2_pi/100.0f)
         {
             auto Value = 5.0f * float(Boundary.GetValue(100.0 * std::cos(double(i)), 100.0 * std::sin(double(i))));
             

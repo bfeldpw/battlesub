@@ -217,7 +217,6 @@ void BattleSub::drawEvent()
             if (!DevCam_)
             {
                 auto Pos = PlayerSub_->Hull.getBody()->GetPosition();
-                auto Vel = PlayerSub_->Hull.getBody()->GetLinearVelocity();
 
                 CameraObjectPlayer1_->resetTransformation();
                 CameraObjectPlayer1_->translate(Vector2(Pos.x+CamMoveAheadX_.Value(),
