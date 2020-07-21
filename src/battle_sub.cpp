@@ -284,8 +284,11 @@ void BattleSub::drawEvent()
                           .setTexScale(std::min(1.0f, float(WindowResolutionX_)/WINDOW_RESOLUTION_MAX_X),
                                        std::min(1.0f, float(WindowResolutionY_)/WINDOW_RESOLUTION_MAX_Y));
         MeshMainDisplay_.draw(ShaderMainDisplay_);
-        
-        updateCameraDynamics();
+
+        if (!IsPaused_ || IsStepForward_)
+        {
+            updateCameraDynamics();
+        }
         updateUI();
                 
         swapBuffers();
