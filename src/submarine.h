@@ -10,8 +10,7 @@ class Submarine : public Entity
         
         GameObject       Hull;
         GameObject       Rudder;
-        b2RevoluteJoint* RudderJoint = nullptr;
-        
+
         Submarine& setPose(float PosX, float PosY, float Angle=0.0f)
         {
             if (IsInitialised)
@@ -29,7 +28,8 @@ class Submarine : public Entity
         }
         
         float getThrottle() const {return Throttle_;}
-        
+
+        void create(const float PosX, const float PosY, const float Angle);
         void fire(float GunPos);
         
         void fullStop()
@@ -58,6 +58,8 @@ class Submarine : public Entity
         void update();
         
     private:
+
+        b2RevoluteJoint* RudderJoint = nullptr;
 
         bool IsInitialised = false;
         

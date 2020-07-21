@@ -37,6 +37,7 @@ class BattleSub : public Platform::Application
         void viewportEvent(ViewportEvent& Evend) override;
         
         void cleanupAndExit();
+        void updateCameraDynamics();
         void updateGameObjects();
         void updateUI();
         
@@ -96,9 +97,12 @@ class BattleSub : public Platform::Application
         GameObject* CanyonBoundary = nullptr;
         
         float VisRes_ = 10.0f; // Visual Resolution in pixels per meter
-        CameraDynamics CamMoveAheadX_;
-        CameraDynamics CamMoveAheadY_;
-        CameraDynamics Zoom_;
+        CameraDynamics Cam1MoveAheadX_;
+        CameraDynamics Cam1MoveAheadY_;
+        CameraDynamics Cam1Zoom_;
+        CameraDynamics Cam2MoveAheadX_;
+        CameraDynamics Cam2MoveAheadY_;
+        CameraDynamics Cam2Zoom_;
         bool DevCam_ = false;
 
 };

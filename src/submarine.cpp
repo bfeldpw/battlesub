@@ -1,8 +1,54 @@
 #include "submarine.h"
 
+#include "drawable_generic.h"
 #include "global_factories.h"
 #include "global_resources.h"
-#include "drawable_generic.h"
+
+void Submarine::create(const float PosX, const float PosY, const float Angle)
+{
+    b2BodyDef BodyDef;
+    BodyDef.type = b2_dynamicBody;
+    BodyDef.active = true;
+    BodyDef.position.Set(PosX, PosY);
+    BodyDef.angle = Angle;
+    BodyDef.angularDamping = 0.8f;
+    BodyDef.linearDamping = 0.2f;
+    Hull.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
+        .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
+        .setScene(GlobalResources::Get.getScene())
+        .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
+        .setShader(GlobalResources::Get.getShader())
+        .setWorld(GlobalResources::Get.getWorld())
+        .init(GameObjectTypeE::SUBMARINE_HULL, BodyDef);
+    b2BodyDef BodyDefRudder;
+    BodyDefRudder.type = b2_dynamicBody;
+    BodyDefRudder.active = true;
+    BodyDefRudder.position.Set(PosX+8.0f*std::sin(Angle), PosY-8.0f*std::cos(Angle));
+    BodyDefRudder.angle = Angle;
+    BodyDefRudder.angularDamping = 0.8f;
+    BodyDefRudder.linearDamping = 0.2f;
+    Rudder.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
+          .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_RUDDER))
+          .setScene(GlobalResources::Get.getScene())
+          .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_RUDDER))
+          .setShader(GlobalResources::Get.getShader())
+          .setWorld(GlobalResources::Get.getWorld())
+          .init(GameObjectTypeE::SUBMARINE_RUDDER, BodyDefRudder);
+
+    b2RevoluteJointDef jointDef;
+    jointDef.lowerAngle = -0.25f * b2_pi; // -45 degrees
+    jointDef.upperAngle =  0.25f * b2_pi; // 45 degrees
+    jointDef.enableLimit = true;
+    jointDef.bodyA = Hull.getBody();
+    jointDef.localAnchorA = {0.0f, -6.0f};
+    jointDef.bodyB = Rudder.getBody();
+    jointDef.localAnchorB = {0.0f,  1.0f};
+    jointDef.maxMotorTorque = 10000.0f;
+    jointDef.motorSpeed = 0.0f;
+    jointDef.enableMotor = true;
+    jointDef.collideConnected = false;
+    RudderJoint = static_cast<b2RevoluteJoint*>(GlobalResources::Get.getWorld()->CreateJoint(&jointDef));
+}
 
 void Submarine::fire(float GunPos)
 {
@@ -51,4 +97,6 @@ void Submarine::update()
     Hull.getBody()->ApplyForceToCenter(Hull.getBody()->GetWorldVector({0.0f, Throttle_}), true);
     Hull.getBody()->ApplyForce(Rudder.getBody()->GetWorldVector({-WaterResistanceOnRudder, 0.0f }),
                                Hull.getBody()->GetWorldPoint({0.0f, -6.0f}), true);
+
+    RudderJoint->SetMotorSpeed(0.0f);
 }
