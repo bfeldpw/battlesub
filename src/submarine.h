@@ -3,6 +3,7 @@
 
 #include "entity.h"
 #include "game_object.h"
+#include "timer.h"
 
 class Submarine : public Entity
 {
@@ -10,6 +11,11 @@ class Submarine : public Entity
         
         GameObject       Hull;
         GameObject       Rudder;
+
+        Submarine()
+        {
+            GunRateTimer.start();
+        }
 
         Submarine& setPose(float PosX, float PosY, float Angle=0.0f)
         {
@@ -30,7 +36,7 @@ class Submarine : public Entity
         float getThrottle() const {return Throttle_;}
 
         void create(const float PosX, const float PosY, const float Angle);
-        void fire(float GunPos);
+        void fire();
         
         void fullStop()
         {
@@ -59,10 +65,15 @@ class Submarine : public Entity
         
     private:
 
+        constexpr static bool GUN_LEFT=false;
+        constexpr static bool GUN_RIGHT=true;
+        bool GunSide = GUN_LEFT;
+        Timer GunRateTimer;
+
         b2RevoluteJoint* RudderJoint = nullptr;
 
         bool IsInitialised = false;
-        
+
         float Rudder_   = 0.0f;
         float Throttle_ = 0.0f;
         

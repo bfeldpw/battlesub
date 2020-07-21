@@ -66,8 +66,12 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
         case KeyEvent::Key::Right: KeyPressedMap["right"] = true; break;
         case KeyEvent::Key::Up: KeyPressedMap["up"] = true; break;
         case KeyEvent::Key::LeftCtrl:
+            KeyPressedMap["ctrl_l"] = true;
             DevCam_ = true;
             break;
+        case KeyEvent::Key::RightCtrl: KeyPressedMap["ctrl_r"] = true; break;
+        case KeyEvent::Key::LeftShift: KeyPressedMap["shift_l"] = true; break;
+        case KeyEvent::Key::RightShift: KeyPressedMap["shift_r"] = true; break;
         case KeyEvent::Key::Esc:
         {
             IsExitTriggered_ = true;
@@ -93,8 +97,12 @@ void BattleSub::keyReleaseEvent(KeyEvent& Event)
         case KeyEvent::Key::Right: KeyPressedMap["right"] = false; break;
         case KeyEvent::Key::Up: KeyPressedMap["up"] = false; break;
         case KeyEvent::Key::LeftCtrl:
+            KeyPressedMap["ctrl_l"] = false;
             DevCam_ = false;
             break;
+        case KeyEvent::Key::RightCtrl: KeyPressedMap["ctrl_r"] = false; break;
+        case KeyEvent::Key::LeftShift: KeyPressedMap["shift_l"] = false; break;
+        case KeyEvent::Key::RightShift: KeyPressedMap["shift_r"] = false; break;
         default: break;
     }
 }
@@ -133,20 +141,7 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
 void BattleSub::mousePressEvent(MouseEvent& Event)
 {
     // Only react if not in UI mode
-    if (!ImGUI_.handleMousePressEvent(Event))
-    {
-        if(Event.button() == MouseEvent::Button::Left)
-        {
-            if (!(Event.modifiers() & MouseEvent::Modifier::Ctrl))
-            {
-                PlayerSub_->fire(-1.0f);
-            }
-        }
-        else if (Event.button() == MouseEvent::Button::Right)
-        {
-            PlayerSub_->fire(1.0f);
-        }
-    }
+    if (ImGUI_.handleMousePressEvent(Event)) return;
 }
 
 void BattleSub::mouseReleaseEvent(MouseEvent& Event)
@@ -180,6 +175,9 @@ void BattleSub::drawEvent()
         if (KeyPressedMap["left"] == true) PlayerSub2_->rudderLeft();
         if (KeyPressedMap["right"] == true) PlayerSub2_->rudderRight();
         if (KeyPressedMap["up"] == true) PlayerSub2_->throttleForward();
+        if (KeyPressedMap["shift_l"] == true) PlayerSub_->fire();
+        if (KeyPressedMap["shift_r"] == true) PlayerSub2_->fire();
+
 
         
         CameraPlayer1_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),

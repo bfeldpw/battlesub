@@ -50,39 +50,48 @@ void Submarine::create(const float PosX, const float PosY, const float Angle)
     RudderJoint = static_cast<b2RevoluteJoint*>(GlobalResources::Get.getWorld()->CreateJoint(&jointDef));
 }
 
-void Submarine::fire(float GunPos)
+void Submarine::fire()
 {
     assert(Hull.getBody() != nullptr);
+
+    float GunPos = 1.0f;
+
+    GunSide == GUN_LEFT ? GunPos = -1.0f : GunPos = 1.0f; 
+
+    if (GunRateTimer.split() > 0.1)
+    {
+        GameObject* Bullet = GlobalFactories::Projectiles.create();
     
-    GameObject* Bullet = GlobalFactories::Projectiles.create();
-    
-    b2BodyDef BodyDef;
-    BodyDef.type = b2_dynamicBody;
-    BodyDef.active = true;
-    BodyDef.position.Set(Hull.getBody()->GetPosition().x +
-                         Hull.getBody()->GetWorldVector({GunPos, 8.0f}).x,
-                         Hull.getBody()->GetPosition().y + 
-                         Hull.getBody()->GetWorldVector({GunPos, 8.0f}).y);
-    BodyDef.angle = Hull.getBody()->GetAngle();
-    BodyDef.angularDamping = 5.0f;
-    BodyDef.linearDamping = 1.0f;
-    BodyDef.bullet = true;
-    Bullet->setColor({0.7f, 0.5f, 0.3f, 1.0f})
-           .setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON))
-           .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::PROJECTILE))
-           .setScene(GlobalResources::Get.getScene())
-           .setShader(GlobalResources::Get.getShader())
-           .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::PROJECTILE))
-           .setWorld(GlobalResources::Get.getWorld()) 
-           .init(GameObjectTypeE::PROJECTILE, BodyDef);
-    b2Filter Filter;
-    Filter.categoryBits = 0x0004;
-//     Filter.maskBits = 0xFFFD;
-    Bullet->getBody()->GetFixtureList()->SetFilterData(Filter);
-    Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
-                                          Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
-    Hull.getBody()->ApplyLinearImpulse(Hull.getBody()->GetWorldVector({0.0f,-1.0f}),
-                                       Hull.getBody()->GetWorldPoint({GunPos, 8.0f}), true);
+        b2BodyDef BodyDef;
+        BodyDef.type = b2_dynamicBody;
+        BodyDef.active = true;
+        BodyDef.position.Set(Hull.getBody()->GetPosition().x +
+                            Hull.getBody()->GetWorldVector({GunPos, 8.0f}).x,
+                            Hull.getBody()->GetPosition().y +
+                            Hull.getBody()->GetWorldVector({GunPos, 8.0f}).y);
+        BodyDef.angle = Hull.getBody()->GetAngle();
+        BodyDef.angularDamping = 5.0f;
+        BodyDef.linearDamping = 1.0f;
+        BodyDef.bullet = true;
+        Bullet->setColor({0.7f, 0.5f, 0.3f, 1.0f})
+            .setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON))
+            .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::PROJECTILE))
+            .setScene(GlobalResources::Get.getScene())
+            .setShader(GlobalResources::Get.getShader())
+            .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::PROJECTILE))
+            .setWorld(GlobalResources::Get.getWorld())
+            .init(GameObjectTypeE::PROJECTILE, BodyDef);
+        b2Filter Filter;
+        Filter.categoryBits = 0x0004;
+    //     Filter.maskBits = 0xFFFD;
+        Bullet->getBody()->GetFixtureList()->SetFilterData(Filter);
+        Bullet->getBody()->ApplyLinearImpulse(Bullet->getBody()->GetWorldVector({0.0f,1.0e2f}),
+                                            Bullet->getBody()->GetWorldPoint({0.0f, 0.0f}), true);
+        Hull.getBody()->ApplyLinearImpulse(Hull.getBody()->GetWorldVector({0.0f,-1.0f}),
+                                           Hull.getBody()->GetWorldPoint({GunPos, 8.0f}), true);
+        GunSide^=true; // Just toggle
+        GunRateTimer.restart();
+    }
 }
 
 void Submarine::update()
