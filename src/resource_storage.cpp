@@ -71,8 +71,9 @@ void ResourceStorage::initDebris()
                           DEBRIS_SIZE_AVG*std::sin(i)});
     }
     
-    auto& Shapes = Shapes_[int(GameObjectTypeE::DEBRIS)];
-    
+    auto& ShapesLandscape = Shapes_[int(GameObjectTypeE::DEBRIS_LANDSCAPE)];
+    auto& ShapesSubmarine = Shapes_[int(GameObjectTypeE::DEBRIS_SUBMARINE)];
+
     b2FixtureDef Fixture;
     Fixture.density =  2.5f;
     Fixture.friction = 0.02f; // Use low value, since we are using a circle for performance reasons
@@ -85,17 +86,25 @@ void ResourceStorage::initDebris()
     // - radius 
     ShapeType ShapeP{{0.0f, 0.0f}, {0.05f, 0.0f}};
         
-    Shapes.ShapeDefs.push_back(std::move(ShapeP));
-    Shapes.FixtureDefs.push_back(std::move(Fixture));
-    Shapes.Type = ShapeEnumType::CIRCLE;
+    ShapesLandscape.ShapeDefs.push_back(ShapeP);
+    ShapesLandscape.FixtureDefs.push_back(Fixture);
+    ShapesLandscape.Type = ShapeEnumType::CIRCLE;
+    ShapesSubmarine.ShapeDefs.push_back(std::move(ShapeP));
+    ShapesSubmarine.FixtureDefs.push_back(std::move(Fixture));
+    ShapesSubmarine.Type = ShapeEnumType::CIRCLE;
             
-    GL::Mesh Mesh;
+    GL::Mesh MeshLandscape;
+    GL::Mesh MeshSubmarine;
     GL::Buffer Buffer;
     Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapeG), GL::BufferUsage::StaticDraw);
-    Mesh.setCount(ShapeG.size())
-        .setPrimitive(GL::MeshPrimitive::TriangleFan)
-        .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
-    Meshes_[int(GameObjectTypeE::DEBRIS)].push_back(std::move(Mesh));
+    MeshLandscape.setCount(ShapeG.size())
+                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
+                 .addVertexBuffer(Buffer, 0, Shaders::VertexColor2D::Position{});
+    MeshSubmarine.setCount(ShapeG.size())
+                 .setPrimitive(GL::MeshPrimitive::TriangleFan)
+                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+    Meshes_[int(GameObjectTypeE::DEBRIS_LANDSCAPE)].push_back(std::move(MeshLandscape));
+    Meshes_[int(GameObjectTypeE::DEBRIS_SUBMARINE)].push_back(std::move(MeshSubmarine));
 }
 
 void ResourceStorage::initHeightMap()
@@ -106,7 +115,7 @@ void ResourceStorage::initHeightMap()
     noise::module::Turbulence   FinalTerrain;
     noise::module::Exponent     Exponent;
     noise::module::Clamp        Plateus;
-      
+
     {
         double FrequencyRidged = 0.001;
         double LacunarityRidged = 1.7931;

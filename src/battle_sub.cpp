@@ -166,7 +166,6 @@ void BattleSub::drawEvent()
         GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
         GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.0f, 1.0f));
         
-        
         if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
         if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
         if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
@@ -178,8 +177,6 @@ void BattleSub::drawEvent()
         if (KeyPressedMap["shift_l"] == true) PlayerSub_->fire();
         if (KeyPressedMap["shift_r"] == true) PlayerSub2_->fire();
 
-
-        
         CameraPlayer1_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
                                                                  WindowResolutionY_/VisRes_*Cam1Zoom_.Value()}));
         CameraPlayer2_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam2Zoom_.Value(),

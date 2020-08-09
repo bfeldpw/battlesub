@@ -66,9 +66,9 @@ void Submarine::fire()
         BodyDef.type = b2_dynamicBody;
         BodyDef.active = true;
         BodyDef.position.Set(Hull.getBody()->GetPosition().x +
-                            Hull.getBody()->GetWorldVector({GunPos, 8.0f}).x,
+                            Hull.getBody()->GetWorldVector({GunPos, 8.75f}).x,
                             Hull.getBody()->GetPosition().y +
-                            Hull.getBody()->GetWorldVector({GunPos, 8.0f}).y);
+                            Hull.getBody()->GetWorldVector({GunPos, 8.75f}).y);
         BodyDef.angle = Hull.getBody()->GetAngle();
         BodyDef.angularDamping = 5.0f;
         BodyDef.linearDamping = 1.0f;
@@ -98,8 +98,14 @@ void Submarine::update()
 {
     assert(Hull.getBody() != nullptr);
     
-    constexpr float WATER_FORCE_FACTOR = 3000.0f;
+    constexpr float WATER_FORCE_FACTOR = 5000.0f;
     constexpr float RUDDER_LENGTH = 2.0f;
+
+    // b2Vec2 Force = {-(Rudder.getBody()->GetLocalVector(Hull.getBody()->GetLinearVelocity())).x*WATER_FORCE_FACTOR, 0.0f};
+    // b2Vec2 POA = {Rudder.getBody()->GetWorldPoint({0.0f, 0.0f})};
+
+    // Hull.getBody()->ApplyForceToCenter(Hull.getBody()->GetWorldVector({0.0f, Throttle_}), true);
+    // Rudder.getBody()->ApplyForce(Force, POA, true);
 
     float WaterResistanceOnRudder = RUDDER_LENGTH * Rudder.getBody()->GetLocalVector(Hull.getBody()->GetLinearVelocity()).x * WATER_FORCE_FACTOR;
     

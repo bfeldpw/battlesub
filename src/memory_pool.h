@@ -36,7 +36,7 @@ class MemoryPool
             else
             {
                 GlobalErrorHandler.reportError("Exceeding memory pool limits.");
-                return &Dummy_;
+                return nullptr;
             }
         }
 
@@ -59,8 +59,7 @@ class MemoryPool
         
         std::vector<T*>     FreeItems_;
         std::array<T, S>    Items_;
-        T                   Dummy_;
-        
+
 };
 
 #endif // MEMORY_POOL_H

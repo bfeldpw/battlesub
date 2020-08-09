@@ -34,7 +34,8 @@ typedef std::vector<GL::Mesh>   MeshesType;
 
 enum class GameObjectTypeE : int
 {
-    DEBRIS,
+    DEBRIS_LANDSCAPE,
+    DEBRIS_SUBMARINE,
     LANDSCAPE,
     PROJECTILE,
     SUBMARINE_HULL,
@@ -75,7 +76,7 @@ class GameObject : public Entity
             assert(Body_ != nullptr);
             
             // Body starts sinking if too slow
-            if ((Body_->GetLinearVelocity().Length() < 0.01f) || (Age_.split() > 20.0))
+            if ((Body_->GetLinearVelocity().Length() < 0.01f) || (Age_.split() > 5.0))
             {
                 this->sink();
             }
