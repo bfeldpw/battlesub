@@ -55,6 +55,9 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
             KeyPressedMap["p"] = true;
             IsPaused_ ^= true;
             break;
+        case KeyEvent::Key::Q:
+            if (IsMainMenuDisplayed_) IsExitTriggered_ = true;
+            break;
         case KeyEvent::Key::T: PlayerSub_->setPose(-100.0f, 20.0f, 0.3f); break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = true; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = true; break;
@@ -74,7 +77,7 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
         case KeyEvent::Key::RightShift: KeyPressedMap["shift_r"] = true; break;
         case KeyEvent::Key::Esc:
         {
-            IsExitTriggered_ = true;
+            IsMainMenuDisplayed_ ^= true;
             break;
         }
         case KeyEvent::Key::Space:
@@ -427,137 +430,181 @@ void BattleSub::updateUI()
     
     ImGUI_.newFrame();
     {
-        ImGui::Begin("Debug");
-        
-            ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
-            ImGui::Indent();
-                ImGui::Text("%.3f ms; (%.1f FPS)",
-                    1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
-            ImGui::Unindent();
-        
-            int Buffer = static_cast<int>(FluidBuffer_);
-            ImGui::NewLine();
-            ImGui::TextColored(ImVec4(1,1,0,1), "Buffer Selection");
-            ImGui::Indent();
-                ImGui::RadioButton("Density Sources", &Buffer, 0);
-                ImGui::RadioButton("Density Base", &Buffer, 1);
-                ImGui::RadioButton("Velocity Sources", &Buffer, 2);
-                ImGui::RadioButton("Velocity Buffer Front", &Buffer, 3);
-                ImGui::RadioButton("Velocity Buffer Back", &Buffer, 4);
-                ImGui::RadioButton("Density Buffer Front", &Buffer, 5);
-                ImGui::RadioButton("Density Buffer Back", &Buffer, 6);
-                ImGui::RadioButton("Ground Distorted", &Buffer, 7);
-                ImGui::RadioButton("Final Composition", &Buffer, 8);
+        if (IsDebugDisplayed_)
+        {
+            ImGui::Begin("Debug");
+
+                ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
+                ImGui::Indent();
+                    ImGui::Text("%.3f ms; (%.1f FPS)",
+                        1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
+                ImGui::Unindent();
+
+                int Buffer = static_cast<int>(FluidBuffer_);
                 ImGui::NewLine();
-                ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
-                    showTooltip("Show magnitude or show colour-coded direction, too.");
-            ImGui::Unindent();
-            FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
-            
-            ImGui::NewLine();
-            ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");
-            ImGui::NewLine();
-            ImGui::SliderFloat("Gamma Correction", &GammaCorrection_, 0.5f, 5.0f);
-                showTooltip("Gamma correction value for the fluid. Default value of 2.2 should gamma correct monitor defaults.\n"
-                            "Higher value will brighten up the scene.");
-            ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
-                showTooltip("Scale colour values for displaying velocity\n"
-                            "The given value defines the upper bound in m/s, everything above is capped.\n"
-                            "E.g. a value of 20.0 will scale colour values to the interval [0, 20] m/s.");
-            ImGui::NewLine();
-            ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
-            ImGui::NewLine();
-            ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
-                showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
-                            "Base density (background) will be distorted by x * advection, e.g.:\n"
-                            "  Value 200: A velocity of 1m/s will distort by 200m");
-            ImGui::SliderFloat("Velocity Advection Factor", &VelocityAdvectionFactor_, 0.0f, 2.0f);
-                showTooltip("Factor for velocity advection.\nA lower value than 1.0 will move the velocity field slower than self-advection.\n"
-                            "A higher value than 1.0 will move the velocity field faster than self-advection.");
-            ImGui::SliderFloat("Velocity Diffusion Gain", &VelocityDiffusionGain_, 0.0f, 10.0f);
-                showTooltip("The higher the value, the more the velocity sources will be amplified.");
-            ImGui::SliderFloat("Velocity Diffusion Rate", &VelocityDiffusionRate_, 0.0f, 10.0f);
-                showTooltip("The higher the value, the slower the velocity will diffuse.");
-            
-            ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
-                showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");
+                ImGui::TextColored(ImVec4(1,1,0,1), "Buffer Selection");
+                ImGui::Indent();
+                    ImGui::RadioButton("Density Sources", &Buffer, 0);
+                    ImGui::RadioButton("Density Base", &Buffer, 1);
+                    ImGui::RadioButton("Velocity Sources", &Buffer, 2);
+                    ImGui::RadioButton("Velocity Buffer Front", &Buffer, 3);
+                    ImGui::RadioButton("Velocity Buffer Back", &Buffer, 4);
+                    ImGui::RadioButton("Density Buffer Front", &Buffer, 5);
+                    ImGui::RadioButton("Density Buffer Back", &Buffer, 6);
+                    ImGui::RadioButton("Ground Distorted", &Buffer, 7);
+                    ImGui::RadioButton("Final Composition", &Buffer, 8);
+                    ImGui::NewLine();
+                    ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
+                        showTooltip("Show magnitude or show colour-coded direction, too.");
+                ImGui::Unindent();
+                FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
 
+                ImGui::NewLine();
+                ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");
+                ImGui::NewLine();
+                ImGui::SliderFloat("Gamma Correction", &GammaCorrection_, 0.5f, 5.0f);
+                    showTooltip("Gamma correction value for the fluid. Default value of 2.2 should gamma correct monitor defaults.\n"
+                                "Higher value will brighten up the scene.");
+                ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
+                    showTooltip("Scale colour values for displaying velocity\n"
+                                "The given value defines the upper bound in m/s, everything above is capped.\n"
+                                "E.g. a value of 20.0 will scale colour values to the interval [0, 20] m/s.");
+                ImGui::NewLine();
+                ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
+                ImGui::NewLine();
+                ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
+                    showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
+                                "Base density (background) will be distorted by x * advection, e.g.:\n"
+                                "  Value 200: A velocity of 1m/s will distort by 200m");
+                ImGui::SliderFloat("Velocity Advection Factor", &VelocityAdvectionFactor_, 0.0f, 2.0f);
+                    showTooltip("Factor for velocity advection.\nA lower value than 1.0 will move the velocity field slower than self-advection.\n"
+                                "A higher value than 1.0 will move the velocity field faster than self-advection.");
+                ImGui::SliderFloat("Velocity Diffusion Gain", &VelocityDiffusionGain_, 0.0f, 10.0f);
+                    showTooltip("The higher the value, the more the velocity sources will be amplified.");
+                ImGui::SliderFloat("Velocity Diffusion Rate", &VelocityDiffusionRate_, 0.0f, 10.0f);
+                    showTooltip("The higher the value, the slower the velocity will diffuse.");
+
+                ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
+                    showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");
+
+            ImGui::End();
+
+            ImGui::Begin("Camera Dynamics Debug");
+
+                ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
+                ImGui::Indent();
+                    ImGui::Checkbox("Enable AutoZoom", &Cam1Zoom_.IsAuto);
+                        showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
+                                    "Zoom out when accelerating, zooms in when decelerating");
+                        if (Cam1Zoom_.IsAuto) Cam1Zoom_.Base = 0.2f;
+                    std::vector<float> Vals;
+                    for (const auto Val : Cam1Zoom_.Values) {Vals.push_back(Val);}
+                    ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
+                        showTooltip("Zoom history, 600 frames = 10s");
+                    ImGui::SliderFloat("AutoZoom Speed", &Cam1Zoom_.Speed, 0.01f, 0.5f);
+                        showTooltip("Speed to adapt to new target value, lower is more dampened");
+                    ImGui::SliderFloat("AutoZoom Strength", &Cam1Zoom_.Strength, 0.0f, 0.02f);
+                        showTooltip("Amplitude of AutoZoom, lower is less zooming");
+                ImGui::Unindent();
+
+                ImGui::NewLine();
+
+                ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
+                ImGui::Indent();
+                    static bool Cam1MoveAheadIsAuto_s = true;
+
+                    ImGui::Checkbox("Enable AutoMove", &Cam1MoveAheadIsAuto_s);
+                        showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
+                                    "Moves in velocity direction when accelerating, moves back when decelerating");
+
+                    Cam1MoveAheadX_.IsAuto = Cam1MoveAheadIsAuto_s;
+                    Cam1MoveAheadY_.IsAuto = Cam1MoveAheadIsAuto_s;
+
+                    std::vector<float> ValsMoveX;
+                    std::vector<float> ValsMoveY;
+                    for (const auto ValMove : Cam1MoveAheadX_.Values) ValsMoveX.push_back(ValMove);
+                    for (const auto ValMove : Cam1MoveAheadY_.Values) ValsMoveY.push_back(ValMove);
+                    ImGui::PlotLines("Move X", ValsMoveX.data(), ValsMoveX.size());
+                        showTooltip("AutoMove history, 600 frames = 10s, x component");
+                    ImGui::PlotLines("Move Y", ValsMoveY.data(), ValsMoveY.size());
+                        showTooltip("AutoMove history, 600 frames = 10s, y component");
+
+                    static float Cam1MoveAheadSpeed_s = 0.1f;
+                    static float Cam1MoveAheadStrength_s = 0.25f;
+
+                    ImGui::SliderFloat("AutoMove Speed", &Cam1MoveAheadSpeed_s, 0.01f, 0.5f);
+                        showTooltip("Speed to adapt to new target value, lower is more dampened");
+                    ImGui::SliderFloat("AutoMove Strength", &Cam1MoveAheadStrength_s, 0.0f, 1.0f);
+                        showTooltip("Amplitude of AutoMove, lower is less movement");
+
+                    Cam1MoveAheadX_.Speed = Cam1MoveAheadSpeed_s;
+                    Cam1MoveAheadY_.Speed = Cam1MoveAheadSpeed_s;
+                    Cam1MoveAheadX_.Strength = Cam1MoveAheadStrength_s;
+                    Cam1MoveAheadY_.Strength = Cam1MoveAheadStrength_s;
+                ImGui::Unindent();
+
+            ImGui::End();
+        }
+
+        if (IsMainMenuDisplayed_)
+        {
+            ImGui::Begin("Menu");
+
+                ImGui::Checkbox("Tooltips", &IsTooltipsEnabled_);
+                    showTooltip("Guess what...");
+                ImGui::Checkbox("Split screen", &IsSplitscreen_);
+                    showTooltip("Toggle split screen mode");
+                ImGui::Checkbox("Debug", &IsDebugDisplayed_);
+                    showTooltip("Toggle debug mode");
+
+                static std::string Label;
+                if (IsPaused_) Label = "Resume               ";
+                else Label = "Pause                ";
+                if (ImGui::Button(Label.c_str())) IsPaused_ ^= 1;
+                    showTooltip("Pause/Resume the game");
+                if (ImGui::Button("Quit              <q>")) IsExitTriggered_ = true;
+                    showTooltip("Quit BattleSub, exit to desktop");
+
+            ImGui::End();
+        }
+
+        // Submarine stats
+
+        ImVec2 StatsPosSub1 = ImVec2(10, 10);
+        ImGui::SetNextWindowPos(StatsPosSub1, ImGuiCond_Always);
+        ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
+        ImGuiWindowFlags WindowFlags = ImGuiWindowFlags_NoDecoration |
+                                       ImGuiWindowFlags_AlwaysAutoResize |
+                                       ImGuiWindowFlags_NoSavedSettings |
+                                       ImGuiWindowFlags_NoFocusOnAppearing |
+                                       ImGuiWindowFlags_NoInputs |
+                                       ImGuiWindowFlags_NoNav |
+                                       ImGuiWindowFlags_NoMove;
+        bool CloseButton = false;
+        ImGui::Begin("Submarine 1", &CloseButton, WindowFlags);
+            ImGui::Text("Hull Integrity: ");
         ImGui::End();
+        if (IsSplitscreen_)
+        {
+            // UIStyle_->WindowRounding = 0.0f;
 
-        ImGui::Begin("Camera Dynamics Debug");
-
-            ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
-            ImGui::Indent();
-                ImGui::Checkbox("Enable AutoZoom", &Cam1Zoom_.IsAuto);
-                    showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
-                                "Zoom out when accelerating, zooms in when decelerating");
-                    if (Cam1Zoom_.IsAuto) Cam1Zoom_.Base = 0.2f;
-                std::vector<float> Vals;
-                for (const auto Val : Cam1Zoom_.Values) {Vals.push_back(Val);}
-                ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
-                    showTooltip("Zoom history, 600 frames = 10s");
-                ImGui::SliderFloat("AutoZoom Speed", &Cam1Zoom_.Speed, 0.01f, 0.5f);
-                    showTooltip("Speed to adapt to new target value, lower is more dampened");
-                ImGui::SliderFloat("AutoZoom Strength", &Cam1Zoom_.Strength, 0.0f, 0.02f);
-                    showTooltip("Amplitude of AutoZoom, lower is less zooming");
-            ImGui::Unindent();
-
-            ImGui::NewLine();
-
-            ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
-            ImGui::Indent();
-                static bool Cam1MoveAheadIsAuto_s = true;
-
-                ImGui::Checkbox("Enable AutoMove", &Cam1MoveAheadIsAuto_s);
-                    showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
-                                "Moves in velocity direction when accelerating, moves back when decelerating");
-
-                Cam1MoveAheadX_.IsAuto = Cam1MoveAheadIsAuto_s;
-                Cam1MoveAheadY_.IsAuto = Cam1MoveAheadIsAuto_s;
-
-                std::vector<float> ValsMoveX;
-                std::vector<float> ValsMoveY;
-                for (const auto ValMove : Cam1MoveAheadX_.Values) ValsMoveX.push_back(ValMove);
-                for (const auto ValMove : Cam1MoveAheadY_.Values) ValsMoveY.push_back(ValMove);
-                ImGui::PlotLines("Move X", ValsMoveX.data(), ValsMoveX.size());
-                    showTooltip("AutoMove history, 600 frames = 10s, x component");
-                ImGui::PlotLines("Move Y", ValsMoveY.data(), ValsMoveY.size());
-                    showTooltip("AutoMove history, 600 frames = 10s, y component");
-
-                static float Cam1MoveAheadSpeed_s = 0.1f;
-                static float Cam1MoveAheadStrength_s = 0.25f;
-
-                ImGui::SliderFloat("AutoMove Speed", &Cam1MoveAheadSpeed_s, 0.01f, 0.5f);
-                    showTooltip("Speed to adapt to new target value, lower is more dampened");
-                ImGui::SliderFloat("AutoMove Strength", &Cam1MoveAheadStrength_s, 0.0f, 1.0f);
-                    showTooltip("Amplitude of AutoMove, lower is less movement");
-
-                Cam1MoveAheadX_.Speed = Cam1MoveAheadSpeed_s;
-                Cam1MoveAheadY_.Speed = Cam1MoveAheadSpeed_s;
-                Cam1MoveAheadX_.Strength = Cam1MoveAheadStrength_s;
-                Cam1MoveAheadY_.Strength = Cam1MoveAheadStrength_s;
-            ImGui::Unindent();
-
-        ImGui::End();
-        
-        ImGui::Begin("Menu");
-        
-            ImGui::Checkbox("Tooltips", &IsTooltipsEnabled_);
-                showTooltip("Guess what...");
-            ImGui::Checkbox("Split screen", &IsSplitscreen_);
-                showTooltip("Toggle split screen mode");
-                    
-            static std::string Label;
-            if (IsPaused_) Label = "Resume";
-            else Label = "Pause";
-            if (ImGui::Button(Label.c_str())) IsPaused_ ^= 1;
-                showTooltip("Pause/Resume the game");
-            if (ImGui::Button("Quit")) IsExitTriggered_ = true;
-                showTooltip("Quit BattleSub, exit to desktop");
-
-        ImGui::End();
+            ImVec2 StatsPosSub2 = ImVec2(WindowResolutionX_/2 + 10, 10);
+            ImGui::SetNextWindowPos(StatsPosSub2, ImGuiCond_Always);
+            ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
+            ImGuiWindowFlags WindowFlags = ImGuiWindowFlags_NoDecoration |
+                                           ImGuiWindowFlags_AlwaysAutoResize |
+                                           ImGuiWindowFlags_NoSavedSettings |
+                                           ImGuiWindowFlags_NoFocusOnAppearing |
+                                           ImGuiWindowFlags_NoInputs |
+                                           ImGuiWindowFlags_NoNav |
+                                           ImGuiWindowFlags_NoMove;
+            bool CloseButton = false;
+            ImGui::Begin("Submarine 2", &CloseButton, WindowFlags);
+                ImGui::Text("Hull Integrity: ");
+            ImGui::End();
+        }
     }
-    
+
     ImGUI_.drawFrame();
     
     GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
@@ -589,6 +636,7 @@ void BattleSub::setupWindow()
     // Prepare ImGui
     ImGUI_ = ImGuiIntegration::Context({float(WindowResolutionX_), float(WindowResolutionY_)},
     windowSize(), framebufferSize());
+    UIStyle_ = &ImGui::GetStyle();
     
     GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add,
     GL::Renderer::BlendEquation::Add);

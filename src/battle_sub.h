@@ -65,11 +65,16 @@ class BattleSub : public Platform::Application
         //--- Controls ---//
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;
+        bool IsDebugDisplayed_ = false;
         bool IsExitTriggered_ = false;
+        bool IsMainMenuDisplayed_ = false;
         bool IsPaused_ = false;
         bool IsStepForward_ = false;
         bool IsSplitscreen_ = false;
         bool IsTooltipsEnabled_ = true;
+
+        //-- UI --//
+        ImGuiStyle* UIStyle_{nullptr};
         
         Object2D* CameraObjectCurrentPlayer_{nullptr};
         Object2D* CameraObjectOtherPlayer_{nullptr};
