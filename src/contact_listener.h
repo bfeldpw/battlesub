@@ -30,11 +30,12 @@ class ContactListener : public b2ContactListener
                 if (ObjB->getType() == GameObjectTypeE::SUBMARINE_HULL)
                 {
                     Body = Contact->GetFixtureB()->GetBody();
-                    IsContactKept = false;
+                    IsContactKept = true;
                 }
                 else if (ObjB->getType() == GameObjectTypeE::PROJECTILE)
                 {
                     Body = Contact->GetFixtureB()->GetBody();
+                    IsContactKept = false;
                 }
                 DebrisType = GameObjectTypeE::DEBRIS_LANDSCAPE;
             } 
@@ -43,6 +44,7 @@ class ContactListener : public b2ContactListener
                 if (ObjA->getType() == GameObjectTypeE::SUBMARINE_HULL)
                 {
                     Body = Contact->GetFixtureA()->GetBody();
+                    IsContactKept = true;
                 }
                 else if (ObjA->getType() == GameObjectTypeE::PROJECTILE)
                 {
@@ -71,6 +73,7 @@ class ContactListener : public b2ContactListener
                             if (Angle > -0.7f && Angle < 0.7f)
                             {
                                 IsContactKept = false;
+                                std::any_cast<Submarine*>(ObjA->getParent())->impact(2.0f);
                             }
                         }
                     }

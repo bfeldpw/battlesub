@@ -569,7 +569,6 @@ void BattleSub::updateUI()
         }
 
         // Submarine stats
-
         ImVec2 StatsPosSub1 = ImVec2(10, 10);
         ImGui::SetNextWindowPos(StatsPosSub1, ImGuiCond_Always);
         ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
@@ -581,13 +580,15 @@ void BattleSub::updateUI()
                                        ImGuiWindowFlags_NoNav |
                                        ImGuiWindowFlags_NoMove;
         bool CloseButton = false;
+        float Integrity = PlayerSub_->getHullIntegrity() / 100.0f;
+        UIStyleSubStats_.Colors[ImGuiCol_PlotHistogram] = ImVec4(1.0f-Integrity, Integrity, 0.0f, 0.5f);
+        *UIStyle_ = UIStyleSubStats_;
         ImGui::Begin("Submarine 1", &CloseButton, WindowFlags);
-            ImGui::Text("Hull Integrity: ");
+            ImGui::Text("Hull Integrity                    ");
+            ImGui::ProgressBar(Integrity);
         ImGui::End();
         if (IsSplitscreen_)
         {
-            // UIStyle_->WindowRounding = 0.0f;
-
             ImVec2 StatsPosSub2 = ImVec2(WindowResolutionX_/2 + 10, 10);
             ImGui::SetNextWindowPos(StatsPosSub2, ImGuiCond_Always);
             ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
@@ -599,14 +600,19 @@ void BattleSub::updateUI()
                                            ImGuiWindowFlags_NoNav |
                                            ImGuiWindowFlags_NoMove;
             bool CloseButton = false;
+            float Integrity = PlayerSub2_->getHullIntegrity() / 100.0f;
+            UIStyleSubStats_.Colors[ImGuiCol_PlotHistogram] = ImVec4(1.0f-Integrity, Integrity, 0.0f, 0.5f);
+            *UIStyle_ = UIStyleSubStats_;
             ImGui::Begin("Submarine 2", &CloseButton, WindowFlags);
-                ImGui::Text("Hull Integrity: ");
+                ImGui::Text("Hull Integrity                    ");
+                ImGui::ProgressBar(Integrity);
             ImGui::End();
         }
+        *UIStyle_ = UIStyleDefault_;
     }
 
     ImGUI_.drawFrame();
-    
+
     GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
     GL::Renderer::disable(GL::Renderer::Feature::Blending);
 }
@@ -637,6 +643,9 @@ void BattleSub::setupWindow()
     ImGUI_ = ImGuiIntegration::Context({float(WindowResolutionX_), float(WindowResolutionY_)},
     windowSize(), framebufferSize());
     UIStyle_ = &ImGui::GetStyle();
+    UIStyleDefault_ = *UIStyle_;
+    UIStyleSubStats_ = *UIStyle_;
+    UIStyleSubStats_.WindowRounding = 0.0f;
     
     GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add,
     GL::Renderer::BlendEquation::Add);

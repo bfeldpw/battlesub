@@ -48,6 +48,9 @@ void Submarine::create(const float PosX, const float PosY, const float Angle)
     jointDef.enableMotor = true;
     jointDef.collideConnected = false;
     RudderJoint = static_cast<b2RevoluteJoint*>(GlobalResources::Get.getWorld()->CreateJoint(&jointDef));
+
+    Hull.setParent(this);
+    Rudder.setParent(this);
 }
 
 void Submarine::fire()

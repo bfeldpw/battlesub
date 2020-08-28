@@ -75,6 +75,8 @@ class BattleSub : public Platform::Application
 
         //-- UI --//
         ImGuiStyle* UIStyle_{nullptr};
+        ImGuiStyle  UIStyleSubStats_;
+        ImGuiStyle  UIStyleDefault_;
         
         Object2D* CameraObjectCurrentPlayer_{nullptr};
         Object2D* CameraObjectOtherPlayer_{nullptr};

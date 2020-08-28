@@ -34,6 +34,12 @@ class Submarine : public Entity
         }
         
         float getThrottle() const {return Throttle_;}
+        float getHullIntegrity() const {return HullIntegrity_;}
+        void impact(const float Strength)
+        {
+            HullIntegrity_ -= Strength;
+            if (HullIntegrity_ < 0.0f) HullIntegrity_ = 0.0f;
+        }
 
         void create(const float PosX, const float PosY, const float Angle);
         void fire();
@@ -77,7 +83,7 @@ class Submarine : public Entity
         float Rudder_   = 0.0f;
         float Throttle_ = 0.0f;
         
-        float HitPoints_ = 1000.0f;
+        float HullIntegrity_ = 100.0f;
         
 };
 
