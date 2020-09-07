@@ -51,6 +51,13 @@ void FluidGrid::display(const Matrix3 CameraProjection,
 {
     switch (Buffer)
     {
+        case FluidBufferE::BOUNDARIES:
+        {
+            ShaderVelocityDisplay_.bindTexture(TexBoundaries_);
+            ShaderVelocityDisplay_.setTransformation(CameraProjection);
+            MeshDensityDisplay_.draw(ShaderVelocityDisplay_);
+            break;
+        }
         case FluidBufferE::DENSITY_SOURCES:
         {
             ShaderDensityDisplay_.bindTexture(TexDensitySources_);
@@ -121,6 +128,7 @@ void FluidGrid::display(const Matrix3 CameraProjection,
 
 void FluidGrid::init()
 {
+    TexBoundaries_ = GL::Texture2D{};
     TexDensityBase_ = GL::Texture2D{};
     TexDensitySources_ = GL::Texture2D{};
     TexDensities0_ = GL::Texture2D{};
@@ -130,6 +138,7 @@ void FluidGrid::init()
     TexVelocitySources_ = GL::Texture2D{};
     TexVelocities0_ = GL::Texture2D{};
     TexVelocities1_ = GL::Texture2D{};
+    // ShaderBoundaries_ = BoundariesShader();
     ShaderDensityAdvection_ = DensityAdvectionShader();
     ShaderDensityDiffusion_ = DensityDiffusionShader();
     ShaderDensityDisplay_ = DensityDisplayShader();
@@ -145,6 +154,21 @@ void FluidGrid::init()
     assert(DensityBase_->size() == FLUID_GRID_ARRAY_SIZE);
     ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, *DensityBase_);
 
+    std::vector<float> BoundariesTmp(FLUID_GRID_ARRAY_SIZE*2, 0.0f);
+    for (auto y=400u; y<600; ++y)
+    {
+        BoundariesTmp[1800+y*2048*2] = -0.7071f;
+        BoundariesTmp[1801+y*2048*2] = 0.7071f;
+        BoundariesTmp[1802+y*2048*2] = 0.7071f;
+        BoundariesTmp[1803+y*2048*2] = 0.7071f;
+    }
+
+    assert(BoundariesTmp.size() == FLUID_GRID_ARRAY_SIZE*2);
+    ImageView2D ImageBoundaries(PixelFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, BoundariesTmp);
+
+    TexBoundaries_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
+                  .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
+                  .setSubImage(0, {}, ImageBoundaries);
     TexDensityBase_.setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                    .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                    .setSubImage(0, {}, Image);
@@ -183,7 +207,10 @@ void FluidGrid::init()
     TexDensitiesFront_  = &TexDensities1_;
     TexVelocitiesBack_  = &TexVelocities0_;
     TexVelocitiesFront_ = &TexVelocities1_;
-                    
+
+    // FBOBoundaries_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
+    // FBOBoundaries_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexBoundaries_, 0)
+    //               .clearColor(0, Color4(0.0f, 0.0f));
     FBODensitySources_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBODensitySources_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexDensitySources_, 0)
                       .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
@@ -301,7 +328,7 @@ void FluidGrid::init()
                             .setAdvectionFactor(0.5)
                             .setDeltaT(1.0f/60.0f)
                             .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
-                            .bindTexture(*TexVelocitiesBack_);
+                            .bindTextures(*TexVelocitiesBack_, TexBoundaries_);
     ShaderVelocityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                             .setDeltaT(1.0f/60.0f)
                             .setDiff(1.0e5f)
@@ -394,7 +421,7 @@ void FluidGrid::process(const double SimTime)
     std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
     
     FBOVelocitiesFront_->bind(); // FBOVelocities1_
-    ShaderVelocityAdvection_.bindTexture(*TexVelocitiesBack_); // TexVelocities0_
+    ShaderVelocityAdvection_.bindTextures(*TexVelocitiesBack_, TexBoundaries_); // TexVelocities0_
     
     MeshVelocityAdvection_.draw(ShaderVelocityAdvection_);
 

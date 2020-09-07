@@ -283,6 +283,8 @@ void BattleSub::drawEvent()
                                        std::min(1.0f, float(WindowResolutionY_)/WINDOW_RESOLUTION_MAX_Y));
         MeshMainDisplay_.draw(ShaderMainDisplay_);
 
+        // (*(PlayerSub_->Hull.getMeshes()))[0].draw(Shader);
+
         if (!IsPaused_ || IsStepForward_)
         {
             updateCameraDynamics();
@@ -444,15 +446,16 @@ void BattleSub::updateUI()
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Buffer Selection");
                 ImGui::Indent();
-                    ImGui::RadioButton("Density Sources", &Buffer, 0);
-                    ImGui::RadioButton("Density Base", &Buffer, 1);
-                    ImGui::RadioButton("Velocity Sources", &Buffer, 2);
-                    ImGui::RadioButton("Velocity Buffer Front", &Buffer, 3);
-                    ImGui::RadioButton("Velocity Buffer Back", &Buffer, 4);
-                    ImGui::RadioButton("Density Buffer Front", &Buffer, 5);
-                    ImGui::RadioButton("Density Buffer Back", &Buffer, 6);
-                    ImGui::RadioButton("Ground Distorted", &Buffer, 7);
-                    ImGui::RadioButton("Final Composition", &Buffer, 8);
+                    ImGui::RadioButton("Boundaries", &Buffer, 0);
+                    ImGui::RadioButton("Density Sources", &Buffer, 1);
+                    ImGui::RadioButton("Density Base", &Buffer, 2);
+                    ImGui::RadioButton("Velocity Sources", &Buffer, 3);
+                    ImGui::RadioButton("Velocity Buffer Front", &Buffer, 4);
+                    ImGui::RadioButton("Velocity Buffer Back", &Buffer, 5);
+                    ImGui::RadioButton("Density Buffer Front", &Buffer, 6);
+                    ImGui::RadioButton("Density Buffer Back", &Buffer, 7);
+                    ImGui::RadioButton("Ground Distorted", &Buffer, 8);
+                    ImGui::RadioButton("Final Composition", &Buffer, 9);
                     ImGui::NewLine();
                     ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
                         showTooltip("Show magnitude or show colour-coded direction, too.");

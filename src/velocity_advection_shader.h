@@ -42,6 +42,7 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
             setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
+            setUniform(uniformLocation("u_tex_boundary_buffer"), TexUnitBoundaryBuffer);
             AdvectionFactorUniform_ = uniformLocation("u_advection_factor");
             DeltaTUniform_ = uniformLocation("u_dt");
             GridResolutionUniform_ = uniformLocation("u_grid_res");
@@ -76,9 +77,11 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
             return *this;
         }
 
-        VelocityAdvectionShader& bindTexture(GL::Texture2D& TexVelocityBuffer)
+        VelocityAdvectionShader& bindTextures(GL::Texture2D& TexVelocityBuffer,
+                                              GL::Texture2D& TexBoundaryBuffer)
         {
             TexVelocityBuffer.bind(TexUnitVelocityBuffer);
+            TexBoundaryBuffer.bind(TexUnitBoundaryBuffer);
             return *this;
         }
 
@@ -86,7 +89,8 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
         
         enum: Int
         {
-            TexUnitVelocityBuffer = 0
+            TexUnitVelocityBuffer = 0,
+            TexUnitBoundaryBuffer = 1
         };
 
         std::string Path_{SHADER_PATH};
