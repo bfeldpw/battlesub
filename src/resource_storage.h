@@ -6,7 +6,6 @@
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/Primitives/Square.h>
 #include <Magnum/SceneGraph/Drawable.h>
-#include <Magnum/Trade/MeshData2D.h>
 
 #include "game_object.h"
 #include "world_def.h"

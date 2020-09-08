@@ -4,12 +4,13 @@
 #include <thread>
 
 #include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/ArrayViewStl.h>
 #include <Corrade/Containers/Optional.h>
 #include <Corrade/PluginManager/Manager.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/Trade/AbstractImporter.h>
-#include <Magnum/Trade/MeshData3D.h>
+#include <Magnum/Trade/MeshData.h>
 
 #include "common.h"
 

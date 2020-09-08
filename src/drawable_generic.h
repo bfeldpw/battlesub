@@ -28,8 +28,9 @@ class DrawableGeneric: public SceneGraph::Drawable2D
             assert(Shader_ != nullptr);
             Shader_
                 ->setTransformationProjectionMatrix(Camera.projectionMatrix()*TransformationMatrix)
-                 .setColor(ColorScale_*Color_);
-            Mesh_->draw(*Shader_);
+                 .setColor(ColorScale_*Color_)
+                 .draw(*Mesh_);
+            // Mesh_->draw(*Shader_);
         }
 
         GL::Mesh*           Mesh_;

@@ -281,9 +281,9 @@ void BattleSub::drawEvent()
         ShaderMainDisplay_.bindTexture(TexMainDisplay_)
                           .setTexScale(std::min(1.0f, float(WindowResolutionX_)/WINDOW_RESOLUTION_MAX_X),
                                        std::min(1.0f, float(WindowResolutionY_)/WINDOW_RESOLUTION_MAX_Y));
-        MeshMainDisplay_.draw(ShaderMainDisplay_);
+        ShaderMainDisplay_.draw(MeshMainDisplay_);
 
-        // (*(PlayerSub_->Hull.getMeshes()))[0].draw(Shader);
+        // ShaderMainDisplay_.draw(PlayerSub_->Hull.getMeshes()->at(0));
 
         if (!IsPaused_ || IsStepForward_)
         {

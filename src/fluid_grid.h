@@ -111,7 +111,6 @@ class FluidGrid
         GL::Texture2D TexVelocitySources_{NoCreate};    // Velocity sources
         GL::Texture2D TexVelocities0_{NoCreate};        // Velocities back buffer
         GL::Texture2D TexVelocities1_{NoCreate};        // Velocities front buffer
-        float Viscosity_ = 1.0f;
 
         std::vector<float>* DensityBase_{nullptr};
         std::vector<float> DensitySources_;
