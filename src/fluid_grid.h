@@ -52,7 +52,8 @@ class FluidGrid
         FluidGrid& setVelocityDisplayScale(const float f) {ShaderVelocityDisplay_.setScale(f); return *this;}
         FluidGrid& setVelocityDisplayShowOnlyMagnitude(const bool b) {ShaderVelocityDisplay_.setShowOnlyMagnitude(b); return *this;}
         FluidGrid& setDensityBase(std::vector<float>* const DensityBase);
-        
+
+        void bindBoundaryMap();
         void display(const Matrix3 CameraProjection,
                      const FluidBufferE Buffer = FluidBufferE::FINAL_COMPOSITION);
         void init();

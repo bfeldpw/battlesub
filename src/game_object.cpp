@@ -83,7 +83,7 @@ void GameObject::init(const GameObjectTypeE Type, const b2BodyDef& BodyDef)
     ScaleY_  = 1.0f;
     ScaleSinkColor = 1.0f;
     IsSunk_ = false;
-    
+
     for (auto i=0u; i<Meshes_->size(); ++i)
     {
         Drawable = new DrawableGeneric(Visuals_, &((*Meshes_)[i]), Shader_, Color_, DrawableGrp_);

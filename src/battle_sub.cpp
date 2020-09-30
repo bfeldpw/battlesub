@@ -222,6 +222,22 @@ void BattleSub::drawEvent()
         // Draw the scene
         if (!IsPaused_ || IsStepForward_)
         {
+            FluidGrid_.bindBoundaryMap();
+            // Shaders::Flat2D Shader;
+            // Shader.setColor(Color4(1.0f, 1.0f));
+            // Matrix3 Transformation = Matrix3::translation(Vector2(
+            //                                                   PlayerSub_->Hull.getBody()->GetPosition().x,
+            //                                                   PlayerSub_->Hull.getBody()->GetPosition().y
+            //                                               ))*
+            //                          Matrix3::rotation(Rad(PlayerSub_->Hull.getBody()->GetAngle()));
+            // Shader.setTransformationProjectionMatrix(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y})*
+            //                                          Transformation);
+            // auto Meshes = PlayerSub_->Hull.getMeshes();
+            // for (auto it = Meshes->begin(); it != Meshes->end(); it++)
+            //     Shader.draw(*it);
+            CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+            CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+
             FluidGrid_.process(SimTime_.time());
             IsStepForward_ = false;
         }
@@ -251,10 +267,13 @@ void BattleSub::drawEvent()
                              .setViewport({{WindowResX, WindowResolutionY_}});
 
         FluidGrid_.display(CameraCurrentPlayer_->projectionMatrix()*CameraCurrentPlayer_->cameraMatrix(),
-                            FluidBuffer_);
-        
-        CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
-        CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+                           FluidBuffer_);
+
+        if (FluidBuffer_ != FluidBufferE::BOUNDARIES)
+        {
+            CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+            CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+        }
 
         // In case of splitscreen, also render the second view
         if (IsSplitscreen_)
@@ -268,9 +287,12 @@ void BattleSub::drawEvent()
 
             FluidGrid_.display(CameraOtherPlayer_->projectionMatrix()*CameraOtherPlayer_->cameraMatrix(),
                                FluidBuffer_);
-            
-            CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
-            CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+
+            if (FluidBuffer_ != FluidBufferE::BOUNDARIES)
+            {
+                CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+                CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+            }
         }
 
         //-----------------------------------------------------------------------
@@ -720,6 +742,13 @@ void BattleSub::setupCameras()
     Cam2MoveAheadY_.Base = 0.0f;
     Cam2MoveAheadY_.Speed = 0.1f;
     Cam2MoveAheadY_.Strength = 0.25f;
+
+
+    CameraObjectBoundaries_ = new Object2D{GlobalResources::Get.getScene()};
+    CameraBoundaries_ = new SceneGraph::Camera2D{*CameraObjectBoundaries_};
+    CameraBoundaries_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
+        .setProjectionMatrix(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+        .setViewport({int(WORLD_SIZE_DEFAULT_X), int(WORLD_SIZE_DEFAULT_Y)});
 }
 
 void BattleSub::setupGameObjects()

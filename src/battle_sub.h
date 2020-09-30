@@ -82,10 +82,12 @@ class BattleSub : public Platform::Application
         Object2D* CameraObjectOtherPlayer_{nullptr};
         Object2D* CameraObjectPlayer1_;
         Object2D* CameraObjectPlayer2_;
+        Object2D* CameraObjectBoundaries_;
         SceneGraph::Camera2D* CameraCurrentPlayer_{nullptr};
         SceneGraph::Camera2D* CameraOtherPlayer_{nullptr};
         SceneGraph::Camera2D* CameraPlayer1_;
         SceneGraph::Camera2D* CameraPlayer2_;
+        SceneGraph::Camera2D* CameraBoundaries_;
         
         ContactListener ContactListener_;
         FluidGrid FluidGrid_;

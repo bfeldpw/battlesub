@@ -30,7 +30,6 @@ class DrawableGeneric: public SceneGraph::Drawable2D
                 ->setTransformationProjectionMatrix(Camera.projectionMatrix()*TransformationMatrix)
                  .setColor(ColorScale_*Color_)
                  .draw(*Mesh_);
-            // Mesh_->draw(*Shader_);
         }
 
         GL::Mesh*           Mesh_;

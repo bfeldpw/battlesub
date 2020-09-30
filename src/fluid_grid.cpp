@@ -47,6 +47,12 @@ FluidGrid& FluidGrid::setDensityBase(std::vector<float>* const DensityBase)
     return *this;
 }
 
+void FluidGrid::bindBoundaryMap()
+{
+    FBOBoundaries_.clearColor(0, Color4(0.0f))
+                  .bind();
+}
+
 void FluidGrid::display(const Matrix3 CameraProjection,
                         const FluidBufferE Buffer)
 {
@@ -167,7 +173,7 @@ void FluidGrid::init()
     ImageView2D ImageBoundaries(PixelFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, BoundariesTmp);
 
     TexBoundaries_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
-                  .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
+                  .setMagnificationFilter(GL::SamplerFilter::Nearest)
                   .setSubImage(0, {}, ImageBoundaries);
     TexDensityBase_.setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                    .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
@@ -208,9 +214,9 @@ void FluidGrid::init()
     TexVelocitiesBack_  = &TexVelocities0_;
     TexVelocitiesFront_ = &TexVelocities1_;
 
-    // FBOBoundaries_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
-    // FBOBoundaries_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexBoundaries_, 0)
-    //               .clearColor(0, Color4(0.0f, 0.0f));
+    FBOBoundaries_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
+    FBOBoundaries_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexBoundaries_, 0)
+                  .clearColor(0, Color4(0.0f, 0.0f));
     FBODensitySources_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBODensitySources_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexDensitySources_, 0)
                       .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
@@ -387,6 +393,9 @@ void FluidGrid::process(const double SimTime)
 
     VelocitySourcesPoints_.clear();
     VelocitySourcesLines_.clear();
+
+    // FBOBoundaries_.clearColor(0, Color4(0.0f))
+    //               .bind();
     
     //------------------------------------------------------------------
     // Draw densities
