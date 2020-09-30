@@ -6,18 +6,14 @@
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/Primitives/Square.h>
 #include <Magnum/SceneGraph/Drawable.h>
-#include <Magnum/Trade/MeshData2D.h>
 
 #include "game_object.h"
 #include "world_def.h"
 
-constexpr int DRAWABLE_GROUPS_TYPE_ENUM_SIZE = 2;
-constexpr int GAME_OBJECT_TYPE_ENUM_SIZE = 5;
-
 enum class DrawableGroupsTypeE : int
 {
-    DEFAULT,
-    WEAPON
+    WEAPON,
+    DEFAULT
 };
 
 class ResourceStorage
@@ -53,10 +49,9 @@ class ResourceStorage
         Scene2D* Scene_ = new Scene2D;
         Shaders::Flat2D* Shader_ = nullptr;
 
-        std::array<SceneGraph::DrawableGroup2D*, DRAWABLE_GROUPS_TYPE_ENUM_SIZE> Drawables_
-            {new SceneGraph::DrawableGroup2D, new SceneGraph::DrawableGroup2D};
-        std::array<MeshesType, GAME_OBJECT_TYPE_ENUM_SIZE> Meshes_;
-        std::array<ShapesType, GAME_OBJECT_TYPE_ENUM_SIZE> Shapes_;
+        std::array<SceneGraph::DrawableGroup2D*, int(DrawableGroupsTypeE::DEFAULT)+1> Drawables_{new SceneGraph::DrawableGroup2D, new SceneGraph::DrawableGroup2D};
+        std::array<MeshesType, int(GameObjectTypeE::DEFAULT)+1> Meshes_;
+        std::array<ShapesType, int(GameObjectTypeE::DEFAULT)+1> Shapes_;
         
         std::vector<float> HeightMap_;
         std::vector<float>* HeightMapPlateausFront_;

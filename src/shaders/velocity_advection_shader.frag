@@ -1,4 +1,5 @@
 uniform sampler2D u_tex_velocity_buffer;
+uniform sampler2D u_tex_boundary_buffer;
 
 uniform float u_advection_factor;
 uniform float u_dt;
@@ -26,5 +27,11 @@ void main()
 
     vec2 f = pos - n.xy;
 
-    frag_col = mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y);
+    vec2 b = texelFetch(u_tex_boundary_buffer, ivec2(gl_FragCoord.xy), 0).xy;
+
+    // frag_col = reflect(mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y), b);
+    // frag_col = mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y);
+    float border = 0.0;
+    if (b.x == 0) border = 1.0;
+    frag_col = border*mix(mix(v_tl, v_tr, f.x), mix(v_bl, v_br, f.x), f.y);
 }

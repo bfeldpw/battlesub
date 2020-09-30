@@ -4,7 +4,7 @@
 #include "emitter.h"
 #include "entity_factory.h"
 
-constexpr int POOL_SIZE_EMITTERS = 100;
+constexpr int POOL_SIZE_EMITTERS = 1000;
 
 typedef EntityFactory<Emitter, POOL_SIZE_EMITTERS> EmitterFactory;
 

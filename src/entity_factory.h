@@ -19,7 +19,7 @@ class EntityFactory
         T* create()
         {
             T* NewEntity = EntityPool.allocate();
-            Entities[NewEntity->ID] = NewEntity;
+            if (NewEntity != nullptr) Entities[NewEntity->ID] = NewEntity;
             return NewEntity;
         }
         

@@ -83,7 +83,7 @@ void GameObject::init(const GameObjectTypeE Type, const b2BodyDef& BodyDef)
     ScaleY_  = 1.0f;
     ScaleSinkColor = 1.0f;
     IsSunk_ = false;
-    
+
     for (auto i=0u; i<Meshes_->size(); ++i)
     {
         Drawable = new DrawableGeneric(Visuals_, &((*Meshes_)[i]), Shader_, Color_, DrawableGrp_);
@@ -106,7 +106,8 @@ void GameObject::sink()
     
     Drawable->setColorScale(ScaleSinkColor);
 
-    if (ScaleX_ < 0.8f || ScaleY_ < 0.8f)
+    // if (ScaleX_ < 0.8f || ScaleY_ < 0.8f)
+    Body_->SetLinearVelocity({0.0f, 0.0f});
     Body_->SetActive(false);
 }
         

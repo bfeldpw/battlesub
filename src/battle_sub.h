@@ -38,6 +38,7 @@ class BattleSub : public Platform::Application
         void viewportEvent(ViewportEvent& Evend) override;
         
         void cleanupAndExit();
+        void updateCameraDynamics();
         void updateGameObjects();
         void updateUI();
         
@@ -65,20 +66,29 @@ class BattleSub : public Platform::Application
         //--- Controls ---//
         std::unordered_map<std::string, bool> KeyPressedMap;
         Vector2i MouseDelta_;
+        bool IsDebugDisplayed_ = false;
         bool IsExitTriggered_ = false;
+        bool IsMainMenuDisplayed_ = false;
         bool IsPaused_ = false;
         bool IsStepForward_ = false;
         bool IsSplitscreen_ = false;
         bool IsTooltipsEnabled_ = true;
+
+        //-- UI --//
+        ImGuiStyle* UIStyle_{nullptr};
+        ImGuiStyle  UIStyleSubStats_;
+        ImGuiStyle  UIStyleDefault_;
         
         Object2D* CameraObjectCurrentPlayer_{nullptr};
         Object2D* CameraObjectOtherPlayer_{nullptr};
         Object2D* CameraObjectPlayer1_;
         Object2D* CameraObjectPlayer2_;
+        Object2D* CameraObjectBoundaries_;
         SceneGraph::Camera2D* CameraCurrentPlayer_{nullptr};
         SceneGraph::Camera2D* CameraOtherPlayer_{nullptr};
         SceneGraph::Camera2D* CameraPlayer1_;
         SceneGraph::Camera2D* CameraPlayer2_;
+        SceneGraph::Camera2D* CameraBoundaries_;
         
         ContactListener ContactListener_;
         FluidGrid FluidGrid_;
@@ -97,9 +107,12 @@ class BattleSub : public Platform::Application
         GameObject* CanyonBoundary = nullptr;
         
         float VisRes_ = 10.0f; // Visual Resolution in pixels per meter
-        CameraDynamics CamMoveAheadX_;
-        CameraDynamics CamMoveAheadY_;
-        CameraDynamics Zoom_;
+        CameraDynamics Cam1MoveAheadX_;
+        CameraDynamics Cam1MoveAheadY_;
+        CameraDynamics Cam1Zoom_;
+        CameraDynamics Cam2MoveAheadX_;
+        CameraDynamics Cam2MoveAheadY_;
+        CameraDynamics Cam2Zoom_;
         bool DevCam_ = false;
 
 };

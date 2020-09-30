@@ -1,5 +1,6 @@
 #include "fluid_grid.h"
 
+#include <Corrade/Containers/ArrayViewStl.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/TextureFormat.h>
 #include <Magnum/Math/Color.h>
@@ -46,73 +47,85 @@ FluidGrid& FluidGrid::setDensityBase(std::vector<float>* const DensityBase)
     return *this;
 }
 
+void FluidGrid::bindBoundaryMap()
+{
+    FBOBoundaries_.clearColor(0, Color4(0.0f))
+                  .bind();
+}
+
 void FluidGrid::display(const Matrix3 CameraProjection,
                         const FluidBufferE Buffer)
 {
     switch (Buffer)
     {
+        case FluidBufferE::BOUNDARIES:
+        {
+            ShaderVelocityDisplay_.bindTexture(TexBoundaries_)
+                                  .setTransformation(CameraProjection)
+                                  .draw(MeshDensityDisplay_);
+            break;
+        }
         case FluidBufferE::DENSITY_SOURCES:
         {
-            ShaderDensityDisplay_.bindTexture(TexDensitySources_);
-            ShaderDensityDisplay_.setTransformation(CameraProjection);
-            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            ShaderDensityDisplay_.bindTexture(TexDensitySources_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshDensityDisplay_);
             break;
         }
         case FluidBufferE::DENSITY_BASE:
         {
-            ShaderDensityDisplay_.bindTexture(TexDensityBase_);
-            ShaderDensityDisplay_.setTransformation(CameraProjection);
-            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            ShaderDensityDisplay_.bindTexture(TexDensityBase_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshDensityDisplay_);
             break;
         }
         case FluidBufferE::VELOCITY_SOURCES:
         {
-            ShaderVelocityDisplay_.bindTexture(TexVelocitySources_);
-            ShaderVelocityDisplay_.setTransformation(CameraProjection);
-            MeshDensityDisplay_.draw(ShaderVelocityDisplay_);
+            ShaderVelocityDisplay_.bindTexture(TexVelocitySources_)
+                                  .setTransformation(CameraProjection)
+                                  .draw(MeshDensityDisplay_);
             break;
         }
         case FluidBufferE::VELOCITIES_BACK:
         {
-            ShaderVelocityDisplay_.bindTexture(*TexVelocitiesBack_);
-            ShaderVelocityDisplay_.setTransformation(CameraProjection);
-
-            MeshDensityDisplay_.draw(ShaderVelocityDisplay_);
+            ShaderVelocityDisplay_.bindTexture(*TexVelocitiesBack_)
+                                  .setTransformation(CameraProjection)
+                                  .draw(MeshDensityDisplay_);
             break;
         }
         case FluidBufferE::VELOCITIES_FRONT:
         {
-            ShaderVelocityDisplay_.bindTexture(*TexVelocitiesFront_);
-            ShaderVelocityDisplay_.setTransformation(CameraProjection);
-            MeshDensityDisplay_.draw(ShaderVelocityDisplay_);
+            ShaderVelocityDisplay_.bindTexture(*TexVelocitiesFront_)
+                                  .setTransformation(CameraProjection)
+                                  .draw(MeshDensityDisplay_);
             break;
         }
         case FluidBufferE::DENSITY_DIFFUSION_FRONT:
         {
-            ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_);
-            ShaderDensityDisplay_.setTransformation(CameraProjection);
-            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshDensityDisplay_);
             break;
         }
         case FluidBufferE::DENSITY_DIFFUSION_BACK:
         {
-            ShaderDensityDisplay_.bindTexture(*TexDensitiesBack_);
-            ShaderDensityDisplay_.setTransformation(CameraProjection);
-            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            ShaderDensityDisplay_.bindTexture(*TexDensitiesBack_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshDensityDisplay_);
             break;
         }
         case FluidBufferE::GROUND_DISTORTED:
         {
-            ShaderDensityDisplay_.bindTexture(TexGroundDistorted_);
-            ShaderDensityDisplay_.setTransformation(CameraProjection);
-            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            ShaderDensityDisplay_.bindTexture(TexGroundDistorted_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshDensityDisplay_);
             break;
         }
         case FluidBufferE::FINAL_COMPOSITION:
         {
-            ShaderDensityDisplay_.bindTexture(TexFluidFinalComposition_);
-            ShaderDensityDisplay_.setTransformation(CameraProjection);
-            MeshDensityDisplay_.draw(ShaderDensityDisplay_);
+            ShaderDensityDisplay_.bindTexture(TexFluidFinalComposition_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshDensityDisplay_);
             break;
         }
         default: break;
@@ -121,6 +134,7 @@ void FluidGrid::display(const Matrix3 CameraProjection,
 
 void FluidGrid::init()
 {
+    TexBoundaries_ = GL::Texture2D{};
     TexDensityBase_ = GL::Texture2D{};
     TexDensitySources_ = GL::Texture2D{};
     TexDensities0_ = GL::Texture2D{};
@@ -130,6 +144,7 @@ void FluidGrid::init()
     TexVelocitySources_ = GL::Texture2D{};
     TexVelocities0_ = GL::Texture2D{};
     TexVelocities1_ = GL::Texture2D{};
+    // ShaderBoundaries_ = BoundariesShader();
     ShaderDensityAdvection_ = DensityAdvectionShader();
     ShaderDensityDiffusion_ = DensityDiffusionShader();
     ShaderDensityDisplay_ = DensityDisplayShader();
@@ -145,6 +160,21 @@ void FluidGrid::init()
     assert(DensityBase_->size() == FLUID_GRID_ARRAY_SIZE);
     ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, *DensityBase_);
 
+    std::vector<float> BoundariesTmp(FLUID_GRID_ARRAY_SIZE*2, 0.0f);
+    for (auto y=400u; y<600; ++y)
+    {
+        BoundariesTmp[1800+y*2048*2] = -0.7071f;
+        BoundariesTmp[1801+y*2048*2] = 0.7071f;
+        BoundariesTmp[1802+y*2048*2] = 0.7071f;
+        BoundariesTmp[1803+y*2048*2] = 0.7071f;
+    }
+
+    assert(BoundariesTmp.size() == FLUID_GRID_ARRAY_SIZE*2);
+    ImageView2D ImageBoundaries(PixelFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, BoundariesTmp);
+
+    TexBoundaries_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
+                  .setMagnificationFilter(GL::SamplerFilter::Nearest)
+                  .setSubImage(0, {}, ImageBoundaries);
     TexDensityBase_.setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                    .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                    .setSubImage(0, {}, Image);
@@ -183,7 +213,10 @@ void FluidGrid::init()
     TexDensitiesFront_  = &TexDensities1_;
     TexVelocitiesBack_  = &TexVelocities0_;
     TexVelocitiesFront_ = &TexVelocities1_;
-                    
+
+    FBOBoundaries_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
+    FBOBoundaries_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexBoundaries_, 0)
+                  .clearColor(0, Color4(0.0f, 0.0f));
     FBODensitySources_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBODensitySources_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexDensitySources_, 0)
                       .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
@@ -301,7 +334,7 @@ void FluidGrid::init()
                             .setAdvectionFactor(0.5)
                             .setDeltaT(1.0f/60.0f)
                             .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
-                            .bindTexture(*TexVelocitiesBack_);
+                            .bindTextures(*TexVelocitiesBack_, TexBoundaries_);
     ShaderVelocityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                             .setDeltaT(1.0f/60.0f)
                             .setDiff(1.0e5f)
@@ -360,21 +393,24 @@ void FluidGrid::process(const double SimTime)
 
     VelocitySourcesPoints_.clear();
     VelocitySourcesLines_.clear();
+
+    // FBOBoundaries_.clearColor(0, Color4(0.0f))
+    //               .bind();
     
     //------------------------------------------------------------------
     // Draw densities
     //------------------------------------------------------------------
     FBODensitySources_.clearColor(0, Color4(0.0f))
                       .bind();
-    MeshDensitySources.draw(ShaderDensitySources_);
+    ShaderDensitySources_.draw(MeshDensitySources);
     
     //------------------------------------------------------------------
     // Draw velocities
     //------------------------------------------------------------------
     FBOVelocitySources_.clearColor(0, Color4(0.0f,0.0f))
                        .bind();
-    MeshVelocitySourcesPoints.draw(ShaderVelocitySources_);
-    MeshVelocitySourcesLines.draw(ShaderVelocitySources_);
+    ShaderVelocitySources_.draw(MeshVelocitySourcesPoints);
+    ShaderVelocitySources_.draw(MeshVelocitySourcesLines);
     
     //------------------------------------------------------------------
     // Diffuse velocities
@@ -385,7 +421,7 @@ void FluidGrid::process(const double SimTime)
     FBOVelocitiesFront_->bind(); // FBOVelocities0_
     ShaderVelocityDiffusion_.bindTextures(TexVelocitySources_, *TexVelocitiesBack_); // TexVelocities1_
     
-    MeshVelocities_.draw(ShaderVelocityDiffusion_);
+    ShaderVelocityDiffusion_.draw(MeshVelocities_);
     
     //------------------------------------------------------------------
     // Advect velocities
@@ -394,9 +430,9 @@ void FluidGrid::process(const double SimTime)
     std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
     
     FBOVelocitiesFront_->bind(); // FBOVelocities1_
-    ShaderVelocityAdvection_.bindTexture(*TexVelocitiesBack_); // TexVelocities0_
+    ShaderVelocityAdvection_.bindTextures(*TexVelocitiesBack_, TexBoundaries_); // TexVelocities0_
     
-    MeshVelocityAdvection_.draw(ShaderVelocityAdvection_);
+    ShaderVelocityAdvection_.draw(MeshVelocityAdvection_);
 
     //------------------------------------------------------------------
     // Distort ground
@@ -405,7 +441,7 @@ void FluidGrid::process(const double SimTime)
     ShaderGroundDistortion_.bindTextures(TexDensityBase_, *TexVelocitiesFront_)
                            .setTime(SimTime);
 
-    MeshGroundDistorted_.draw(ShaderGroundDistortion_);
+    ShaderGroundDistortion_.draw(MeshGroundDistorted_);
 
     //------------------------------------------------------------------
     // Diffuse densities
@@ -416,7 +452,7 @@ void FluidGrid::process(const double SimTime)
     
     ShaderDensityDiffusion_.bindTextures(TexDensitySources_, *TexDensitiesBack_);
     
-    MeshDensityDiffusion_.draw(ShaderDensityDiffusion_);
+    ShaderDensityDiffusion_.draw(MeshDensityDiffusion_);
     
     //------------------------------------------------------------------
     // Advect densities
@@ -427,7 +463,7 @@ void FluidGrid::process(const double SimTime)
     
     ShaderDensityAdvection_.bindTextures(*TexDensitiesBack_, *TexVelocitiesFront_);
     
-    MeshDensityAdvection_.draw(ShaderDensityAdvection_);
+    ShaderDensityAdvection_.draw(MeshDensityAdvection_);
 
     //-----------------------------------------------------------------------
     // Final composition of density base, advected densities, and velocities
@@ -439,5 +475,5 @@ void FluidGrid::process(const double SimTime)
                                               TexGroundDistorted_,
                                               *TexVelocitiesFront_);
 
-    MeshFluidFinalComposition_.draw(ShaderFluidFinalComposition_);
+    ShaderFluidFinalComposition_.draw(MeshFluidFinalComposition_);
 }

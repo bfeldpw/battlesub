@@ -24,15 +24,16 @@ using namespace Magnum;
 
 enum class FluidBufferE : int
 {
-    DENSITY_SOURCES = 0,
-    DENSITY_BASE = 1,
-    VELOCITY_SOURCES = 2,
-    VELOCITIES_FRONT = 3,
-    VELOCITIES_BACK = 4,
-    DENSITY_DIFFUSION_FRONT = 5,
-    DENSITY_DIFFUSION_BACK = 6,
-    GROUND_DISTORTED = 7,
-    FINAL_COMPOSITION = 8
+    BOUNDARIES = 0,
+    DENSITY_SOURCES = 1,
+    DENSITY_BASE = 2,
+    VELOCITY_SOURCES = 3,
+    VELOCITIES_FRONT = 4,
+    VELOCITIES_BACK = 5,
+    DENSITY_DIFFUSION_FRONT = 6,
+    DENSITY_DIFFUSION_BACK = 7,
+    GROUND_DISTORTED = 8,
+    FINAL_COMPOSITION = 9
 };
 
 class FluidGrid
@@ -51,7 +52,8 @@ class FluidGrid
         FluidGrid& setVelocityDisplayScale(const float f) {ShaderVelocityDisplay_.setScale(f); return *this;}
         FluidGrid& setVelocityDisplayShowOnlyMagnitude(const bool b) {ShaderVelocityDisplay_.setShowOnlyMagnitude(b); return *this;}
         FluidGrid& setDensityBase(std::vector<float>* const DensityBase);
-        
+
+        void bindBoundaryMap();
         void display(const Matrix3 CameraProjection,
                      const FluidBufferE Buffer = FluidBufferE::FINAL_COMPOSITION);
         void init();
@@ -65,6 +67,7 @@ class FluidGrid
         GL::Framebuffer* FBODensitiesFront_{nullptr};
         GL::Framebuffer* FBOVelocitiesBack_{nullptr};
         GL::Framebuffer* FBOVelocitiesFront_{nullptr};
+        GL::Framebuffer FBOBoundaries_{NoCreate};
         GL::Framebuffer FBODensitySources_{NoCreate};
         GL::Framebuffer FBODensities0_{NoCreate};
         GL::Framebuffer FBODensities1_{NoCreate};
@@ -73,7 +76,8 @@ class FluidGrid
         GL::Framebuffer FBOVelocitySources_{NoCreate};
         GL::Framebuffer FBOVelocities0_{NoCreate};
         GL::Framebuffer FBOVelocities1_{NoCreate};
-        
+
+        // BoundariesShader ShaderBoundaries_{NoCreate};
         DensityAdvectionShader ShaderDensityAdvection_{NoCreate};
         DensityDiffusionShader ShaderDensityDiffusion_{NoCreate};
         DensityDisplayShader ShaderDensityDisplay_{NoCreate};
@@ -84,7 +88,8 @@ class FluidGrid
         VelocityDiffusionShader ShaderVelocityDiffusion_{NoCreate};
         VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
         VelocitySourcesShader ShaderVelocitySources_{NoCreate};
-        
+
+        GL::Mesh MeshBoundaries_{NoCreate};
         GL::Mesh MeshDensityAdvection_{NoCreate};
         GL::Mesh MeshDensityDisplay_{NoCreate};
         GL::Mesh MeshDensityDiffusion_{NoCreate};
@@ -97,6 +102,7 @@ class FluidGrid
         GL::Texture2D* TexVelocitiesFront_{nullptr};
         GL::Texture2D* TexDensitiesBack_{nullptr};
         GL::Texture2D* TexDensitiesFront_{nullptr};
+        GL::Texture2D TexBoundaries_{NoCreate};
         GL::Texture2D TexDensityBase_{NoCreate};        // Heightmap
         GL::Texture2D TexDensitySources_{NoCreate};     // Density sources
         GL::Texture2D TexDensities0_{NoCreate};         // Density buffer
@@ -106,8 +112,7 @@ class FluidGrid
         GL::Texture2D TexVelocitySources_{NoCreate};    // Velocity sources
         GL::Texture2D TexVelocities0_{NoCreate};        // Velocities back buffer
         GL::Texture2D TexVelocities1_{NoCreate};        // Velocities front buffer
-        float Viscosity_ = 1.0f;
-        
+
         std::vector<float>* DensityBase_{nullptr};
         std::vector<float> DensitySources_;
         std::vector<float> VelocitySourcesPoints_;

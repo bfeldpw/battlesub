@@ -1,6 +1,7 @@
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
 
+#include <any>
 #include <iostream>
 #include <vector>
 
@@ -34,7 +35,8 @@ typedef std::vector<GL::Mesh>   MeshesType;
 
 enum class GameObjectTypeE : int
 {
-    DEBRIS,
+    DEBRIS_LANDSCAPE,
+    DEBRIS_SUBMARINE,
     LANDSCAPE,
     PROJECTILE,
     SUBMARINE_HULL,
@@ -45,6 +47,9 @@ enum class GameObjectTypeE : int
 class GameObject : public Entity
 {
     public:
+
+        std::any    getParent() const {return Parent_;}
+        void        setParent(const std::any Parent) {Parent_ = Parent;}
         
         GameObjectTypeE getType() const {return Type_;}
         
@@ -56,7 +61,7 @@ class GameObject : public Entity
         Object2D*   getVisuals() {return Visuals_;}
         
         void        init(const GameObjectTypeE Type, const b2BodyDef& BodyDef);
-        
+
         bool        isSunk() const {return IsSunk_;}
 
         void destroy();
@@ -75,7 +80,7 @@ class GameObject : public Entity
             assert(Body_ != nullptr);
             
             // Body starts sinking if too slow
-            if ((Body_->GetLinearVelocity().Length() < 0.01f) || (Age_.split() > 20.0))
+            if ((Body_->GetLinearVelocity().Length() < 0.01f) || (Age_.split() > 5.0))
             {
                 this->sink();
             }
@@ -84,6 +89,9 @@ class GameObject : public Entity
     protected:
         
         void sink();
+
+        // Parent
+        std::any Parent_;
         
         // General data
         GameObjectTypeE Type_ = GameObjectTypeE::DEFAULT;

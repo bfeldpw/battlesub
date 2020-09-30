@@ -49,17 +49,14 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
 {
     switch (Event.key())
     {
-        case KeyEvent::Key::A:
-            KeyPressedMap["a"] = true;
-            PlayerSub_->RudderJoint->SetMotorSpeed(-1.0f);
-            break;
-        case KeyEvent::Key::D:
-            KeyPressedMap["d"] = true;
-            PlayerSub_->RudderJoint->SetMotorSpeed(1.0f);
-            break;
+        case KeyEvent::Key::A: KeyPressedMap["a"] = true; break;
+        case KeyEvent::Key::D: KeyPressedMap["d"] = true; break;
         case KeyEvent::Key::P:
             KeyPressedMap["p"] = true;
             IsPaused_ ^= true;
+            break;
+        case KeyEvent::Key::Q:
+            if (IsMainMenuDisplayed_) IsExitTriggered_ = true;
             break;
         case KeyEvent::Key::T: PlayerSub_->setPose(-100.0f, 20.0f, 0.3f); break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = true; break;
@@ -67,12 +64,20 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
         case KeyEvent::Key::X:
             PlayerSub_->fullStop();
             break;
+        case KeyEvent::Key::Down: KeyPressedMap["down"] = true; break;
+        case KeyEvent::Key::Left: KeyPressedMap["left"] = true; break;
+        case KeyEvent::Key::Right: KeyPressedMap["right"] = true; break;
+        case KeyEvent::Key::Up: KeyPressedMap["up"] = true; break;
         case KeyEvent::Key::LeftCtrl:
+            KeyPressedMap["ctrl_l"] = true;
             DevCam_ = true;
             break;
+        case KeyEvent::Key::RightCtrl: KeyPressedMap["ctrl_r"] = true; break;
+        case KeyEvent::Key::LeftShift: KeyPressedMap["shift_l"] = true; break;
+        case KeyEvent::Key::RightShift: KeyPressedMap["shift_r"] = true; break;
         case KeyEvent::Key::Esc:
         {
-            IsExitTriggered_ = true;
+            IsMainMenuDisplayed_ ^= true;
             break;
         }
         case KeyEvent::Key::Space:
@@ -86,19 +91,21 @@ void BattleSub::keyReleaseEvent(KeyEvent& Event)
 {
     switch (Event.key())
     {
-        case KeyEvent::Key::A:
-            KeyPressedMap["a"] = false;
-            PlayerSub_->RudderJoint->SetMotorSpeed(0.0f);
-            break;
-        case KeyEvent::Key::D:
-            KeyPressedMap["d"] = false;
-            PlayerSub_->RudderJoint->SetMotorSpeed(0.0f);
-            break;
+        case KeyEvent::Key::A: KeyPressedMap["a"] = false; break;
+        case KeyEvent::Key::D: KeyPressedMap["d"] = false; break;
         case KeyEvent::Key::S: KeyPressedMap["s"] = false; break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = false; break;
+        case KeyEvent::Key::Down: KeyPressedMap["down"] = false; break;
+        case KeyEvent::Key::Left: KeyPressedMap["left"] = false; break;
+        case KeyEvent::Key::Right: KeyPressedMap["right"] = false; break;
+        case KeyEvent::Key::Up: KeyPressedMap["up"] = false; break;
         case KeyEvent::Key::LeftCtrl:
+            KeyPressedMap["ctrl_l"] = false;
             DevCam_ = false;
             break;
+        case KeyEvent::Key::RightCtrl: KeyPressedMap["ctrl_r"] = false; break;
+        case KeyEvent::Key::LeftShift: KeyPressedMap["shift_l"] = false; break;
+        case KeyEvent::Key::RightShift: KeyPressedMap["shift_r"] = false; break;
         default: break;
     }
 }
@@ -117,13 +124,13 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
             {
                 if (MouseDelta_.y() != 0)
                 {
-                    Zoom_.increaseByMultiplication(1.0f-0.01f*MouseDelta_.y());
+                    Cam1Zoom_.increaseByMultiplication(1.0f-0.01f*MouseDelta_.y());
                 }
             }
             else 
             {
                 Platform::Application::Sdl2Application::setCursor(Cursor::HiddenLocked);
-                CameraObjectPlayer1_->translate(0.05f*Zoom_.Value()*Vector2(MouseDelta_));
+                CameraObjectPlayer1_->translate(0.05f*Cam1Zoom_.Value()*Vector2(MouseDelta_));
                 MouseDelta_ = Vector2i();
             }
         }
@@ -137,20 +144,7 @@ void BattleSub::mouseMoveEvent(MouseMoveEvent& Event)
 void BattleSub::mousePressEvent(MouseEvent& Event)
 {
     // Only react if not in UI mode
-    if (!ImGUI_.handleMousePressEvent(Event))
-    {
-        if(Event.button() == MouseEvent::Button::Left)
-        {
-            if (!(Event.modifiers() & MouseEvent::Modifier::Ctrl))
-            {
-                PlayerSub_->fire(-1.0f);
-            }
-        }
-        else if (Event.button() == MouseEvent::Button::Right)
-        {
-            PlayerSub_->fire(1.0f);
-        }
-    }
+    if (ImGUI_.handleMousePressEvent(Event)) return;
 }
 
 void BattleSub::mouseReleaseEvent(MouseEvent& Event)
@@ -165,25 +159,6 @@ void BattleSub::viewportEvent(ViewportEvent& Event)
 
     GL::defaultFramebuffer.setViewport({{}, Event.framebufferSize()});
 
-//    TexMainDisplay_ = GL::Texture2D{};
-//    TexPlayer2_ = GL::Texture2D{};
-//    TexMainDisplay_.setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WindowResolutionX_, WindowResolutionY_});
-//    TexPlayer2_.setStorage(Math::log2(WindowResolutionX_)+1, GL::TextureFormat::RGBA8, {WindowResolutionX_, WindowResolutionY_});
-//    FBOMainDisplay_.setViewport({{}, Event.framebufferSize()});
-//    FBOPlayer2_.setViewport({{}, Event.framebufferSize()});
-
-//    FBOMainDisplay_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexMainDisplay_, 0)
-//               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
-//    FBOPlayer2_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPlayer2_, 0)
-//               .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
-
-    // ShaderMainDisplay_.setTransformation(Matrix3::projection({float(WindowResolutionX_), float(WindowResolutionY_)}));
-
-    // CameraPlayer1_->setViewport(Event.framebufferSize());
-
-
-//    this->setupFrameBuffersMainScreen();
-
     ImGUI_.relayout(Vector2(Event.windowSize()), Event.windowSize(), Event.framebufferSize());
 }
 
@@ -194,14 +169,21 @@ void BattleSub::drawEvent()
         GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
         GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.0f, 1.0f));
         
-        
-//         if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
-//         if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
+        if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
+        if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
         if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
         if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
-        
-        CameraPlayer1_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_.Value(),
-                                                                 WindowResolutionY_/VisRes_*Zoom_.Value()}));
+        if (KeyPressedMap["down"] == true) PlayerSub2_->throttleReverse();
+        if (KeyPressedMap["left"] == true) PlayerSub2_->rudderLeft();
+        if (KeyPressedMap["right"] == true) PlayerSub2_->rudderRight();
+        if (KeyPressedMap["up"] == true) PlayerSub2_->throttleForward();
+        if (KeyPressedMap["shift_l"] == true) PlayerSub_->fire();
+        if (KeyPressedMap["shift_r"] == true) PlayerSub2_->fire();
+
+        CameraPlayer1_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
+                                                                 WindowResolutionY_/VisRes_*Cam1Zoom_.Value()}));
+        CameraPlayer2_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam2Zoom_.Value(),
+                                                                 WindowResolutionY_/VisRes_*Cam2Zoom_.Value()}));
         
         FluidGrid_.setDensityDistortion(DensityDistortion_)
                   .setGammaCorrection(GammaCorrection_)
@@ -217,11 +199,18 @@ void BattleSub::drawEvent()
             if (!DevCam_)
             {
                 auto Pos = PlayerSub_->Hull.getBody()->GetPosition();
-                auto Vel = PlayerSub_->Hull.getBody()->GetLinearVelocity();
 
                 CameraObjectPlayer1_->resetTransformation();
-                CameraObjectPlayer1_->translate(Vector2(Pos.x+CamMoveAheadX_.Value(),
-                                                        Pos.y+CamMoveAheadY_.Value()));
+                CameraObjectPlayer1_->translate(Vector2(Pos.x+Cam1MoveAheadX_.Value(),
+                                                        Pos.y+Cam1MoveAheadY_.Value()));
+                if (IsSplitscreen_)
+                {
+                    auto Pos = PlayerSub2_->Hull.getBody()->GetPosition();
+
+                    CameraObjectPlayer2_->resetTransformation();
+                    CameraObjectPlayer2_->translate(Vector2(Pos.x+Cam2MoveAheadX_.Value(),
+                                                            Pos.y+Cam2MoveAheadY_.Value()));
+                }
             }
         }
         
@@ -233,6 +222,22 @@ void BattleSub::drawEvent()
         // Draw the scene
         if (!IsPaused_ || IsStepForward_)
         {
+            FluidGrid_.bindBoundaryMap();
+            // Shaders::Flat2D Shader;
+            // Shader.setColor(Color4(1.0f, 1.0f));
+            // Matrix3 Transformation = Matrix3::translation(Vector2(
+            //                                                   PlayerSub_->Hull.getBody()->GetPosition().x,
+            //                                                   PlayerSub_->Hull.getBody()->GetPosition().y
+            //                                               ))*
+            //                          Matrix3::rotation(Rad(PlayerSub_->Hull.getBody()->GetAngle()));
+            // Shader.setTransformationProjectionMatrix(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y})*
+            //                                          Transformation);
+            // auto Meshes = PlayerSub_->Hull.getMeshes();
+            // for (auto it = Meshes->begin(); it != Meshes->end(); it++)
+            //     Shader.draw(*it);
+            CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+            CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+
             FluidGrid_.process(SimTime_.time());
             IsStepForward_ = false;
         }
@@ -257,32 +262,37 @@ void BattleSub::drawEvent()
                        .bind();
         // Camera projection and viewport have to use the full resolution, even
         // if above texture size, in order to render with the correct aspect ratio
-        CameraCurrentPlayer_->setProjectionMatrix(Matrix3::projection({WindowResX/VisRes_*Zoom_.Value(),
-                                                                       WindowResolutionY_/VisRes_*Zoom_.Value()}))
+        CameraCurrentPlayer_->setProjectionMatrix(Matrix3::projection({WindowResX/VisRes_*Cam1Zoom_.Value(),
+                                                                       WindowResolutionY_/VisRes_*Cam1Zoom_.Value()}))
                              .setViewport({{WindowResX, WindowResolutionY_}});
 
         FluidGrid_.display(CameraCurrentPlayer_->projectionMatrix()*CameraCurrentPlayer_->cameraMatrix(),
-                            FluidBuffer_);
-        
-        CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
-        CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+                           FluidBuffer_);
+
+        if (FluidBuffer_ != FluidBufferE::BOUNDARIES)
+        {
+            CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+            CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+        }
 
         // In case of splitscreen, also render the second view
         if (IsSplitscreen_)
         {
-            //--- Todo: To be called on toggle:
             FBOMainDisplay_.setViewport({{std::min(WindowResX, WindowResMaxX), 0},
                                          {std::min(WindowResolutionX_, WINDOW_RESOLUTION_MAX_X),
                                           std::min(WindowResolutionY_, WINDOW_RESOLUTION_MAX_Y)}});
-            CameraOtherPlayer_->setProjectionMatrix(Matrix3::projection({WindowResX/VisRes_,
-                                                                         WindowResolutionY_/VisRes_}))
+            CameraOtherPlayer_->setProjectionMatrix(Matrix3::projection({WindowResX/VisRes_*Cam2Zoom_.Value(),
+                                                                         WindowResolutionY_/VisRes_*Cam2Zoom_.Value()}))
                                .setViewport({WindowResX, WindowResolutionY_});
 
             FluidGrid_.display(CameraOtherPlayer_->projectionMatrix()*CameraOtherPlayer_->cameraMatrix(),
                                FluidBuffer_);
-            
-            CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
-            CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+
+            if (FluidBuffer_ != FluidBufferE::BOUNDARIES)
+            {
+                CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+                CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+            }
         }
 
         //-----------------------------------------------------------------------
@@ -293,17 +303,14 @@ void BattleSub::drawEvent()
         ShaderMainDisplay_.bindTexture(TexMainDisplay_)
                           .setTexScale(std::min(1.0f, float(WindowResolutionX_)/WINDOW_RESOLUTION_MAX_X),
                                        std::min(1.0f, float(WindowResolutionY_)/WINDOW_RESOLUTION_MAX_Y));
-        MeshMainDisplay_.draw(ShaderMainDisplay_);
-        
-        Vector2 vs{PlayerSub_->Hull.getBody()->GetLinearVelocity().x,
-                   PlayerSub_->Hull.getBody()->GetLinearVelocity().y};
-        float s = PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
-        float s_x = PlayerSub_->Hull.getBody()->GetLinearVelocity().x;
-        float s_y = PlayerSub_->Hull.getBody()->GetLinearVelocity().y;
-        CamMoveAheadX_.interpolate(s_x*s_x*Math::sign(s_x));
-        CamMoveAheadY_.interpolate(s_y*s_y*Math::sign(s_y));
-        Zoom_.interpolate(s*s);
+        ShaderMainDisplay_.draw(MeshMainDisplay_);
 
+        // ShaderMainDisplay_.draw(PlayerSub_->Hull.getMeshes()->at(0));
+
+        if (!IsPaused_ || IsStepForward_)
+        {
+            updateCameraDynamics();
+        }
         updateUI();
                 
         swapBuffers();
@@ -322,6 +329,31 @@ void BattleSub::cleanupAndExit()
     GlobalResources::Get.release();
     
     Platform::Application::Sdl2Application::exit();
+}
+
+void BattleSub::updateCameraDynamics()
+{
+    {
+        Vector2 vs{PlayerSub_->Hull.getBody()->GetLinearVelocity().x,
+                   PlayerSub_->Hull.getBody()->GetLinearVelocity().y};
+        float s = PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
+        float s_x = PlayerSub_->Hull.getBody()->GetLinearVelocity().x;
+        float s_y = PlayerSub_->Hull.getBody()->GetLinearVelocity().y;
+        Cam1MoveAheadX_.interpolate(s_x*s_x*Math::sign(s_x));
+        Cam1MoveAheadY_.interpolate(s_y*s_y*Math::sign(s_y));
+        Cam1Zoom_.interpolate(s*s);
+    }
+    if (IsSplitscreen_)
+    {
+        Vector2 vs{PlayerSub2_->Hull.getBody()->GetLinearVelocity().x,
+                   PlayerSub2_->Hull.getBody()->GetLinearVelocity().y};
+        float s = PlayerSub2_->Hull.getBody()->GetLinearVelocity().Length();
+        float s_x = PlayerSub2_->Hull.getBody()->GetLinearVelocity().x;
+        float s_y = PlayerSub2_->Hull.getBody()->GetLinearVelocity().y;
+        Cam2MoveAheadX_.interpolate(s_x*s_x*Math::sign(s_x));
+        Cam2MoveAheadY_.interpolate(s_y*s_y*Math::sign(s_y));
+        Cam2Zoom_.interpolate(s*s);
+    }
 }
 
 void BattleSub::updateGameObjects()
@@ -394,24 +426,23 @@ void BattleSub::updateGameObjects()
     {
         GlobalEmitterFactory::Get.destroy(GlobalEmitterFactory::Get.getEntities().at(d));
     }
-//     for (auto Sub : GlobalFactories::Submarines.getEntities())
-//     {
-//         Sub.second->update();
-//     }
-    PlayerSub_->update();
-    auto Propellor = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
-    auto Direction = PlayerSub_->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
-    auto Front     = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f,  8.0f});
-    auto Back      = PlayerSub_->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
-    
-    FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.001f*std::abs(PlayerSub_->getThrottle()))
-              .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*PlayerSub_->getThrottle(), 0.001f*Direction.y*PlayerSub_->getThrottle());
-              
-    FluidGrid_.addDensity(Front.x, Front.y, std::abs(PlayerSub_->Hull.getBody()->GetLinearVelocity().Length())*1.0f)
-              .addVelocity(Front.x, Front.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
-                                             PlayerSub_->Hull.getBody()->GetLinearVelocity().y,
-                           Back.x, Back.y, PlayerSub_->Hull.getBody()->GetLinearVelocity().x, 
-                                           PlayerSub_->Hull.getBody()->GetLinearVelocity().y);
+    for (auto Sub : GlobalFactories::Submarines.getEntities())
+    {
+        Sub.second->update();
+        auto Propellor = Sub.second->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
+        auto Direction = Sub.second->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
+        auto Front     = Sub.second->Hull.getBody()->GetWorldPoint({0.0f,  8.0f});
+        auto Back      = Sub.second->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
+
+        FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.001f*std::abs(Sub.second->getThrottle()))
+                  .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*Sub.second->getThrottle(), 0.001f*Direction.y*Sub.second->getThrottle());
+
+        FluidGrid_.addDensity(Front.x, Front.y, std::abs(Sub.second->Hull.getBody()->GetLinearVelocity().Length())*1.0f)
+                  .addVelocity(Front.x, Front.y, Sub.second->Hull.getBody()->GetLinearVelocity().x,
+                                                 Sub.second->Hull.getBody()->GetLinearVelocity().y,
+                               Back.x,   Back.y, Sub.second->Hull.getBody()->GetLinearVelocity().x,
+                                                 Sub.second->Hull.getBody()->GetLinearVelocity().y);
+    }
 }
 
 void BattleSub::updateUI()
@@ -423,139 +454,190 @@ void BattleSub::updateUI()
     
     ImGUI_.newFrame();
     {
-        ImGui::Begin("Debug");
-        
-            ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
-            ImGui::Indent();
-                ImGui::Text("%.3f ms; (%.1f FPS)",
-                    1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
-            ImGui::Unindent();
-        
-            int Buffer = static_cast<int>(FluidBuffer_);
-            ImGui::NewLine();
-            ImGui::TextColored(ImVec4(1,1,0,1), "Buffer Selection");
-            ImGui::Indent();
-                ImGui::RadioButton("Density Sources", &Buffer, 0);
-                ImGui::RadioButton("Density Base", &Buffer, 1);
-                ImGui::RadioButton("Velocity Sources", &Buffer, 2);
-                ImGui::RadioButton("Velocity Buffer Front", &Buffer, 3);
-                ImGui::RadioButton("Velocity Buffer Back", &Buffer, 4);
-                ImGui::RadioButton("Density Buffer Front", &Buffer, 5);
-                ImGui::RadioButton("Density Buffer Back", &Buffer, 6);
-                ImGui::RadioButton("Ground Distorted", &Buffer, 7);
-                ImGui::RadioButton("Final Composition", &Buffer, 8);
+        if (IsDebugDisplayed_)
+        {
+            ImGui::Begin("Debug");
+
+                ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
+                ImGui::Indent();
+                    ImGui::Text("%.3f ms; (%.1f FPS)",
+                        1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
+                ImGui::Unindent();
+
+                int Buffer = static_cast<int>(FluidBuffer_);
                 ImGui::NewLine();
-                ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
-                    showTooltip("Show magnitude or show colour-coded direction, too.");
-            ImGui::Unindent();
-            FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
-            
-            ImGui::NewLine();
-            ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");
-            ImGui::NewLine();
-            ImGui::SliderFloat("Gamma Correction", &GammaCorrection_, 0.5f, 5.0f);
-                showTooltip("Gamma correction value for the fluid. Default value of 2.2 should gamma correct monitor defaults.\n"
-                            "Higher value will brighten up the scene.");
-            ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
-                showTooltip("Scale colour values for displaying velocity\n"
-                            "The given value defines the upper bound in m/s, everything above is capped.\n"
-                            "E.g. a value of 20.0 will scale colour values to the interval [0, 20] m/s.");
-            ImGui::NewLine();
-            ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
-            ImGui::NewLine();
-            ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
-                showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
-                            "Base density (background) will be distorted by x * advection, e.g.:\n"
-                            "  Value 200: A velocity of 1m/s will distort by 200m");
-            ImGui::SliderFloat("Velocity Advection Factor", &VelocityAdvectionFactor_, 0.0f, 2.0f);
-                showTooltip("Factor for velocity advection.\nA lower value than 1.0 will move the velocity field slower than self-advection.\n"
-                            "A higher value than 1.0 will move the velocity field faster than self-advection.");
-            ImGui::SliderFloat("Velocity Diffusion Gain", &VelocityDiffusionGain_, 0.0f, 10.0f);
-                showTooltip("The higher the value, the more the velocity sources will be amplified.");
-            ImGui::SliderFloat("Velocity Diffusion Rate", &VelocityDiffusionRate_, 0.0f, 10.0f);
-                showTooltip("The higher the value, the slower the velocity will diffuse.");
-            
-            ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
-                showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");
+                ImGui::TextColored(ImVec4(1,1,0,1), "Buffer Selection");
+                ImGui::Indent();
+                    ImGui::RadioButton("Boundaries", &Buffer, 0);
+                    ImGui::RadioButton("Density Sources", &Buffer, 1);
+                    ImGui::RadioButton("Density Base", &Buffer, 2);
+                    ImGui::RadioButton("Velocity Sources", &Buffer, 3);
+                    ImGui::RadioButton("Velocity Buffer Front", &Buffer, 4);
+                    ImGui::RadioButton("Velocity Buffer Back", &Buffer, 5);
+                    ImGui::RadioButton("Density Buffer Front", &Buffer, 6);
+                    ImGui::RadioButton("Density Buffer Back", &Buffer, 7);
+                    ImGui::RadioButton("Ground Distorted", &Buffer, 8);
+                    ImGui::RadioButton("Final Composition", &Buffer, 9);
+                    ImGui::NewLine();
+                    ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
+                        showTooltip("Show magnitude or show colour-coded direction, too.");
+                ImGui::Unindent();
+                FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
 
+                ImGui::NewLine();
+                ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");
+                ImGui::NewLine();
+                ImGui::SliderFloat("Gamma Correction", &GammaCorrection_, 0.5f, 5.0f);
+                    showTooltip("Gamma correction value for the fluid. Default value of 2.2 should gamma correct monitor defaults.\n"
+                                "Higher value will brighten up the scene.");
+                ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
+                    showTooltip("Scale colour values for displaying velocity\n"
+                                "The given value defines the upper bound in m/s, everything above is capped.\n"
+                                "E.g. a value of 20.0 will scale colour values to the interval [0, 20] m/s.");
+                ImGui::NewLine();
+                ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
+                ImGui::NewLine();
+                ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
+                    showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
+                                "Base density (background) will be distorted by x * advection, e.g.:\n"
+                                "  Value 200: A velocity of 1m/s will distort by 200m");
+                ImGui::SliderFloat("Velocity Advection Factor", &VelocityAdvectionFactor_, 0.0f, 2.0f);
+                    showTooltip("Factor for velocity advection.\nA lower value than 1.0 will move the velocity field slower than self-advection.\n"
+                                "A higher value than 1.0 will move the velocity field faster than self-advection.");
+                ImGui::SliderFloat("Velocity Diffusion Gain", &VelocityDiffusionGain_, 0.0f, 10.0f);
+                    showTooltip("The higher the value, the more the velocity sources will be amplified.");
+                ImGui::SliderFloat("Velocity Diffusion Rate", &VelocityDiffusionRate_, 0.0f, 10.0f);
+                    showTooltip("The higher the value, the slower the velocity will diffuse.");
+
+                ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
+                    showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");
+
+            ImGui::End();
+
+            ImGui::Begin("Camera Dynamics Debug");
+
+                ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
+                ImGui::Indent();
+                    ImGui::Checkbox("Enable AutoZoom", &Cam1Zoom_.IsAuto);
+                        showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
+                                    "Zoom out when accelerating, zooms in when decelerating");
+                        if (Cam1Zoom_.IsAuto) Cam1Zoom_.Base = 0.2f;
+                    std::vector<float> Vals;
+                    for (const auto Val : Cam1Zoom_.Values) {Vals.push_back(Val);}
+                    ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
+                        showTooltip("Zoom history, 600 frames = 10s");
+                    ImGui::SliderFloat("AutoZoom Speed", &Cam1Zoom_.Speed, 0.01f, 0.5f);
+                        showTooltip("Speed to adapt to new target value, lower is more dampened");
+                    ImGui::SliderFloat("AutoZoom Strength", &Cam1Zoom_.Strength, 0.0f, 0.02f);
+                        showTooltip("Amplitude of AutoZoom, lower is less zooming");
+                ImGui::Unindent();
+
+                ImGui::NewLine();
+
+                ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
+                ImGui::Indent();
+                    static bool Cam1MoveAheadIsAuto_s = true;
+
+                    ImGui::Checkbox("Enable AutoMove", &Cam1MoveAheadIsAuto_s);
+                        showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
+                                    "Moves in velocity direction when accelerating, moves back when decelerating");
+
+                    Cam1MoveAheadX_.IsAuto = Cam1MoveAheadIsAuto_s;
+                    Cam1MoveAheadY_.IsAuto = Cam1MoveAheadIsAuto_s;
+
+                    std::vector<float> ValsMoveX;
+                    std::vector<float> ValsMoveY;
+                    for (const auto ValMove : Cam1MoveAheadX_.Values) ValsMoveX.push_back(ValMove);
+                    for (const auto ValMove : Cam1MoveAheadY_.Values) ValsMoveY.push_back(ValMove);
+                    ImGui::PlotLines("Move X", ValsMoveX.data(), ValsMoveX.size());
+                        showTooltip("AutoMove history, 600 frames = 10s, x component");
+                    ImGui::PlotLines("Move Y", ValsMoveY.data(), ValsMoveY.size());
+                        showTooltip("AutoMove history, 600 frames = 10s, y component");
+
+                    static float Cam1MoveAheadSpeed_s = 0.1f;
+                    static float Cam1MoveAheadStrength_s = 0.25f;
+
+                    ImGui::SliderFloat("AutoMove Speed", &Cam1MoveAheadSpeed_s, 0.01f, 0.5f);
+                        showTooltip("Speed to adapt to new target value, lower is more dampened");
+                    ImGui::SliderFloat("AutoMove Strength", &Cam1MoveAheadStrength_s, 0.0f, 1.0f);
+                        showTooltip("Amplitude of AutoMove, lower is less movement");
+
+                    Cam1MoveAheadX_.Speed = Cam1MoveAheadSpeed_s;
+                    Cam1MoveAheadY_.Speed = Cam1MoveAheadSpeed_s;
+                    Cam1MoveAheadX_.Strength = Cam1MoveAheadStrength_s;
+                    Cam1MoveAheadY_.Strength = Cam1MoveAheadStrength_s;
+                ImGui::Unindent();
+
+            ImGui::End();
+        }
+
+        if (IsMainMenuDisplayed_)
+        {
+            ImGui::Begin("Menu");
+
+                ImGui::Checkbox("Tooltips", &IsTooltipsEnabled_);
+                    showTooltip("Guess what...");
+                ImGui::Checkbox("Split screen", &IsSplitscreen_);
+                    showTooltip("Toggle split screen mode");
+                ImGui::Checkbox("Debug", &IsDebugDisplayed_);
+                    showTooltip("Toggle debug mode");
+
+                static std::string Label;
+                if (IsPaused_) Label = "Resume               ";
+                else Label = "Pause                ";
+                if (ImGui::Button(Label.c_str())) IsPaused_ ^= 1;
+                    showTooltip("Pause/Resume the game");
+                if (ImGui::Button("Quit              <q>")) IsExitTriggered_ = true;
+                    showTooltip("Quit BattleSub, exit to desktop");
+
+            ImGui::End();
+        }
+
+        // Submarine stats
+        ImVec2 StatsPosSub1 = ImVec2(10, 10);
+        ImGui::SetNextWindowPos(StatsPosSub1, ImGuiCond_Always);
+        ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
+        ImGuiWindowFlags WindowFlags = ImGuiWindowFlags_NoDecoration |
+                                       ImGuiWindowFlags_AlwaysAutoResize |
+                                       ImGuiWindowFlags_NoSavedSettings |
+                                       ImGuiWindowFlags_NoFocusOnAppearing |
+                                       ImGuiWindowFlags_NoInputs |
+                                       ImGuiWindowFlags_NoNav |
+                                       ImGuiWindowFlags_NoMove;
+        bool CloseButton = false;
+        float Integrity = PlayerSub_->getHullIntegrity() / 100.0f;
+        UIStyleSubStats_.Colors[ImGuiCol_PlotHistogram] = ImVec4(1.0f-Integrity, Integrity, 0.0f, 0.5f);
+        *UIStyle_ = UIStyleSubStats_;
+        ImGui::Begin("Submarine 1", &CloseButton, WindowFlags);
+            ImGui::Text("Hull Integrity                    ");
+            ImGui::ProgressBar(Integrity);
         ImGui::End();
-
-        ImGui::Begin("Camera Dynamics Debug");
-
-            ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
-            ImGui::Indent();
-                ImGui::Checkbox("Enable AutoZoom", &Zoom_.IsAuto);
-                    showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
-                                "Zoom out when accelerating, zooms in when decelerating");
-                    if (Zoom_.IsAuto) Zoom_.Base = 0.2f;
-                std::vector<float> Vals;
-                for (const auto Val : Zoom_.Values) {Vals.push_back(Val);}
-                ImGui::PlotLines("Zoom", Vals.data(), Vals.size());
-                    showTooltip("Zoom history, 600 frames = 10s");
-                ImGui::SliderFloat("AutoZoom Speed", &Zoom_.Speed, 0.01f, 0.5f);
-                    showTooltip("Speed to adapt to new target value, lower is more dampened");
-                ImGui::SliderFloat("AutoZoom Strength", &Zoom_.Strength, 0.0f, 0.02f);
-                    showTooltip("Amplitude of AutoZoom, lower is less zooming");
-            ImGui::Unindent();
-
-            ImGui::NewLine();
-
-            ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
-            ImGui::Indent();
-                static bool CamMoveAheadIsAuto_s = true;
-
-                ImGui::Checkbox("Enable AutoMove", &CamMoveAheadIsAuto_s);
-                    showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
-                                "Moves in velocity direction when accelerating, moves back when decelerating");
-
-                CamMoveAheadX_.IsAuto = CamMoveAheadIsAuto_s;
-                CamMoveAheadY_.IsAuto = CamMoveAheadIsAuto_s;
-
-                std::vector<float> ValsMoveX;
-                std::vector<float> ValsMoveY;
-                for (const auto ValMove : CamMoveAheadX_.Values) ValsMoveX.push_back(ValMove);
-                for (const auto ValMove : CamMoveAheadY_.Values) ValsMoveY.push_back(ValMove);
-                ImGui::PlotLines("Move X", ValsMoveX.data(), ValsMoveX.size());
-                    showTooltip("AutoMove history, 600 frames = 10s, x component");
-                ImGui::PlotLines("Move Y", ValsMoveY.data(), ValsMoveY.size());
-                    showTooltip("AutoMove history, 600 frames = 10s, y component");
-
-                static float CamMoveAheadSpeed_s = 0.1f;
-                static float CamMoveAheadStrength_s = 0.25f;
-
-                ImGui::SliderFloat("AutoMove Speed", &CamMoveAheadSpeed_s, 0.01f, 0.5f);
-                    showTooltip("Speed to adapt to new target value, lower is more dampened");
-                ImGui::SliderFloat("AutoMove Strength", &CamMoveAheadStrength_s, 0.0f, 1.0f);
-                    showTooltip("Amplitude of AutoMove, lower is less movement");
-
-                CamMoveAheadX_.Speed = CamMoveAheadSpeed_s;
-                CamMoveAheadY_.Speed = CamMoveAheadSpeed_s;
-                CamMoveAheadX_.Strength = CamMoveAheadStrength_s;
-                CamMoveAheadY_.Strength = CamMoveAheadStrength_s;
-            ImGui::Unindent();
-
-        ImGui::End();
-        
-        ImGui::Begin("Menu");
-        
-            ImGui::Checkbox("Tooltips", &IsTooltipsEnabled_);
-                showTooltip("Guess what...");
-            ImGui::Checkbox("Split screen", &IsSplitscreen_);
-                showTooltip("Toggle split screen mode");
-                    
-            static std::string Label;
-            if (IsPaused_) Label = "Resume";
-            else Label = "Pause";
-            if (ImGui::Button(Label.c_str())) IsPaused_ ^= 1;
-                showTooltip("Pause/Resume the game");
-            if (ImGui::Button("Quit")) IsExitTriggered_ = true;
-                showTooltip("Quit BattleSub, exit to desktop");
-
-        ImGui::End();
+        if (IsSplitscreen_)
+        {
+            ImVec2 StatsPosSub2 = ImVec2(WindowResolutionX_/2 + 10, 10);
+            ImGui::SetNextWindowPos(StatsPosSub2, ImGuiCond_Always);
+            ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
+            ImGuiWindowFlags WindowFlags = ImGuiWindowFlags_NoDecoration |
+                                           ImGuiWindowFlags_AlwaysAutoResize |
+                                           ImGuiWindowFlags_NoSavedSettings |
+                                           ImGuiWindowFlags_NoFocusOnAppearing |
+                                           ImGuiWindowFlags_NoInputs |
+                                           ImGuiWindowFlags_NoNav |
+                                           ImGuiWindowFlags_NoMove;
+            bool CloseButton = false;
+            float Integrity = PlayerSub2_->getHullIntegrity() / 100.0f;
+            UIStyleSubStats_.Colors[ImGuiCol_PlotHistogram] = ImVec4(1.0f-Integrity, Integrity, 0.0f, 0.5f);
+            *UIStyle_ = UIStyleSubStats_;
+            ImGui::Begin("Submarine 2", &CloseButton, WindowFlags);
+                ImGui::Text("Hull Integrity                    ");
+                ImGui::ProgressBar(Integrity);
+            ImGui::End();
+        }
+        *UIStyle_ = UIStyleDefault_;
     }
-    
+
     ImGUI_.drawFrame();
-    
+
     GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
     GL::Renderer::disable(GL::Renderer::Feature::Blending);
 }
@@ -585,6 +667,10 @@ void BattleSub::setupWindow()
     // Prepare ImGui
     ImGUI_ = ImGuiIntegration::Context({float(WindowResolutionX_), float(WindowResolutionY_)},
     windowSize(), framebufferSize());
+    UIStyle_ = &ImGui::GetStyle();
+    UIStyleDefault_ = *UIStyle_;
+    UIStyleSubStats_ = *UIStyle_;
+    UIStyleSubStats_.WindowRounding = 0.0f;
     
     GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add,
     GL::Renderer::BlendEquation::Add);
@@ -623,8 +709,8 @@ void BattleSub::setupCameras()
     CameraObjectPlayer1_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer1_ = new SceneGraph::Camera2D{*CameraObjectPlayer1_};
     CameraPlayer1_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::NotPreserved)
-        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_.Value(),
-                                                  WindowResolutionY_/VisRes_*Zoom_.Value()}))
+        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
+                                                  WindowResolutionY_/VisRes_*Cam1Zoom_.Value()}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectCurrentPlayer_ = CameraObjectPlayer1_;
     CameraCurrentPlayer_ = CameraPlayer1_;
@@ -632,21 +718,37 @@ void BattleSub::setupCameras()
     CameraObjectPlayer2_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer2_ = new SceneGraph::Camera2D{*CameraObjectPlayer2_};
     CameraPlayer2_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::NotPreserved)
-        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Zoom_.Value(),
-                                                  WindowResolutionY_/VisRes_*Zoom_.Value()}))
+        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
+                                                  WindowResolutionY_/VisRes_*Cam1Zoom_.Value()}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectOtherPlayer_ = CameraObjectPlayer2_;
     CameraOtherPlayer_ = CameraPlayer2_;
 
-    Zoom_.Base = 0.2f;
-    Zoom_.Speed = 0.1f;
-    Zoom_.Strength = 0.005f;
-    CamMoveAheadX_.Base = 0.0f;
-    CamMoveAheadX_.Speed = 0.1f;
-    CamMoveAheadX_.Strength = 0.25f;
-    CamMoveAheadY_.Base = 0.0f;
-    CamMoveAheadY_.Speed = 0.1f;
-    CamMoveAheadY_.Strength = 0.25f;
+    Cam1Zoom_.Base = 0.2f;
+    Cam1Zoom_.Speed = 0.1f;
+    Cam1Zoom_.Strength = 0.005f;
+    Cam1MoveAheadX_.Base = 0.0f;
+    Cam1MoveAheadX_.Speed = 0.1f;
+    Cam1MoveAheadX_.Strength = 0.25f;
+    Cam1MoveAheadY_.Base = 0.0f;
+    Cam1MoveAheadY_.Speed = 0.1f;
+    Cam1MoveAheadY_.Strength = 0.25f;
+    Cam2Zoom_.Base = 0.2f;
+    Cam2Zoom_.Speed = 0.1f;
+    Cam2Zoom_.Strength = 0.005f;
+    Cam2MoveAheadX_.Base = 0.0f;
+    Cam2MoveAheadX_.Speed = 0.1f;
+    Cam2MoveAheadX_.Strength = 0.25f;
+    Cam2MoveAheadY_.Base = 0.0f;
+    Cam2MoveAheadY_.Speed = 0.1f;
+    Cam2MoveAheadY_.Strength = 0.25f;
+
+
+    CameraObjectBoundaries_ = new Object2D{GlobalResources::Get.getScene()};
+    CameraBoundaries_ = new SceneGraph::Camera2D{*CameraObjectBoundaries_};
+    CameraBoundaries_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
+        .setProjectionMatrix(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+        .setViewport({int(WORLD_SIZE_DEFAULT_X), int(WORLD_SIZE_DEFAULT_Y)});
 }
 
 void BattleSub::setupGameObjects(entt::registry& Reg)
@@ -655,64 +757,13 @@ void BattleSub::setupGameObjects(entt::registry& Reg)
     auto PlayerSub2 = Reg.create();
 
     PlayerSub_ = GlobalFactories::Submarines.create();
-    b2BodyDef BodyDef;
-    BodyDef.type = b2_dynamicBody;
-    BodyDef.active = true;
-    BodyDef.position.Set(0.0f, -20.0f);
-    BodyDef.angularDamping = 0.8f;
-    BodyDef.linearDamping = 0.2f;
-    PlayerSub_->Hull.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
-                    .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
-                    .setScene(GlobalResources::Get.getScene())
-                    .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
-                    .setShader(GlobalResources::Get.getShader())
-                    .setWorld(GlobalResources::Get.getWorld())
-                    .init(GameObjectTypeE::SUBMARINE_HULL, BodyDef);
-    b2BodyDef BodyDefRudder;
-    BodyDefRudder.type = b2_dynamicBody;
-    BodyDefRudder.active = true;
-    BodyDefRudder.position.Set(0.0f, -27.0f);
-    BodyDefRudder.angularDamping = 0.8f;
-    BodyDefRudder.linearDamping = 0.2f;
-    PlayerSub_->Rudder.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
-                      .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_RUDDER))
-                      .setScene(GlobalResources::Get.getScene())
-                      .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_RUDDER))
-                      .setShader(GlobalResources::Get.getShader())
-                      .setWorld(GlobalResources::Get.getWorld())
-                      .init(GameObjectTypeE::SUBMARINE_RUDDER, BodyDef);
-        
-    b2RevoluteJointDef jointDef;
-    jointDef.lowerAngle = -0.25f * b2_pi; // -45 degrees
-    jointDef.upperAngle =  0.25f * b2_pi; // 45 degrees
-    jointDef.enableLimit = true;
-    jointDef.bodyA = PlayerSub_->Hull.getBody();
-    jointDef.localAnchorA = {0.0f, -6.0f};
-    jointDef.bodyB = PlayerSub_->Rudder.getBody();
-    jointDef.localAnchorB = {0.0f,  1.0f};
-    jointDef.maxMotorTorque = 10000.0f;
-    jointDef.motorSpeed = 0.0f;
-    jointDef.enableMotor = true;
-    jointDef.collideConnected = false;
-    PlayerSub_->RudderJoint = static_cast<b2RevoluteJoint*>(GlobalResources::Get.getWorld()->CreateJoint(&jointDef));
-    
-    
+    PlayerSub_->create(0.0f, -20.0f, 0.0f);
+
     PlayerSub2_ = GlobalFactories::Submarines.create();
-    b2BodyDef BodyDef2;
-    BodyDef2.type = b2_dynamicBody;
-    BodyDef2.active = true;
-    BodyDef2.position.Set(10.0f, 20.0f);
-    BodyDef2.angle = 3.14159f;
-    BodyDef2.angularDamping = 0.8f;
-    BodyDef2.linearDamping = 0.2f;
-    PlayerSub2_->Hull.setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
-                     .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL))
-                     .setScene(GlobalResources::Get.getScene())
-                     .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL))
-                     .setShader(GlobalResources::Get.getShader())
-                     .setWorld(GlobalResources::Get.getWorld())
-                     .init(GameObjectTypeE::SUBMARINE_HULL, BodyDef2);
-    
+    PlayerSub2_->create(10.0f, 40.0f, 3.14159f);
+    static Submarine* Sub3 = GlobalFactories::Submarines.create();
+    Sub3->create(-20.0f, 20.0f, 4.5f);
+
     CanyonBoundary = GlobalFactories::Landscapes.create();
     b2BodyDef BodyDef3;
     BodyDef3.type = b2_staticBody;
