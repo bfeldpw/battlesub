@@ -21,6 +21,9 @@ git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git
 echo "> git clone --branch v2.3.1 --depth 1 https://github.com/erincatto/box2d.git"
 git clone --branch v2.3.1 --depth 1 https://github.com/erincatto/box2d.git
 
+echo "> git clone --branch v3.5.2 --depth 1 https://github.com/skypjack/entt.git"
+git clone --branch v3.5.2 --depth 1 https://github.com/skypjack/entt.git
+
 echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git"
 git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git
 
@@ -63,6 +66,22 @@ echo "> make -j8 install"
 make -j8 install
 echo "> cd ../../.."
 cd ../../..
+
+# Install entt
+
+echo "> cd entt"
+cd entt
+# build directory already exists
+#echo "> mkdir -p build"
+#mkdir -p build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBUILD_GMOCK=OFF -DBUILD_TESTING=OFF -DINSTALL_GTEST=OFF -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBUILD_GMOCK=OFF -DBUILD_TESTING=OFF -DINSTALL_GTEST=OFF -DCMAKE_BUILD_TYPE=RELEASE
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
 
 # Install corrade
 

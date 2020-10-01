@@ -32,7 +32,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     
     FluidGrid_.setDensityBase(GlobalResources::Get.getHeightMap())
               .init();
-    
+    entt::registry Registry;
     this->setupGameObjects(Registry);
     
     GlobalResources::Get.getWorld()->SetContactListener(&ContactListener_);
@@ -753,9 +753,6 @@ void BattleSub::setupCameras()
 
 void BattleSub::setupGameObjects(entt::registry& Reg)
 {
-    auto PlayerSub1 = Reg.create();
-    auto PlayerSub2 = Reg.create();
-
     PlayerSub_ = GlobalFactories::Submarines.create();
     PlayerSub_->create(0.0f, -20.0f, 0.0f);
 
