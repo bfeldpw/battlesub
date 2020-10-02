@@ -1,6 +1,8 @@
 #ifndef SUBMARINE_H
 #define SUBMARINE_H
 
+#include <entt/entity/registry.hpp>
+
 #include "entity.h"
 #include "game_object.h"
 #include "timer.h"
@@ -41,7 +43,7 @@ class Submarine : public Entity
             if (HullIntegrity_ < 0.0f) HullIntegrity_ = 0.0f;
         }
 
-        void create(const float PosX, const float PosY, const float Angle);
+        void create(entt::registry& Reg, const float PosX, const float PosY, const float Angle);
         void fire();
         
         void fullStop()
@@ -70,6 +72,8 @@ class Submarine : public Entity
         void update();
         
     private:
+
+        entt::entity ComponentsEntity;
 
         constexpr static bool GUN_LEFT=false;
         constexpr static bool GUN_RIGHT=true;

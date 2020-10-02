@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <Box2D/Box2D.h>
+#include <entt/entity/registry.hpp>
 
 #include "common.h"
 #include "drawable_generic.h"
@@ -42,6 +43,68 @@ enum class GameObjectTypeE : int
     SUBMARINE_HULL,
     SUBMARINE_RUDDER,
     DEFAULT
+};
+
+struct PhysicsComponent
+{
+    b2Body*     Body_   = nullptr;
+    b2World*    World_  = nullptr;
+    ShapesType* Shapes_ = nullptr;
+};
+
+struct StatusComponent
+{
+    GameObjectTypeE Type_ = GameObjectTypeE::DEFAULT;
+    Timer Age_;
+    bool  IsSunk_ = false;
+};
+
+struct VisualsComponent
+{
+    MeshesType*                     Meshes_         = nullptr;
+    Shaders::Flat2D*                Shader_         = nullptr;
+    Object2D*                       Visuals_        = nullptr;
+    Scene2D*                        Scene_          = nullptr;
+    Color4                          Color_{0.1f, 0.1f, 0.2f, 1.0f};
+    DrawableGeneric*                Drawable        = nullptr;
+    SceneGraph::DrawableGroup2D*    DrawableGrp_    = nullptr;
+    float                           ScaleX_         = 1.0f;
+    float                           ScaleY_         = 1.0f;
+    float                           ScaleSinkColor  = 1.0f;
+};
+
+struct ParentComponent
+{
+    entt::entity Parent;
+};
+
+struct GameObjectComponent
+{
+    entt::entity GameObjectEntity;
+    entt::entity Next;
+};
+
+class GameObjectSystem
+{
+    public:
+
+        GameObjectSystem(entt::registry& Reg) : Reg_(Reg) {}
+        GameObjectSystem() = delete;
+
+    entt::entity create()
+    {
+        auto e = Reg_.create();
+        Reg_.emplace<ParentComponent>(e);
+        Reg_.emplace<PhysicsComponent>(e);
+        Reg_.emplace<StatusComponent>(e);
+        Reg_.emplace<VisualsComponent>(e);
+        return e;
+    }
+
+    private:
+
+        entt::registry& Reg_;
+
 };
 
 class GameObject : public Entity

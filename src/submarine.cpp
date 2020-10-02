@@ -4,8 +4,67 @@
 #include "global_factories.h"
 #include "global_resources.h"
 
-void Submarine::create(const float PosX, const float PosY, const float Angle)
+void Submarine::create(entt::registry& Reg, const float PosX, const float PosY, const float Angle)
 {
+    {
+        ComponentsEntity = Reg.create();
+
+        GameObjectSystem GameObjectSys(Reg);
+        auto Hull = Reg.emplace<GameObjectComponent>(ComponentsEntity);
+        Hull.GameObjectEntity = Reg.create();
+        {
+            auto Parent = Reg.emplace<ParentComponent>(Hull.GameObjectEntity);
+            auto Physics = Reg.emplace<PhysicsComponent>(Hull.GameObjectEntity);
+            auto Status = Reg.emplace<StatusComponent>(Hull.GameObjectEntity);
+            auto Visuals = Reg.emplace<VisualsComponent>(Hull.GameObjectEntity);
+
+            b2BodyDef BodyDef;
+            BodyDef.type = b2_dynamicBody;
+            BodyDef.active = true;
+            BodyDef.position.Set(PosX, PosY);
+            BodyDef.angle = Angle;
+            BodyDef.angularDamping = 0.8f;
+            BodyDef.linearDamping = 0.2f;
+            Physics.World_  = GlobalResources::Get.getWorld();
+            Physics.Shapes_ = GlobalResources::Get.getShapes(GameObjectTypeE::SUBMARINE_HULL);
+            Physics.Body_   = Physics.World_->CreateBody(&BodyDef);
+            Physics.Body_->SetUserData(&(Submarine::Hull));
+
+            Status.Age_.restart();
+            Status.Type_ = GameObjectTypeE::SUBMARINE_HULL;
+
+            Visuals.DrawableGrp_ = GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT);
+            Visuals.Meshes_      = GlobalResources::Get.getMeshes(GameObjectTypeE::SUBMARINE_HULL);
+            Visuals.Scene_       = GlobalResources::Get.getScene();
+            Visuals.Shader_      = GlobalResources::Get.getShader();
+            Visuals.Visuals_     = new Object2D(Visuals.Scene_);
+
+            for (auto i=0u; i<Visuals.Meshes_->size(); ++i)
+            {
+                auto Drawable = new DrawableGeneric(Visuals.Visuals_, &((*Visuals.Meshes_)[i]),
+                                                    Visuals.Shader_, Visuals.Color_,
+                                                    Visuals.DrawableGrp_);
+            }
+            // TODO GameObject::init
+        }
+        auto Rudder = Reg.emplace<GameObjectComponent>(Hull.Next);
+        Rudder.GameObjectEntity = Reg.create();
+        {
+            auto Parent = Reg.emplace<ParentComponent>(Rudder.GameObjectEntity);
+            auto Physics = Reg.emplace<PhysicsComponent>(Rudder.GameObjectEntity);
+            auto Status = Reg.emplace<StatusComponent>(Rudder.GameObjectEntity);
+            auto Visuals = Reg.emplace<VisualsComponent>(Rudder.GameObjectEntity);
+        }
+        auto View = Reg.view<StatusComponent>();
+
+        for(auto e: View)
+        {
+            auto& Status = View.get<StatusComponent>(e);
+            std::cout << Status.Age_.split() << std::endl;
+        }
+        std::cout << std::endl;
+    }
+   
     b2BodyDef BodyDef;
     BodyDef.type = b2_dynamicBody;
     BodyDef.active = true;

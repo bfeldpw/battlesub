@@ -22,6 +22,8 @@ namespace BattleSub{
 
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
+    entt::registry Reg;
+
     this->setupWindow();
     this->setupFrameBuffersMainScreen();
     this->setupMainDisplayMesh();
@@ -32,8 +34,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     
     FluidGrid_.setDensityBase(GlobalResources::Get.getHeightMap())
               .init();
-    entt::registry Registry;
-    this->setupGameObjects(Registry);
+    this->setupGameObjects(Reg);
     
     GlobalResources::Get.getWorld()->SetContactListener(&ContactListener_);
     
@@ -754,12 +755,12 @@ void BattleSub::setupCameras()
 void BattleSub::setupGameObjects(entt::registry& Reg)
 {
     PlayerSub_ = GlobalFactories::Submarines.create();
-    PlayerSub_->create(0.0f, -20.0f, 0.0f);
+    PlayerSub_->create(Reg, 0.0f, -20.0f, 0.0f);
 
     PlayerSub2_ = GlobalFactories::Submarines.create();
-    PlayerSub2_->create(10.0f, 40.0f, 3.14159f);
+    PlayerSub2_->create(Reg, 10.0f, 40.0f, 3.14159f);
     static Submarine* Sub3 = GlobalFactories::Submarines.create();
-    Sub3->create(-20.0f, 20.0f, 4.5f);
+    Sub3->create(Reg, -20.0f, 20.0f, 4.5f);
 
     CanyonBoundary = GlobalFactories::Landscapes.create();
     b2BodyDef BodyDef3;
