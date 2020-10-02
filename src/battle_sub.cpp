@@ -51,16 +51,34 @@ void BattleSub::keyPressEvent(KeyEvent& Event)
     switch (Event.key())
     {
         case KeyEvent::Key::A: KeyPressedMap["a"] = true; break;
-        case KeyEvent::Key::D: KeyPressedMap["d"] = true; break;
+        case KeyEvent::Key::D:
+            if (Event.modifiers() & KeyEvent::Modifier::Ctrl)
+                IsDebugDisplayed_ ^= true;
+            else
+                KeyPressedMap["d"] = true;
+            break;
+        case KeyEvent::Key::F:
+            if (Event.modifiers() & KeyEvent::Modifier::Ctrl)
+            {
+                Cam1MoveAheadIsAuto_ ^= true;
+                Cam1Zoom_.IsAuto ^= true;
+            }
+            break;
         case KeyEvent::Key::P:
             KeyPressedMap["p"] = true;
             IsPaused_ ^= true;
             break;
         case KeyEvent::Key::Q:
-            if (IsMainMenuDisplayed_) IsExitTriggered_ = true;
+            if (Event.modifiers() & KeyEvent::Modifier::Ctrl)
+                IsExitTriggered_ = true;
             break;
         case KeyEvent::Key::T: PlayerSub_->setPose(-100.0f, 20.0f, 0.3f); break;
-        case KeyEvent::Key::S: KeyPressedMap["s"] = true; break;
+        case KeyEvent::Key::S:
+            if (Event.modifiers() & KeyEvent::Modifier::Ctrl)
+                IsSplitscreen_ ^= true;
+            else
+                KeyPressedMap["s"] = true;
+            break;
         case KeyEvent::Key::W: KeyPressedMap["w"] = true; break;
         case KeyEvent::Key::X:
             PlayerSub_->fullStop();
@@ -513,12 +531,13 @@ void BattleSub::updateUI()
                 ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
                     showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");
 
-            ImGui::End();
+                ImGui::NewLine();
+                ImGui::TextColored(ImVec4(1,1,0,1), "Camera");
+                ImGui::NewLine();
 
-            ImGui::Begin("Camera Dynamics Debug");
-
-                ImGui::TextColored(ImVec4(1,1,0,1), "AutoZoom");
                 ImGui::Indent();
+                    ImGui::Text("Toggle Auto Zoom&Move: <ctrl f>");
+                    ImGui::NewLine();
                     ImGui::Checkbox("Enable AutoZoom", &Cam1Zoom_.IsAuto);
                         showTooltip("Toggle automatic zooming of camera based on submarine speed.\n"
                                     "Zoom out when accelerating, zooms in when decelerating");
@@ -531,20 +550,13 @@ void BattleSub::updateUI()
                         showTooltip("Speed to adapt to new target value, lower is more dampened");
                     ImGui::SliderFloat("AutoZoom Strength", &Cam1Zoom_.Strength, 0.0f, 0.02f);
                         showTooltip("Amplitude of AutoZoom, lower is less zooming");
-                ImGui::Unindent();
 
-                ImGui::NewLine();
+                    ImGui::NewLine();
 
-                ImGui::TextColored(ImVec4(1,1,0,1), "AutoMove");
-                ImGui::Indent();
-                    static bool Cam1MoveAheadIsAuto_s = true;
-
-                    ImGui::Checkbox("Enable AutoMove", &Cam1MoveAheadIsAuto_s);
+                    ImGui::Checkbox("Enable AutoMove", &Cam1MoveAheadIsAuto_);
                         showTooltip("Toggle automatic movement of camera based on submarine speed.\n"
                                     "Moves in velocity direction when accelerating, moves back when decelerating");
 
-                    Cam1MoveAheadX_.IsAuto = Cam1MoveAheadIsAuto_s;
-                    Cam1MoveAheadY_.IsAuto = Cam1MoveAheadIsAuto_s;
 
                     std::vector<float> ValsMoveX;
                     std::vector<float> ValsMoveY;
@@ -571,6 +583,10 @@ void BattleSub::updateUI()
 
             ImGui::End();
         }
+        // Set correct values for camera dynamics outside of window visibility scope
+        // Otherwise, the value is only set if the window is visible
+        Cam1MoveAheadX_.IsAuto = Cam1MoveAheadIsAuto_;
+        Cam1MoveAheadY_.IsAuto = Cam1MoveAheadIsAuto_;
 
         if (IsMainMenuDisplayed_)
         {
@@ -578,17 +594,17 @@ void BattleSub::updateUI()
 
                 ImGui::Checkbox("Tooltips", &IsTooltipsEnabled_);
                     showTooltip("Guess what...");
-                ImGui::Checkbox("Split screen", &IsSplitscreen_);
+                ImGui::Checkbox("Split screen   <ctrl-s>", &IsSplitscreen_);
                     showTooltip("Toggle split screen mode");
-                ImGui::Checkbox("Debug", &IsDebugDisplayed_);
+                ImGui::Checkbox("Debug          <ctrl-d>", &IsDebugDisplayed_);
                     showTooltip("Toggle debug mode");
 
                 static std::string Label;
-                if (IsPaused_) Label = "Resume               ";
-                else Label = "Pause                ";
+                if (IsPaused_) Label = "Resume                 <p>";
+                else Label = "Pause                  <p>";
                 if (ImGui::Button(Label.c_str())) IsPaused_ ^= 1;
                     showTooltip("Pause/Resume the game");
-                if (ImGui::Button("Quit              <q>")) IsExitTriggered_ = true;
+                if (ImGui::Button("Quit              <ctrl-q>")) IsExitTriggered_ = true;
                     showTooltip("Quit BattleSub, exit to desktop");
 
             ImGui::End();
