@@ -112,6 +112,7 @@ class BattleSub : public Platform::Application
         CameraDynamics Cam2MoveAheadX_;
         CameraDynamics Cam2MoveAheadY_;
         CameraDynamics Cam2Zoom_;
+        bool           Cam1MoveAheadIsAuto_ = true;
         bool DevCam_ = false;
 
 };
