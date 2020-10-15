@@ -1,9 +1,13 @@
 set(HEADERS
+        components/parent_component.hpp
+        components/physics_component.hpp
+        components/status_component.hpp
+        components/visuals_component.hpp
+        systems/game_object_factory.hpp
         battle_sub.h
         camera_dynamics.h
         common.h
         contact_listener.h
-        debris_factory.h
         density_advection_shader.h
         density_diffusion_shader.h
         density_display_shader.h
@@ -20,11 +24,9 @@ set(HEADERS
         global_emitter_factory.h
         global_factories.h
         global_resources.h
-        landscape_factory.h
         main_display_shader.h
         memory_pool.h
         message_handler.h
-        projectile_factory.h
         resource_storage.h
         shader_path.h
         submarine.h
@@ -44,6 +46,7 @@ set(LIB_NOISE_LIBRARY
 
 set(SOURCES
         ${ImGui_INCLUDE_DIR}/imgui.cpp
+        systems/game_object_factory.cpp
         battle_sub.cpp
         camera_dynamics.cpp
         emitter.cpp
@@ -59,6 +62,9 @@ set(SOURCES
 
 add_executable(battle_sub ${LIB_NOISE_HEADERS} ${HEADERS} ${SOURCES})
 
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/")
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/components/")
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/systems/")
 target_include_directories(battle_sub PRIVATE ${MAGNUM_INCLUDE_DIR})
 target_include_directories(battle_sub PRIVATE ${ImGui_INCLUDE_DIR})
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/box2d/Box2D/Box2D")

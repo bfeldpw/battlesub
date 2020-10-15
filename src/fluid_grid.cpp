@@ -407,11 +407,11 @@ void FluidGrid::process(const double SimTime)
     //------------------------------------------------------------------
     // Draw velocities
     //------------------------------------------------------------------
-    FBOVelocitySources_.clearColor(0, Color4(0.0f,0.0f))
+    FBOVelocitySources_.clearColor(0, Color4(0.0f, 0.0f))
                        .bind();
     ShaderVelocitySources_.draw(MeshVelocitySourcesPoints);
     ShaderVelocitySources_.draw(MeshVelocitySourcesLines);
-    
+
     //------------------------------------------------------------------
     // Diffuse velocities
     //------------------------------------------------------------------
@@ -422,16 +422,16 @@ void FluidGrid::process(const double SimTime)
     ShaderVelocityDiffusion_.bindTextures(TexVelocitySources_, *TexVelocitiesBack_); // TexVelocities1_
     
     ShaderVelocityDiffusion_.draw(MeshVelocities_);
-    
+
     //------------------------------------------------------------------
     // Advect velocities
     //------------------------------------------------------------------
     std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
     std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
-    
+
     FBOVelocitiesFront_->bind(); // FBOVelocities1_
     ShaderVelocityAdvection_.bindTextures(*TexVelocitiesBack_, TexBoundaries_); // TexVelocities0_
-    
+
     ShaderVelocityAdvection_.draw(MeshVelocityAdvection_);
 
     //------------------------------------------------------------------

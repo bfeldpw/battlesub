@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <entt/entt.hpp>
+#include <entt/entity/registry.hpp>
 #include <Magnum/GL/Framebuffer.h>
 #include <Magnum/ImGuiIntegration/Context.hpp>
 
@@ -12,6 +12,7 @@
 #include "common.h"
 #include "contact_listener.h"
 #include "fluid_grid.h"
+#include "game_object_factory.hpp"
 #include "main_display_shader.h"
 #include "submarine.h"
 #include "timer.h"
@@ -41,17 +42,21 @@ class BattleSub : public Platform::Application
         void updateCameraDynamics();
         void updateGameObjects();
         void updateUI();
-        
+
+        void setupECS();
         void setupWindow();
         void setupFrameBuffersMainScreen();
         void setupMainDisplayMesh();
         void setupCameras();
-        void setupGameObjects(entt::registry& Reg);
+        void setupGameObjects();
         
         void showTooltip(const std::string& Tooltip);
 
         ImGuiIntegration::Context ImGUI_{NoCreate};
         Timer SimTime_;
+
+        //--- ECS ---//
+        entt::registry Reg_;
 
         //--- World ---//
         int   WindowResolutionX_ = WINDOW_RESOLUTION_MAX_X;
@@ -90,7 +95,6 @@ class BattleSub : public Platform::Application
         SceneGraph::Camera2D* CameraPlayer2_;
         SceneGraph::Camera2D* CameraBoundaries_;
         
-        ContactListener ContactListener_;
         FluidGrid FluidGrid_;
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
         float DensityDistortion_ = 300.0f;

@@ -3,6 +3,7 @@
 
 #include <random>
 
+#include <entt/entity/registry.hpp>
 #include <Box2D/Box2D.h>
 
 #include "entity.h"
@@ -16,7 +17,7 @@ class Emitter : public Entity
     public:
     
         void destroy() {}
-        void emit();
+        void emit(entt::registry& _Reg);
 
         bool isFinished() {return Counter_ >= Number_;}
         void setFrequency(float Frequency) {Frequency_ = Frequency;}

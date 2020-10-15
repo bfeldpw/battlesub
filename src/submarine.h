@@ -1,18 +1,21 @@
 #ifndef SUBMARINE_H
 #define SUBMARINE_H
 
+#include <Box2D/Box2D.h>
 #include <entt/entity/registry.hpp>
 
 #include "entity.h"
-#include "game_object.h"
+#include "game_object_factory.hpp"
 #include "timer.h"
 
 class Submarine : public Entity
 {
     public:
         
-        GameObject       Hull;
-        GameObject       Rudder;
+        // GameObject       Hull;
+        // GameObject       Rudder;
+        entt::entity Hull;
+        entt::entity Rudder;
 
         Submarine()
         {
@@ -23,8 +26,8 @@ class Submarine : public Entity
         {
             if (IsInitialised)
             {
-                Hull.getBody()->SetTransform({PosX, PosY}, Angle);
-                Rudder.getBody()->SetTransform({PosX*std::cos(Angle), (PosY-15.0f)*std::sin(Angle)}, Angle);
+                // Hull.getBody()->SetTransform({PosX, PosY}, Angle);
+                // Rudder.getBody()->SetTransform({PosX*std::cos(Angle), (PosY-15.0f)*std::sin(Angle)}, Angle);
             }
             else
             {
@@ -43,8 +46,8 @@ class Submarine : public Entity
             if (HullIntegrity_ < 0.0f) HullIntegrity_ = 0.0f;
         }
 
-        void create(entt::registry& Reg, const float PosX, const float PosY, const float Angle);
-        void fire();
+        void create(entt::registry& _Reg, const float PosX, const float PosY, const float Angle);
+        void fire(entt::registry& _Reg);
         
         void fullStop()
         {
@@ -69,11 +72,9 @@ class Submarine : public Entity
             if (Throttle_ > -60000.0f) Throttle_ -= 2000.0f;
         }
         
-        void update();
+        void update(entt::registry& _Reg);
         
     private:
-
-        entt::entity ComponentsEntity;
 
         constexpr static bool GUN_LEFT=false;
         constexpr static bool GUN_RIGHT=true;

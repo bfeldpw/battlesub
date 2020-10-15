@@ -22,8 +22,7 @@ namespace BattleSub{
 
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
-    entt::registry Reg;
-
+    this->setupECS();
     this->setupWindow();
     this->setupFrameBuffersMainScreen();
     this->setupMainDisplayMesh();
@@ -34,9 +33,9 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     
     FluidGrid_.setDensityBase(GlobalResources::Get.getHeightMap())
               .init();
-    this->setupGameObjects(Reg);
+    this->setupGameObjects();
     
-    GlobalResources::Get.getWorld()->SetContactListener(&ContactListener_);
+    GlobalResources::Get.getWorld()->SetContactListener(&Reg_.ctx<ContactListener>());
     
     if (!setSwapInterval(1))
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
@@ -196,8 +195,8 @@ void BattleSub::drawEvent()
         if (KeyPressedMap["left"] == true) PlayerSub2_->rudderLeft();
         if (KeyPressedMap["right"] == true) PlayerSub2_->rudderRight();
         if (KeyPressedMap["up"] == true) PlayerSub2_->throttleForward();
-        if (KeyPressedMap["shift_l"] == true) PlayerSub_->fire();
-        if (KeyPressedMap["shift_r"] == true) PlayerSub2_->fire();
+        if (KeyPressedMap["shift_l"] == true) PlayerSub_->fire(Reg_);
+        if (KeyPressedMap["shift_r"] == true) PlayerSub2_->fire(Reg_);
 
         CameraPlayer1_->setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
                                                                  WindowResolutionY_/VisRes_*Cam1Zoom_.Value()}));
@@ -217,14 +216,14 @@ void BattleSub::drawEvent()
             updateGameObjects();
             if (!DevCam_)
             {
-                auto Pos = PlayerSub_->Hull.getBody()->GetPosition();
+                auto Pos = Reg_.get<PhysicsComponent>(PlayerSub_->Hull).Body_->GetPosition();
 
                 CameraObjectPlayer1_->resetTransformation();
                 CameraObjectPlayer1_->translate(Vector2(Pos.x+Cam1MoveAheadX_.Value(),
                                                         Pos.y+Cam1MoveAheadY_.Value()));
                 if (IsSplitscreen_)
                 {
-                    auto Pos = PlayerSub2_->Hull.getBody()->GetPosition();
+                    auto Pos = Reg_.get<PhysicsComponent>(PlayerSub2_->Hull).Body_->GetPosition();
 
                     CameraObjectPlayer2_->resetTransformation();
                     CameraObjectPlayer2_->translate(Vector2(Pos.x+Cam2MoveAheadX_.Value(),
@@ -288,6 +287,7 @@ void BattleSub::drawEvent()
         FluidGrid_.display(CameraCurrentPlayer_->projectionMatrix()*CameraCurrentPlayer_->cameraMatrix(),
                            FluidBuffer_);
 
+        GL::Renderer::enable(GL::Renderer::Feature::Blending);
         if (FluidBuffer_ != FluidBufferE::BOUNDARIES)
         {
             CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
@@ -331,7 +331,9 @@ void BattleSub::drawEvent()
             updateCameraDynamics();
         }
         updateUI();
-                
+
+        GL::Renderer::disable(GL::Renderer::Feature::Blending);
+
         swapBuffers();
         redraw();
     }
@@ -353,22 +355,24 @@ void BattleSub::cleanupAndExit()
 void BattleSub::updateCameraDynamics()
 {
     {
-        Vector2 vs{PlayerSub_->Hull.getBody()->GetLinearVelocity().x,
-                   PlayerSub_->Hull.getBody()->GetLinearVelocity().y};
-        float s = PlayerSub_->Hull.getBody()->GetLinearVelocity().Length();
-        float s_x = PlayerSub_->Hull.getBody()->GetLinearVelocity().x;
-        float s_y = PlayerSub_->Hull.getBody()->GetLinearVelocity().y;
+        b2Body* const HullBody = Reg_.get<PhysicsComponent>(PlayerSub_->Hull).Body_;
+        Vector2 vs{HullBody->GetLinearVelocity().x,
+                   HullBody->GetLinearVelocity().y};
+        float s = HullBody->GetLinearVelocity().Length();
+        float s_x = HullBody->GetLinearVelocity().x;
+        float s_y = HullBody->GetLinearVelocity().y;
         Cam1MoveAheadX_.interpolate(s_x*s_x*Math::sign(s_x));
         Cam1MoveAheadY_.interpolate(s_y*s_y*Math::sign(s_y));
         Cam1Zoom_.interpolate(s*s);
     }
     if (IsSplitscreen_)
     {
-        Vector2 vs{PlayerSub2_->Hull.getBody()->GetLinearVelocity().x,
-                   PlayerSub2_->Hull.getBody()->GetLinearVelocity().y};
-        float s = PlayerSub2_->Hull.getBody()->GetLinearVelocity().Length();
-        float s_x = PlayerSub2_->Hull.getBody()->GetLinearVelocity().x;
-        float s_y = PlayerSub2_->Hull.getBody()->GetLinearVelocity().y;
+        b2Body* const HullBody2 = Reg_.get<PhysicsComponent>(PlayerSub2_->Hull).Body_;
+        Vector2 vs{HullBody2->GetLinearVelocity().x,
+                   HullBody2->GetLinearVelocity().y};
+        float s = HullBody2->GetLinearVelocity().Length();
+        float s_x = HullBody2->GetLinearVelocity().x;
+        float s_y = HullBody2->GetLinearVelocity().y;
         Cam2MoveAheadX_.interpolate(s_x*s_x*Math::sign(s_x));
         Cam2MoveAheadY_.interpolate(s_y*s_y*Math::sign(s_y));
         Cam2Zoom_.interpolate(s*s);
@@ -379,59 +383,53 @@ void BattleSub::updateGameObjects()
 {
     // Update physics
     GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
-    
+
     FluidGrid_.addDensity(10.0, 0.0, 10.0)
               .addVelocity(10.0, 0.0, -20.0, 0.0,
                            10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -20.0, 0.0);
 
-    // Update object visuals    
-    for(b2Body* Body = GlobalResources::Get.getWorld()->GetBodyList(); Body; Body = Body->GetNext())
-    {
-        if (Body->IsActive() && Body->GetType() != b2_staticBody)
-        {            
-            (*static_cast<GameObject*>(Body->GetUserData())->getVisuals())
-                .setTranslation({Body->GetPosition().x, Body->GetPosition().y})
-                .setRotation(Complex::rotation(Rad(Body->GetAngle())));
-        }
-    }
-    for (auto Projectile : GlobalFactories::Projectiles.getEntities())
-    {
-        Projectile.second->update();
-        auto Pos = Projectile.second->getBody()->GetPosition();
-        auto Vel = Projectile.second->getBody()->GetLinearVelocity();
-        
-        if (Projectile.second->isSunk())
-        {
-            GlobalFactories::Projectiles.destroy(Projectile.second);
-            break;
-        }
-        else
-        {
-            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
-                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
-                                   Pos.x-Vel.x*VelocitySourceBackprojection_,
-                                   Pos.y-Vel.y*VelocitySourceBackprojection_,
-                                   Vel.x, Vel.y);
-        }
-    }
-    for (auto Debris : GlobalFactories::Debris.getEntities())
-    {
-        Debris.second->update();
-        auto Pos = Debris.second->getBody()->GetPosition();
-        auto Vel = Debris.second->getBody()->GetLinearVelocity();
-        
-        if (Debris.second->isSunk())
-        {
-            GlobalFactories::Debris.destroy(Debris.second);
-            break;
-        }
-        else
-        {
-            FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
-                      .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
-        }
-    }
-    
+    Reg_.ctx<GameObjectFactory>().updateVisuals();
+    Reg_.ctx<GameObjectFactory>().updateStatus();
+
+
+    // for (auto Projectile : GlobalFactories::Projectiles.getEntities())
+    // {
+    //     Projectile.second->update();
+    //     auto Pos = Projectile.second->getBody()->GetPosition();
+    //     auto Vel = Projectile.second->getBody()->GetLinearVelocity();
+
+    //     if (Projectile.second->isSunk())
+    //     {
+    //         GlobalFactories::Projectiles.destroy(Projectile.second);
+    //         break;
+    //     }
+    //     else
+    //     {
+    //         FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
+    //                   .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
+    //                                Pos.x-Vel.x*VelocitySourceBackprojection_,
+    //                                Pos.y-Vel.y*VelocitySourceBackprojection_,
+    //                                Vel.x, Vel.y);
+    //     }
+    // }
+    // for (auto Debris : GlobalFactories::Debris.getEntities())
+    // {
+    //     Debris.second->update();
+    //     auto Pos = Debris.second->getBody()->GetPosition();
+    //     auto Vel = Debris.second->getBody()->GetLinearVelocity();
+
+    //     if (Debris.second->isSunk())
+    //     {
+    //         GlobalFactories::Debris.destroy(Debris.second);
+    //         break;
+    //     }
+    //     else
+    //     {
+    //         FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
+    //                   .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
+    //     }
+    // }
+
     std::vector<EntityIDType> EmittersToBeDeleted;
     for (auto Emitter : GlobalEmitterFactory::Get.getEntities())
     {
@@ -439,7 +437,7 @@ void BattleSub::updateGameObjects()
         {
             EmittersToBeDeleted.push_back(Emitter.second->ID);
         }
-        Emitter.second->emit();
+        Emitter.second->emit(Reg_);
     }
     for (auto d : EmittersToBeDeleted)
     {
@@ -447,30 +445,32 @@ void BattleSub::updateGameObjects()
     }
     for (auto Sub : GlobalFactories::Submarines.getEntities())
     {
-        Sub.second->update();
-        auto Propellor = Sub.second->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
-        auto Direction = Sub.second->Rudder.getBody()->GetWorldVector({0.0f, -1.0f});
-        auto Front     = Sub.second->Hull.getBody()->GetWorldPoint({0.0f,  8.0f});
-        auto Back      = Sub.second->Hull.getBody()->GetWorldPoint({0.0f, -7.0f});
+        Sub.second->update(Reg_);
+        b2Body* const HullBody   = Reg_.get<PhysicsComponent>(Sub.second->Hull).Body_;
+        b2Body* const RudderBody = Reg_.get<PhysicsComponent>(Sub.second->Rudder).Body_;
+
+        auto Propellor = HullBody->GetWorldPoint({0.0f, -7.0f});
+        auto Direction = RudderBody->GetWorldVector({0.0f, -1.0f});
+        auto Front     = HullBody->GetWorldPoint({0.0f,  8.0f});
+        auto Back      = HullBody->GetWorldPoint({0.0f, -7.0f});
 
         FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.001f*std::abs(Sub.second->getThrottle()))
                   .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*Sub.second->getThrottle(), 0.001f*Direction.y*Sub.second->getThrottle());
 
-        FluidGrid_.addDensity(Front.x, Front.y, std::abs(Sub.second->Hull.getBody()->GetLinearVelocity().Length())*1.0f)
-                  .addVelocity(Front.x, Front.y, Sub.second->Hull.getBody()->GetLinearVelocity().x,
-                                                 Sub.second->Hull.getBody()->GetLinearVelocity().y,
-                               Back.x,   Back.y, Sub.second->Hull.getBody()->GetLinearVelocity().x,
-                                                 Sub.second->Hull.getBody()->GetLinearVelocity().y);
+        FluidGrid_.addDensity(Front.x, Front.y, std::abs(HullBody->GetLinearVelocity().Length())*1.0f)
+                  .addVelocity(Front.x, Front.y, HullBody->GetLinearVelocity().x,
+                                                 HullBody->GetLinearVelocity().y,
+                               Back.x,   Back.y, HullBody->GetLinearVelocity().x,
+                                                 HullBody->GetLinearVelocity().y);
     }
 }
 
 void BattleSub::updateUI()
 {
-    GL::Renderer::enable(GL::Renderer::Feature::Blending);
     GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
     GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
     GL::Renderer::disable(GL::Renderer::Feature::DepthTest);
-    
+
     ImGUI_.newFrame();
     {
         if (IsDebugDisplayed_)
@@ -656,7 +656,15 @@ void BattleSub::updateUI()
     ImGUI_.drawFrame();
 
     GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
-    GL::Renderer::disable(GL::Renderer::Feature::Blending);
+}
+
+void BattleSub::setupECS()
+{
+    Reg_.set<ContactListener>(Reg_);
+    Reg_.set<GameObjectFactory>(Reg_);
+    Reg_.set<MessageHandler>();
+    Reg_.ctx<MessageHandler>().setLevel(MessageHandler::DEBUG_L1);
+    Reg_.set<ErrorHandler>();
 }
 
 void BattleSub::setupWindow()
@@ -688,7 +696,7 @@ void BattleSub::setupWindow()
     UIStyleDefault_ = *UIStyle_;
     UIStyleSubStats_ = *UIStyle_;
     UIStyleSubStats_.WindowRounding = 0.0f;
-    
+
     GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add,
     GL::Renderer::BlendEquation::Add);
     GL::Renderer::setBlendFunction(GL::Renderer::BlendFunction::SourceAlpha,
@@ -707,7 +715,7 @@ void BattleSub::setupFrameBuffersMainScreen()
                    .setStorage(1, GL::TextureFormat::RGBA8, {WINDOW_RESOLUTION_MAX_X, WINDOW_RESOLUTION_MAX_Y});
 
     FBOMainDisplay_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexMainDisplay_, 0)
-                   .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+                   .clearColor(0, Color4(0.0f, 0.0f, 0.0f, 1.0f));
               
     ShaderMainDisplay_ = MainDisplayShader{};
     ShaderMainDisplay_.bindTexture(TexMainDisplay_);
@@ -768,29 +776,23 @@ void BattleSub::setupCameras()
         .setViewport({int(WORLD_SIZE_DEFAULT_X), int(WORLD_SIZE_DEFAULT_Y)});
 }
 
-void BattleSub::setupGameObjects(entt::registry& Reg)
+void BattleSub::setupGameObjects()
 {
     PlayerSub_ = GlobalFactories::Submarines.create();
-    PlayerSub_->create(Reg, 0.0f, -20.0f, 0.0f);
+    PlayerSub_->create(Reg_, 0.0f, -20.0f, 0.0f);
 
     PlayerSub2_ = GlobalFactories::Submarines.create();
-    PlayerSub2_->create(Reg, 10.0f, 40.0f, 3.14159f);
+    PlayerSub2_->create(Reg_, 10.0f, 40.0f, 3.14159f);
     static Submarine* Sub3 = GlobalFactories::Submarines.create();
-    Sub3->create(Reg, -20.0f, 20.0f, 4.5f);
+    Sub3->create(Reg_, -20.0f, 20.0f, 4.5f);
 
-    CanyonBoundary = GlobalFactories::Landscapes.create();
-    b2BodyDef BodyDef3;
-    BodyDef3.type = b2_staticBody;
-    BodyDef3.active = true;
-    BodyDef3.position.Set(0.0f, 0.0f);
-    CanyonBoundary->setColor({0.2f, 0.2f, 0.3f})
-                   .setDrawableGroup(GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT))
-                   .setMeshes(GlobalResources::Get.getMeshes(GameObjectTypeE::LANDSCAPE))
-                   .setScene(GlobalResources::Get.getScene())
-                   .setShapes(GlobalResources::Get.getShapes(GameObjectTypeE::LANDSCAPE))
-                   .setShader(GlobalResources::Get.getShader())
-                   .setWorld(GlobalResources::Get.getWorld())
-                   .init(GameObjectTypeE::LANDSCAPE, BodyDef3);
+    auto CanyonBoundary = Reg_.create();
+    b2BodyDef BodyDef;
+    BodyDef.type = b2_staticBody;
+    BodyDef.active = true;
+    BodyDef.position.Set(0.0f, 0.0f);
+    Reg_.ctx<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE,
+                                         DrawableGroupsTypeE::DEFAULT, {0.2f, 0.2f, 0.3f, 1.0f}, BodyDef);
 }
 
 void BattleSub::showTooltip(const std::string& Tooltip)

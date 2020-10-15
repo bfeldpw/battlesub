@@ -14,7 +14,6 @@
 
 #include "common.h"
 
-
 #include "noise.h"
 #include "timer.h"
 #include "world_def.h"

@@ -1,5 +1,5 @@
-#ifndef COMP_PHYSICS_H
-#define COMP_PHYSICS_H
+#ifndef PHYSICS_COMPONENT
+#define PHYSICS_COMPONENT
 
 #include <Box2D/Box2D.h>
 
@@ -16,14 +16,14 @@ typedef struct
     std::vector<ShapeType>    ShapeDefs;
     std::vector<b2FixtureDef> FixtureDefs;
     ShapeEnumType             Type = ShapeEnumType::POLYGON;
-
+    
 } ShapesType;
 
-struct CompPhysics
+struct PhysicsComponent
 {
-        b2Body*     Body_   = nullptr;
-        b2World*    World_  = nullptr;
-        ShapesType* Shapes_ = nullptr;
+    b2Body*     Body_   = nullptr;
+    b2World*    World_  = nullptr;
+    ShapesType* Shapes_ = nullptr;
 };
 
-#endif // COMP_PHYSICS_H
+#endif // PHYSICS_COMPONENT
