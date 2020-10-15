@@ -118,32 +118,42 @@ void GameObjectFactory::updateStatus()
             }
             if (_StatusComp.IsSinking_)
             {
-                _VisComp.Color_.r() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.01f);
-                _VisComp.Color_.g() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.01f);
-                _VisComp.Color_.a() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.01f);
+                auto Scale = 1.0f/(1.0f+float(_StatusComp.Age_.time())*0.001f);
+                _VisComp.Visuals_->scale({Scale, Scale});
+                _VisComp.Color_.r() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0003f);
+                _VisComp.Color_.g() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0002f);
+                _VisComp.Color_.b() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0001f);
+                _VisComp.Color_.a() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0005f);
                 _VisComp.Drawable_->setColor(_VisComp.Color_);
-                // _PhysComp.Body_->SetLinearVelocity({0.0f, 0.0f});
-                // _PhysComp.Body_->SetActive(false);
-                // _StatusComp.Age_.stop();
 
-                // // Destroy physics data, Box2D will handle everything from here
-                // _PhysComp.World_->DestroyBody(_PhysComp.Body_);
+                if (_StatusComp.Age_.time() > 5.0f)
+                {
+                    _PhysComp.Body_->SetLinearVelocity({0.0f, 0.0f});
+                    _PhysComp.Body_->SetActive(false);
+                    _StatusComp.Age_.stop();
+                    _StatusComp.IsSunk_ = true;
+                }
+                if (_StatusComp.IsSunk_ && Scale < 0.1f)
+                {
+                    // Destroy physics data, Box2D will handle everything from here
+                    _PhysComp.World_->DestroyBody(_PhysComp.Body_);
 
-                // // Destroy graphics data, Magnum will handle everything from here
-                // // (including drawables)
-                // if (_VisComp.Visuals_ != nullptr)
-                // {
-                //     delete _VisComp.Visuals_;
-                //     _VisComp.Visuals_ = nullptr;
-                // }
-                // auto e = *static_cast<entt::entity*>(_PhysComp.Body_->GetUserData());
+                    // Destroy graphics data, Magnum will handle everything from here
+                    // (including drawables)
+                    if (_VisComp.Visuals_ != nullptr)
+                    {
+                        delete _VisComp.Visuals_;
+                        _VisComp.Visuals_ = nullptr;
+                    }
+                    auto e = *static_cast<entt::entity*>(_PhysComp.Body_->GetUserData());
 
-                // EntityIDs.CountFree_++;
-                // EntityIDs.FreeIDs_[EntityIDs.CountFree_-1] = EntityIDs.IDMap_[id(e)];
+                    EntityIDs.CountFree_++;
+                    EntityIDs.FreeIDs_[EntityIDs.CountFree_-1] = EntityIDs.IDMap_[id(e)];
 
-                // DBLK(printInternalEntityLists();)
+                    DBLK(printInternalEntityLists();)
 
-                // Reg_.destroy(e);
+                    Reg_.destroy(e);
+                }
             }
         }
     });
@@ -189,3 +199,4 @@ DBLK(
         Msg.reportDebugRaw("\n", MessageHandler::DEBUG_L2);
     }
 )
+

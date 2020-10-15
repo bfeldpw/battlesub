@@ -2,8 +2,9 @@
 #define VISUALS_COMPONENT
 
 #include <Magnum/GL/Mesh.h>
-
 #include <vector>
+
+#include "drawable_generic.h"
 
 // TODO Replace vector, no dynamic allocations within components
 typedef std::vector<GL::Mesh>   MeshesType;

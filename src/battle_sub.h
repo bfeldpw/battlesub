@@ -108,8 +108,7 @@ class BattleSub : public Platform::Application
 
         Submarine* PlayerSub_  = nullptr;
         Submarine* PlayerSub2_ = nullptr;
-        GameObject* CanyonBoundary = nullptr;
-        
+
         float VisRes_ = 10.0f; // Visual Resolution in pixels per meter
         CameraDynamics Cam1MoveAheadX_;
         CameraDynamics Cam1MoveAheadY_;

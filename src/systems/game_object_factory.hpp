@@ -50,7 +50,6 @@ class GameObjectFactory
         DBLK(
             void printInternalEntityLists() const;
         )
-
 };
 
 #endif // GAME_OBJECT_FACTORY_H

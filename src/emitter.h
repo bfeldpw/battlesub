@@ -7,7 +7,6 @@
 #include <Box2D/Box2D.h>
 
 #include "entity.h"
-#include "game_object.h"
 #include "global_factories.h"
 #include "global_resources.h"
 

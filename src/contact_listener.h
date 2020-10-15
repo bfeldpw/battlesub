@@ -3,7 +3,6 @@
 
 #include <Box2D/Box2D.h>
 
-#include "game_object.h"
 #include "global_emitter_factory.h"
 #include "global_resources.h"
 

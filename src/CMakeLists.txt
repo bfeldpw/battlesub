@@ -20,7 +20,6 @@ set(HEADERS
         error_handler.h
         fluid_final_composition_shader.h
         fluid_grid.h
-        game_object.h
         global_emitter_factory.h
         global_factories.h
         global_resources.h
@@ -52,7 +51,6 @@ set(SOURCES
         emitter.cpp
         entity.cpp
         fluid_grid.cpp
-        game_object.cpp
         global_emitter_factory.cpp
         global_factories.cpp
         global_resources.cpp

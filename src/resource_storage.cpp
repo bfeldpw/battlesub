@@ -13,7 +13,6 @@
 #include <Magnum/Trade/MeshData.h>
 
 #include "common.h"
-
 #include "noise.h"
 #include "timer.h"
 #include "world_def.h"
@@ -96,7 +95,7 @@ void ResourceStorage::initDebris()
     GL::Mesh MeshLandscape;
     GL::Mesh MeshSubmarine;
     GL::Buffer Buffer;
-    Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(ShapeG), GL::BufferUsage::StaticDraw);
+    Buffer.setData(this->convertGeometryPhysicsToGraphics(ShapeG), GL::BufferUsage::StaticDraw);
     MeshLandscape.setCount(ShapeG.size())
                  .setPrimitive(GL::MeshPrimitive::TriangleFan)
                  .addVertexBuffer(Buffer, 0, Shaders::VertexColor2D::Position{});
@@ -380,7 +379,7 @@ void ResourceStorage::initLandscape()
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
+            Buffer.setData(this->convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
             Mesh.setCount(TmpShape.size())
                 .setPrimitive(GL::MeshPrimitive::Triangles)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
@@ -402,7 +401,7 @@ void ResourceStorage::initLandscape()
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
+            Buffer.setData(this->convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
             Mesh.setCount(TmpShape.size())
                 .setPrimitive(GL::MeshPrimitive::Triangles)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
@@ -424,7 +423,7 @@ void ResourceStorage::initLandscape()
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
+            Buffer.setData(this->convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
             Mesh.setCount(TmpShape.size())
                 .setPrimitive(GL::MeshPrimitive::Triangles)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
@@ -446,7 +445,7 @@ void ResourceStorage::initLandscape()
             
             GL::Mesh Mesh;
             GL::Buffer Buffer;
-            Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
+            Buffer.setData(this->convertGeometryPhysicsToGraphics(TmpShape), GL::BufferUsage::StaticDraw);
             Mesh.setCount(TmpShape.size())
                 .setPrimitive(GL::MeshPrimitive::Triangles)
                 .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
@@ -481,7 +480,7 @@ void ResourceStorage::initLandscape()
         
         GL::Mesh Mesh;
         GL::Buffer Buffer;
-        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+        Buffer.setData(this->convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
         Mesh.setCount(Shapes.ShapeDefs.back().size())
             .setPrimitive(GL::MeshPrimitive::TriangleFan)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
@@ -516,7 +515,7 @@ void ResourceStorage::initProjectile()
             
     GL::Mesh Mesh;
     GL::Buffer Buffer;
-    Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+    Buffer.setData(this->convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
     Mesh.setCount(Shapes.ShapeDefs.back().size())
         .setPrimitive(GL::MeshPrimitive::TriangleFan)
         .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
@@ -552,7 +551,7 @@ void ResourceStorage::initSubmarine()
         GL::Mesh Mesh;
         GL::Buffer Buffer;
         Buffer.setData(
-                        GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
+                        this->convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
                         GL::BufferUsage::StaticDraw
                         );
         Mesh.setCount(Shapes.ShapeDefs.back().size())
@@ -583,7 +582,7 @@ void ResourceStorage::initSubmarine()
         GL::Mesh Mesh;
         GL::Buffer Buffer;
         Buffer.setData(
-                        GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
+                        this->convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()),
                         GL::BufferUsage::StaticDraw
                         );
         Mesh.setCount(Shapes.ShapeDefs.back().size())
@@ -613,7 +612,7 @@ void ResourceStorage::initSubmarine()
         
         GL::Mesh Mesh;
         GL::Buffer Buffer;
-        Buffer.setData(GameObject::convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+        Buffer.setData(this->convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
         Mesh.setCount(Shapes.ShapeDefs.back().size())
             .setPrimitive(GL::MeshPrimitive::TriangleFan)
             .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
@@ -655,4 +654,13 @@ void ResourceStorage::initSubmarine()
     
 }
 
+std::vector<Vector2> ResourceStorage::convertGeometryPhysicsToGraphics(const std::vector<b2Vec2> Verts)
+{
+    std::vector<Vector2> Tmp;
 
+    for (auto Vec : Verts)
+    {
+        Tmp.push_back({Vec.x, Vec.y});
+    }
+    return Tmp; // Note: No std::move needed, might even prevent copy elision
+}

@@ -3,11 +3,17 @@
 
 #include <array>
 
+#include <Box2D/Box2D.h>
+
+#include <Magnum/Math/Color.h>
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/Primitives/Square.h>
 #include <Magnum/SceneGraph/Drawable.h>
 
-#include "game_object.h"
+#include "common.h"
+#include "physics_component.hpp"
+#include "status_component.hpp"
+#include "visuals_component.hpp"
 #include "world_def.h"
 
 enum class DrawableGroupsTypeE : int
@@ -58,6 +64,8 @@ class ResourceStorage
         std::vector<float>* HeightMapPlateausBack_;
         std::vector<float> HeightMapPlateaus0_;
         std::vector<float> HeightMapPlateaus1_;
+
+        std::vector<Vector2> convertGeometryPhysicsToGraphics(const std::vector<b2Vec2> Verts);
 };
 
 #endif // RESOURCE_STORAGE_H
