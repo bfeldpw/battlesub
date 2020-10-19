@@ -107,7 +107,9 @@ void GameObjectFactory::updateStatus()
         [this](auto& _PhysComp, auto& _StatusComp, auto& _VisComp)
     {
         if (_StatusComp.Type_ == GameObjectTypeE::PROJECTILE ||
-            _StatusComp.Type_ == GameObjectTypeE::DEBRIS_LANDSCAPE)
+            _StatusComp.Type_ == GameObjectTypeE::DEBRIS_LANDSCAPE ||
+            _StatusComp.Type_ == GameObjectTypeE::DEBRIS_SUBMARINE)
+
         {
             if (!_StatusComp.IsSinking_ &&
                 (_StatusComp.Age_.time() > 5.0f ||
@@ -119,6 +121,7 @@ void GameObjectFactory::updateStatus()
             if (_StatusComp.IsSinking_)
             {
                 auto Scale = 1.0f/(1.0f+float(_StatusComp.Age_.time())*0.001f);
+                _VisComp.Scale_ *= Scale;
                 _VisComp.Visuals_->scale({Scale, Scale});
                 _VisComp.Color_.r() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0003f);
                 _VisComp.Color_.g() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0002f);
@@ -130,10 +133,9 @@ void GameObjectFactory::updateStatus()
                 {
                     _PhysComp.Body_->SetLinearVelocity({0.0f, 0.0f});
                     _PhysComp.Body_->SetActive(false);
-                    _StatusComp.Age_.stop();
                     _StatusComp.IsSunk_ = true;
                 }
-                if (_StatusComp.IsSunk_ && Scale < 0.1f)
+                if (_StatusComp.IsSunk_ && _VisComp.Scale_ < 0.1f)
                 {
                     // Destroy physics data, Box2D will handle everything from here
                     _PhysComp.World_->DestroyBody(_PhysComp.Body_);

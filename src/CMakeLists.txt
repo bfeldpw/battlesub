@@ -49,6 +49,7 @@ set(SOURCES
         systems/game_object_factory.cpp
         battle_sub.cpp
         camera_dynamics.cpp
+        contact_listener.cpp
         emitter.cpp
         entity.cpp
         fluid_grid.cpp

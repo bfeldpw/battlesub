@@ -44,8 +44,8 @@ void Emitter::emit(entt::registry& _Reg)
         auto Asymmetry = 0.5f;
         if (Type_ == GameObjectTypeE::DEBRIS_SUBMARINE)
         {
-            Size *= 0.5f;
-            Asymmetry = 2.0f;
+            Size *= 0.75f;
+            Asymmetry = 1.5f;
         }
         VisComp.Visuals_->setScaling({Size, Size+Asymmetry*DistScale(Generator_)});
     }
