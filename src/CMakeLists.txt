@@ -1,4 +1,5 @@
 set(HEADERS
+        components/fluid_source_component.hpp
         components/parent_component.hpp
         components/physics_component.hpp
         components/status_component.hpp

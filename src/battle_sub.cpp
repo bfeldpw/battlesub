@@ -14,6 +14,8 @@
 
 #include "battle_sub.h"
 #include "common.h"
+#include "fluid_source_component.hpp"
+#include "global_emitter_factory.h"
 #include "global_factories.h"
 #include "global_resources.h"
 #include "world_def.h"
@@ -391,7 +393,15 @@ void BattleSub::updateGameObjects()
     Reg_.ctx<GameObjectFactory>().updateVisuals();
     Reg_.ctx<GameObjectFactory>().updateStatus();
 
+    Reg_.view<PhysicsComponent, FluidSourceComponent>().each([&](const auto& _PhysComp, const auto& _FluidComp)
+    {
+        auto Pos = _PhysComp.Body_->GetPosition();
+        auto Vel = _PhysComp.Body_->GetLinearVelocity();
 
+        FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length()*_FluidComp.DensityWeight_)
+                  .addVelocity(Pos.x, Pos.y, Vel.x*_FluidComp.VelocityWeight_, Vel.y*_FluidComp.VelocityWeight_);
+    }
+    );
     // for (auto Projectile : GlobalFactories::Projectiles.getEntities())
     // {
     //     Projectile.second->update();
@@ -734,7 +744,7 @@ void BattleSub::setupCameras()
     CameraObjectPlayer1_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer1_ = new SceneGraph::Camera2D{*CameraObjectPlayer1_};
     CameraPlayer1_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::NotPreserved)
-        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
+                   .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
                                                   WindowResolutionY_/VisRes_*Cam1Zoom_.Value()}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectCurrentPlayer_ = CameraObjectPlayer1_;
@@ -743,7 +753,7 @@ void BattleSub::setupCameras()
     CameraObjectPlayer2_ = new Object2D{GlobalResources::Get.getScene()};
     CameraPlayer2_ = new SceneGraph::Camera2D{*CameraObjectPlayer2_};
     CameraPlayer2_->setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::NotPreserved)
-        .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
+                   .setProjectionMatrix(Matrix3::projection({WindowResolutionX_/VisRes_*Cam1Zoom_.Value(),
                                                   WindowResolutionY_/VisRes_*Cam1Zoom_.Value()}))
                    .setViewport(GL::defaultFramebuffer.viewport().size());
     CameraObjectOtherPlayer_ = CameraObjectPlayer2_;
@@ -793,6 +803,7 @@ void BattleSub::setupGameObjects()
     BodyDef.position.Set(0.0f, 0.0f);
     Reg_.ctx<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE,
                                          DrawableGroupsTypeE::DEFAULT, {0.2f, 0.2f, 0.3f, 1.0f}, BodyDef);
+    std::cout << "Mass: " << Reg_.get<PhysicsComponent>(CanyonBoundary).Body_->GetMass() << std::endl;
 }
 
 void BattleSub::showTooltip(const std::string& Tooltip)
