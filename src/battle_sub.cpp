@@ -14,8 +14,8 @@
 
 #include "battle_sub.h"
 #include "common.h"
+#include "emitter_system.hpp"
 #include "fluid_source_component.hpp"
-#include "global_emitter_factory.h"
 #include "global_factories.h"
 #include "global_resources.h"
 #include "world_def.h"
@@ -392,6 +392,7 @@ void BattleSub::updateGameObjects()
 
     Reg_.ctx<GameObjectFactory>().updateVisuals();
     Reg_.ctx<GameObjectFactory>().updateStatus();
+    Reg_.ctx<EmitterSystem>().emit();
 
     Reg_.view<PhysicsComponent, FluidSourceComponent>().each([&](const auto& _PhysComp, const auto& _FluidComp)
     {
@@ -400,8 +401,8 @@ void BattleSub::updateGameObjects()
 
         FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length()*_FluidComp.DensityWeight_)
                   .addVelocity(Pos.x, Pos.y, Vel.x*_FluidComp.VelocityWeight_, Vel.y*_FluidComp.VelocityWeight_);
-    }
-    );
+    });
+
     // for (auto Projectile : GlobalFactories::Projectiles.getEntities())
     // {
     //     Projectile.second->update();
@@ -422,37 +423,20 @@ void BattleSub::updateGameObjects()
     //                                Vel.x, Vel.y);
     //     }
     // }
-    // for (auto Debris : GlobalFactories::Debris.getEntities())
+
+    // std::vector<EntityIDType> EmittersToBeDeleted;
+    // for (auto Emitter : GlobalEmitterFactory::Get.getEntities())
     // {
-    //     Debris.second->update();
-    //     auto Pos = Debris.second->getBody()->GetPosition();
-    //     auto Vel = Debris.second->getBody()->GetLinearVelocity();
-
-    //     if (Debris.second->isSunk())
+    //     if (Emitter.second->isFinished())
     //     {
-    //         GlobalFactories::Debris.destroy(Debris.second);
-    //         break;
+    //         EmittersToBeDeleted.push_back(Emitter.second->ID);
     //     }
-    //     else
-    //     {
-    //         FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
-    //                   .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y);
-    //     }
+    //     Emitter.second->emit(Reg_);
     // }
-
-    std::vector<EntityIDType> EmittersToBeDeleted;
-    for (auto Emitter : GlobalEmitterFactory::Get.getEntities())
-    {
-        if (Emitter.second->isFinished())
-        {
-            EmittersToBeDeleted.push_back(Emitter.second->ID);
-        }
-        Emitter.second->emit(Reg_);
-    }
-    for (auto d : EmittersToBeDeleted)
-    {
-        GlobalEmitterFactory::Get.destroy(GlobalEmitterFactory::Get.getEntities().at(d));
-    }
+    // for (auto d : EmittersToBeDeleted)
+    // {
+    //     GlobalEmitterFactory::Get.destroy(GlobalEmitterFactory::Get.getEntities().at(d));
+    // }
     for (auto Sub : GlobalFactories::Submarines.getEntities())
     {
         Sub.second->update(Reg_);
@@ -671,6 +655,7 @@ void BattleSub::updateUI()
 void BattleSub::setupECS()
 {
     Reg_.set<ContactListener>(Reg_);
+    Reg_.set<EmitterSystem>(Reg_);
     Reg_.set<GameObjectFactory>(Reg_);
     Reg_.set<MessageHandler>();
     Reg_.ctx<MessageHandler>().setLevel(MessageHandler::DEBUG_L1);

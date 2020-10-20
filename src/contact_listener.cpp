@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "emitter_component.hpp"
 #include "global_resources.h"
 
 void ContactListener::PreSolve(b2Contact* Contact, const b2Manifold* OldManifold)
@@ -94,23 +95,19 @@ void ContactListener::emitLandscapeDebris(b2Contact* const _Contact, b2Body* con
     float Angle = 2.0f * std::atan2(WorldManifold.normal.y, WorldManifold.normal.x) -
                         (std::atan2(Velocity.y, Velocity.x)+b2_pi);
 
-    Emitter* DebrisEmitter = GlobalEmitterFactory::Get.create();
-    if (DebrisEmitter != nullptr)
-    {
-        DebrisEmitter->setOrigin(POC.x+WorldManifold.normal.x*0.2f, POC.y+WorldManifold.normal.y*0.2f)
-                    .setAngle(Angle)
-                    .setAngleStdDev(1.0f)
-                    .setNumber(10)
-                    .setScale(Velocity.Length()*0.05f+Mass*0.0001f)
-                    .setScaleStdDev(Velocity.Length()*0.05f+Mass*0.0001f)
-                    .setType(GameObjectTypeE::DEBRIS_LANDSCAPE)
-                    .setVelocity(Velocity.Length()*0.02f+1.0f)
-                    .setVelocityStdDev(Velocity.Length()*0.02f);
-    }
-    else
-    {
-        GlobalErrorHandler.reportError("Couldn't create DebrisEmitter, out of pool memory.");
-    }
+    auto Emitter = Reg_.create();
+    auto& EmComp = Reg_.emplace<EmitterComponent>(Emitter);
+    EmComp.Type_ = GameObjectTypeE::DEBRIS_LANDSCAPE;
+    EmComp.Angle_ = Angle;
+    EmComp.AngleStdDev_ = 1.0f;
+    EmComp.Frequency_ = 1.0f;
+    EmComp.Number_ = 10;
+    EmComp.OriginX_ = POC.x+WorldManifold.normal.x*0.2f;
+    EmComp.OriginY_ = POC.y+WorldManifold.normal.y*0.2f;
+    EmComp.Scale_= Velocity.Length()*0.05f+Mass*0.0001f;
+    EmComp.ScaleStdDev_ = Velocity.Length()*0.05f+Mass*0.0001f;
+    EmComp.Velocity_ = Velocity.Length()*0.02f+1.0f;
+    EmComp.VelocityStdDev_ = Velocity.Length()*0.02f;
 }
 
 void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
@@ -153,23 +150,19 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
     float Angle = 2.0f * std::atan2(WorldManifold.normal.y, WorldManifold.normal.x) -
                         (std::atan2(Velocity.y, Velocity.x)+b2_pi);
 
-    Emitter* DebrisEmitter = GlobalEmitterFactory::Get.create();
-    if (DebrisEmitter != nullptr)
-    {
-        DebrisEmitter->setOrigin(POC.x+WorldManifold.normal.x*0.2f, POC.y+WorldManifold.normal.y*0.2f)
-                    .setAngle(Angle)
-                    .setAngleStdDev(1.0f)
-                    .setNumber(10)
-                    .setScale(Scale)
-                    .setScaleStdDev(Scale)
-                    .setType(GameObjectTypeE::DEBRIS_SUBMARINE)
-                    .setVelocity(Velocity.Length()*0.01f+1.0f)
-                    .setVelocityStdDev(Velocity.Length()*0.01f);
-    }
-    else
-    {
-        GlobalErrorHandler.reportError("Couldn't create DebrisEmitter, out of pool memory.");
-    }
+    auto Emitter = Reg_.create();
+    auto& EmComp = Reg_.emplace<EmitterComponent>(Emitter);
+    EmComp.Type_ = GameObjectTypeE::DEBRIS_SUBMARINE;
+    EmComp.Angle_ = Angle;
+    EmComp.AngleStdDev_ = 1.0f;
+    EmComp.Frequency_ = 1.0f;
+    EmComp.Number_ = 10;
+    EmComp.OriginX_ = POC.x+WorldManifold.normal.x*0.2f;
+    EmComp.OriginY_ = POC.y+WorldManifold.normal.y*0.2f;
+    EmComp.Scale_= Scale;
+    EmComp.ScaleStdDev_ = Scale;
+    EmComp.Velocity_ = Velocity.Length()*0.01f+1.0f;
+    EmComp.VelocityStdDev_ = Velocity.Length()*0.01f;
 }
 
 void ContactListener::testGameObjectTypes(b2Contact* const _Contact, const GameObjectTypeE _Type1, const GameObjectTypeE _Type2,
@@ -180,6 +173,8 @@ void ContactListener::testGameObjectTypes(b2Contact* const _Contact, const GameO
         if (_Type2 == GameObjectTypeE::PROJECTILE)
         {
             this->emitLandscapeDebris(_Contact, _Body1, _Body2);
+            _Contact->SetEnabled(false);
+            _Body2->SetLinearVelocity({0.0f, 0.0f});
         }
         else if (_Type2 == GameObjectTypeE::SUBMARINE_HULL ||
                  _Type2 == GameObjectTypeE::SUBMARINE_RUDDER)
@@ -195,6 +190,7 @@ void ContactListener::testGameObjectTypes(b2Contact* const _Contact, const GameO
             _Type2 == GameObjectTypeE::SUBMARINE_RUDDER)
         {
             this->emitSubmarineDebris(_Contact, _Body2, _Body1, GameObjectTypeE::SUBMARINE_HULL);
+            _Body1->SetLinearVelocity({0.0f, 0.0f});
         }
     }
     else if (_Type1 == GameObjectTypeE::SUBMARINE_HULL ||

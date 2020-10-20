@@ -4,7 +4,7 @@
 #include <Box2D/Box2D.h>
 #include <entt/entity/registry.hpp>
 
-#include "global_emitter_factory.h"
+#include "status_component.hpp"
 
 class ContactListener : public b2ContactListener
 {

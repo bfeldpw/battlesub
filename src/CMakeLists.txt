@@ -1,9 +1,11 @@
 set(HEADERS
+        components/emitter_component.hpp
         components/fluid_source_component.hpp
         components/parent_component.hpp
         components/physics_component.hpp
         components/status_component.hpp
         components/visuals_component.hpp
+        systems/emitter_system.hpp
         systems/game_object_factory.hpp
         battle_sub.h
         camera_dynamics.h
@@ -21,7 +23,6 @@ set(HEADERS
         error_handler.h
         fluid_final_composition_shader.h
         fluid_grid.h
-        global_emitter_factory.h
         global_factories.h
         global_resources.h
         main_display_shader.h
@@ -46,6 +47,8 @@ set(LIB_NOISE_LIBRARY
 
 set(SOURCES
         ${ImGui_INCLUDE_DIR}/imgui.cpp
+        components/emitter_component.cpp
+        systems/emitter_system.cpp
         systems/game_object_factory.cpp
         battle_sub.cpp
         camera_dynamics.cpp
@@ -53,7 +56,6 @@ set(SOURCES
         emitter.cpp
         entity.cpp
         fluid_grid.cpp
-        global_emitter_factory.cpp
         global_factories.cpp
         global_resources.cpp
         resource_storage.cpp
