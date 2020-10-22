@@ -21,6 +21,7 @@ class VelocitySourcesShader : public GL::AbstractShaderProgram
         
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> Velocity;
+        typedef GL::Attribute<2, Float> Weight;
 
         explicit VelocitySourcesShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         

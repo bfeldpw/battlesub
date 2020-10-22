@@ -18,26 +18,31 @@ FluidGrid& FluidGrid::addDensity(const float x, const float y, const float d)
     return *this;
 }
 
-FluidGrid& FluidGrid::addVelocity(const float x, const float y, const float Vx, const float Vy)
+FluidGrid& FluidGrid::addVelocity(const float x, const float y, const float Vx, const float Vy, const float w)
 {
     VelocitySourcesPoints_.push_back(x);
     VelocitySourcesPoints_.push_back(y);
     VelocitySourcesPoints_.push_back(Vx);
     VelocitySourcesPoints_.push_back(Vy);
+    VelocitySourcesPoints_.push_back(1.0f);
     return *this;
 }
 
 FluidGrid& FluidGrid::addVelocity(const float x0, const float y0, const float Vx0, const float Vy0,
-                                  const float x1, const float y1, const float Vx1, const float Vy1)
+                                  const float x1, const float y1, const float Vx1, const float Vy1,
+                                  const float w)
 {
     VelocitySourcesLines_.push_back(x0);
     VelocitySourcesLines_.push_back(y0);
     VelocitySourcesLines_.push_back(Vx0);
     VelocitySourcesLines_.push_back(Vy0);
+    VelocitySourcesLines_.push_back(w);
     VelocitySourcesLines_.push_back(x1);
     VelocitySourcesLines_.push_back(y1);
     VelocitySourcesLines_.push_back(Vx1);
     VelocitySourcesLines_.push_back(Vy1);
+    VelocitySourcesLines_.push_back(w);
+
     return *this;
 }
 
@@ -202,7 +207,7 @@ void FluidGrid::init()
                        .setWrapping(GL::SamplerWrapping::ClampToEdge)
                        .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
                        .setStorage(1/*Math::log2(FLUID_GRID_SIZE_X)+1*/, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
-    TexVelocitySources_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
+    TexVelocitySources_.setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                        .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
     TexVelocities0_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                    .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
@@ -219,7 +224,7 @@ void FluidGrid::init()
                   .clearColor(0, Color4(0.0f, 0.0f));
     FBODensitySources_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBODensitySources_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexDensitySources_, 0)
-                      .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+                      .clearColor(0, Color4(0.0f));
     FBODensities0_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBODensities0_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexDensities0_, 0)
                   .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
@@ -234,7 +239,7 @@ void FluidGrid::init()
                        .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
     FBOVelocitySources_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBOVelocitySources_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexVelocitySources_, 0)
-                       .clearColor(0, Color4(0.0f, 0.0f));
+                       .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
     FBOVelocities0_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBOVelocities0_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexVelocities0_, 0)
                    .clearColor(0, Color4(0.0f, 0.0f));
@@ -337,8 +342,6 @@ void FluidGrid::init()
                             .bindTextures(*TexVelocitiesBack_, TexBoundaries_);
     ShaderVelocityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                             .setDeltaT(1.0f/60.0f)
-                            .setDiff(1.0e5f)
-                            .setGain(1.0f)
                             .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                             .bindTextures(TexVelocitySources_, *TexVelocitiesBack_);
     ShaderDensitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}));
@@ -379,7 +382,8 @@ void FluidGrid::process(const double SimTime)
                              .setPrimitive(GL::MeshPrimitive::Points)
                              .addVertexBuffer(std::move(VelocitySourcesBufferPoints), 0,
                                               VelocitySourcesShader::Position{},
-                                              VelocitySourcesShader::Velocity{});
+                                              VelocitySourcesShader::Velocity{},
+                                              VelocitySourcesShader::Weight{});
                              
     GL::Buffer VelocitySourcesBufferLines;
     VelocitySourcesBufferLines.setData(VelocitySourcesLines_, GL::BufferUsage::StreamDraw);
@@ -389,7 +393,8 @@ void FluidGrid::process(const double SimTime)
                             .setPrimitive(GL::MeshPrimitive::Lines)
                             .addVertexBuffer(std::move(VelocitySourcesBufferLines), 0,
                                              VelocitySourcesShader::Position{},
-                                             VelocitySourcesShader::Velocity{});
+                                             VelocitySourcesShader::Velocity{},
+                                             VelocitySourcesShader::Weight{});
 
     VelocitySourcesPoints_.clear();
     VelocitySourcesLines_.clear();
@@ -400,14 +405,14 @@ void FluidGrid::process(const double SimTime)
     //------------------------------------------------------------------
     // Draw densities
     //------------------------------------------------------------------
-    FBODensitySources_.clearColor(0, Color4(0.0f))
+    FBODensitySources_.clearColor(0, Color4(0.0f, 0.0f))
                       .bind();
     ShaderDensitySources_.draw(MeshDensitySources);
     
     //------------------------------------------------------------------
     // Draw velocities
     //------------------------------------------------------------------
-    FBOVelocitySources_.clearColor(0, Color4(0.0f, 0.0f))
+    FBOVelocitySources_.clearColor(0, Color4(0.0f, 0.0f, 0.0f))
                        .bind();
     ShaderVelocitySources_.draw(MeshVelocitySourcesPoints);
     ShaderVelocitySources_.draw(MeshVelocitySourcesLines);

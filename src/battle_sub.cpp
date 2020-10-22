@@ -208,8 +208,6 @@ void BattleSub::drawEvent()
         FluidGrid_.setDensityDistortion(DensityDistortion_)
                   .setGammaCorrection(GammaCorrection_)
                   .setVelocityAdvectionFactor(VelocityAdvectionFactor_)
-                  .setVelocityDiffusionGain(VelocityDiffusionGain_)
-                  .setVelocityDiffusionRate(std::pow(10.0f, VelocityDiffusionRate_))
                   .setVelocityDisplayScale(1.0f/VelocityDisplayScale_)
                   .setVelocityDisplayShowOnlyMagnitude(VelocityDisplayShowOnlyMagnitude_);
         
@@ -517,10 +515,6 @@ void BattleSub::updateUI()
                 ImGui::SliderFloat("Velocity Advection Factor", &VelocityAdvectionFactor_, 0.0f, 2.0f);
                     showTooltip("Factor for velocity advection.\nA lower value than 1.0 will move the velocity field slower than self-advection.\n"
                                 "A higher value than 1.0 will move the velocity field faster than self-advection.");
-                ImGui::SliderFloat("Velocity Diffusion Gain", &VelocityDiffusionGain_, 0.0f, 10.0f);
-                    showTooltip("The higher the value, the more the velocity sources will be amplified.");
-                ImGui::SliderFloat("Velocity Diffusion Rate", &VelocityDiffusionRate_, 0.0f, 10.0f);
-                    showTooltip("The higher the value, the slower the velocity will diffuse.");
 
                 ImGui::SliderFloat("Velocity Source Backprojection [s]", &VelocitySourceBackprojection_, 0.0f, 0.3f);
                     showTooltip("Back projection of velocities for x seconds to close gaps between frames for dynamic sources.\n");

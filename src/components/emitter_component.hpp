@@ -22,6 +22,7 @@ struct EmitterComponent
     float  ScaleStdDev_ = 0.0f;
     float  Velocity_ = 1.0f;
     float  VelocityStdDev_ = 0.0f;
+    float  VelocityWeight_ = 1.0f;
 };
 
 #endif // EMITTER_COMPONENT_HPP

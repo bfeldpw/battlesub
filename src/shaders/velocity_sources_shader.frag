@@ -1,8 +1,10 @@
 in vec2 v_vel;
+in float v_weight;
 
-out vec2 fragmentColor;
+out vec3 fragmentColor;
 
 void main()
 {
-    fragmentColor = v_vel;
+    fragmentColor.xy = v_vel;
+    fragmentColor.z = v_weight;
 }

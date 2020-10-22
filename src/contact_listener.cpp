@@ -163,6 +163,7 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
     EmComp.ScaleStdDev_ = Scale;
     EmComp.Velocity_ = Velocity.Length()*0.01f+1.0f;
     EmComp.VelocityStdDev_ = Velocity.Length()*0.01f;
+    EmComp.VelocityWeight_ = 1.0f;
 }
 
 void ContactListener::testGameObjectTypes(b2Contact* const _Contact, const GameObjectTypeE _Type1, const GameObjectTypeE _Type2,
