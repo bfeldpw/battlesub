@@ -17,7 +17,7 @@ class GameObjectFactory
 {
     public:
 
-        GameObjectFactory(entt::registry& Reg) : Reg_(Reg) {}
+        explicit GameObjectFactory(entt::registry& Reg) : Reg_(Reg) {}
         GameObjectFactory() = delete;
 
         void create(entt::entity e, std::any _Parent, const GameObjectTypeE _GameObjectType,

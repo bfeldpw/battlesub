@@ -10,7 +10,7 @@ class EmitterSystem
 
     public:
 
-        EmitterSystem(entt::registry& _Reg) : Reg_(_Reg) {}
+        explicit EmitterSystem(entt::registry& _Reg) : Reg_(_Reg) {}
         EmitterSystem() = delete;
 
         void emit();

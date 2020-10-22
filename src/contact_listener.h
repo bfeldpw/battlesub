@@ -11,7 +11,7 @@ class ContactListener : public b2ContactListener
 
     public:
 
-        ContactListener(entt::registry& _Reg) : Reg_{_Reg} {}
+        explicit ContactListener(entt::registry& _Reg) : Reg_{_Reg} {}
 
         void PreSolve(b2Contact* Contact, const b2Manifold* OldManifold) override;
 

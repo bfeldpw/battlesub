@@ -24,8 +24,6 @@ void ContactListener::PreSolve(b2Contact* Contact, const b2Manifold* OldManifold
     // Only emit debris if new collision occurred
     if (IsValidContact)
     {
-        GameObjectTypeE DebrisType = GameObjectTypeE::DEFAULT;
-
         auto EntityA = *(static_cast<entt::entity*>(Contact->GetFixtureA()->GetBody()->GetUserData()));
         auto EntityB = *(static_cast<entt::entity*>(Contact->GetFixtureB()->GetBody()->GetUserData()));
         auto& StatusA = Reg_.get<StatusComponent>(EntityA);
@@ -33,11 +31,6 @@ void ContactListener::PreSolve(b2Contact* Contact, const b2Manifold* OldManifold
         b2Body* BodyA = Reg_.get<PhysicsComponent>(EntityA).Body_;
         b2Body* BodyB = Reg_.get<PhysicsComponent>(EntityB).Body_;
 
-        b2Body* Body = nullptr;
-        bool    IsContactKept = true;
-
-        // ReactionA_.reset();
-        // ReactionB_.reset();
         this->testGameObjectTypes(Contact, StatusA.Type_, StatusB.Type_, BodyA, BodyB);
         this->testGameObjectTypes(Contact, StatusB.Type_, StatusA.Type_, BodyB, BodyA);
 

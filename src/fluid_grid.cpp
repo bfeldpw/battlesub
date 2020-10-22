@@ -319,8 +319,6 @@ void FluidGrid::init()
                                         DensityDisplayShader::Position{},
                                         DensityDisplayShader::TextureCoordinates{});
 
-    const std::string SHADER_PATH = "../share/shaders/";
-
     ShaderDensityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                            .setAdvectionFactor(0.8f)
                            .setDeltaT(1.0f/60.0f)
