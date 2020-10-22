@@ -65,7 +65,7 @@ class ResourceStorage
         std::vector<float> HeightMapPlateaus0_;
         std::vector<float> HeightMapPlateaus1_;
 
-        std::vector<Vector2> convertGeometryPhysicsToGraphics(const std::vector<b2Vec2> Verts);
+        std::vector<Vector2> convertGeometryPhysicsToGraphics(const std::vector<b2Vec2>& Verts);
 };
 
 #endif // RESOURCE_STORAGE_H

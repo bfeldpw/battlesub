@@ -654,7 +654,7 @@ void ResourceStorage::initSubmarine()
     
 }
 
-std::vector<Vector2> ResourceStorage::convertGeometryPhysicsToGraphics(const std::vector<b2Vec2> Verts)
+std::vector<Vector2> ResourceStorage::convertGeometryPhysicsToGraphics(const std::vector<b2Vec2>& Verts)
 {
     std::vector<Vector2> Tmp;
 
