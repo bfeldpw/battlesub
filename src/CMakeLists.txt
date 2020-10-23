@@ -16,8 +16,6 @@ set(HEADERS
         density_display_shader.h
         density_sources_shader.h
         drawable_generic.h
-        emitter.h
-        emitter_factory.h
         entity.h
         entity_factory.h
         error_handler.h
@@ -53,7 +51,6 @@ set(SOURCES
         battle_sub.cpp
         camera_dynamics.cpp
         contact_listener.cpp
-        emitter.cpp
         entity.cpp
         fluid_grid.cpp
         global_factories.cpp
