@@ -98,7 +98,6 @@ class BattleSub : public Platform::Application
         FluidGrid FluidGrid_;
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
         float DensityDistortion_ = 300.0f;
-        float GammaCorrection_ = 2.2f;
         float VelocityAdvectionFactor_ = 0.9f;
         float VelocityDisplayScale_ = 20.0f;
         bool  VelocityDisplayShowOnlyMagnitude_ = false;

@@ -206,7 +206,6 @@ void BattleSub::drawEvent()
                                                                  WindowResolutionY_/VisRes_*Cam2Zoom_.Value()}));
         
         FluidGrid_.setDensityDistortion(DensityDistortion_)
-                  .setGammaCorrection(GammaCorrection_)
                   .setVelocityAdvectionFactor(VelocityAdvectionFactor_)
                   .setVelocityDisplayScale(1.0f/VelocityDisplayScale_)
                   .setVelocityDisplayShowOnlyMagnitude(VelocityDisplayShowOnlyMagnitude_);
@@ -498,9 +497,6 @@ void BattleSub::updateUI()
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");
                 ImGui::NewLine();
-                ImGui::SliderFloat("Gamma Correction", &GammaCorrection_, 0.5f, 5.0f);
-                    showTooltip("Gamma correction value for the fluid. Default value of 2.2 should gamma correct monitor defaults.\n"
-                                "Higher value will brighten up the scene.");
                 ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
                     showTooltip("Scale colour values for displaying velocity\n"
                                 "The given value defines the upper bound in m/s, everything above is capped.\n"
