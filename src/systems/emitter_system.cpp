@@ -17,7 +17,7 @@ void EmitterSystem::emit()
         {
             auto Debris = Reg_.create();
 
-            Magnum::Math::Color3 Col = {0.2f, 0.2f, 0.3f};
+            Magnum::Math::Color3 Col = {0.05f, 0.05f, 0.1f};
             if (_EmComp.Type_ == GameObjectTypeE::DEBRIS_SUBMARINE)
             {
                 Col = {0.1f, 0.1f, 0.2f};

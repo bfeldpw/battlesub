@@ -1,9 +1,7 @@
 uniform sampler2D u_tex_velocity_sources;
 uniform sampler2D u_tex_velocity_buffer;
 
-uniform float u_diff;
 uniform float u_dt;
-uniform float u_gain;
 uniform int   u_grid_res;
 
 in vec2 v_tex;

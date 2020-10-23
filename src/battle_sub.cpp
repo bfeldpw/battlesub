@@ -781,8 +781,7 @@ void BattleSub::setupGameObjects()
     BodyDef.active = true;
     BodyDef.position.Set(0.0f, 0.0f);
     Reg_.ctx<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE,
-                                         DrawableGroupsTypeE::DEFAULT, {0.2f, 0.2f, 0.3f, 1.0f}, BodyDef);
-    std::cout << "Mass: " << Reg_.get<PhysicsComponent>(CanyonBoundary).Body_->GetMass() << std::endl;
+                                         DrawableGroupsTypeE::DEFAULT, {0.05f, 0.05f, 0.1f, 1.0f}, BodyDef);
 }
 
 void BattleSub::showTooltip(const std::string& Tooltip)

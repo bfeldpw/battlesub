@@ -9,8 +9,8 @@ out vec4 fragmentColor;
 void main()
 {
     float value = float(texture(u_texture, v_tex).r);
-    fragmentColor.rgb = vec3(value*0.01, value*0.01, value);
+    fragmentColor.rgb = vec3(value*0.01, value*0.3, value);
     fragmentColor.a = 1.0;
     
-    fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0/u_gamma));
+    // fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0/u_gamma));
 }

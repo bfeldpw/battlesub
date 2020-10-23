@@ -61,17 +61,6 @@ void ContactListener::PreSolve(b2Contact* Contact, const b2Manifold* OldManifold
         //         DebrisType = GameObjectTypeE::DEBRIS_SUBMARINE;
         //     }
         // }
-
-        // if (ReactionA_.EmitLandscapeDebris_) this->emitLandscapeDebris(Contact, BodyB, BodyA);
-        // if (ReactionB_.EmitLandscapeDebris_) this->emitLandscapeDebris(Contact, BodyA, BodyB);
-        // if (ReactionA_.EmitSubmarineDebris_) this->emitSubmarineDebris(Contact, BodyA, BodyB);
-        // if (ReactionB_.EmitSubmarineDebris_) this->emitSubmarineDebris(Contact, BodyB, BodyA);
-
-        // if (!IsContactKept)
-        // {
-        //     Contact->SetEnabled(false);
-        //     Body->SetLinearVelocity({0.0f, 0.0f}); // Be sure object will be disabled and sinking
-        // }
     }
 }
 
