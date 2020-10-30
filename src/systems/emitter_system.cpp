@@ -27,7 +27,7 @@ void EmitterSystem::emit()
             BodyDef.type = b2_dynamicBody;
             BodyDef.active = true;
             BodyDef.angularDamping = 1.0f;
-            BodyDef.linearDamping = 1.0f;
+            BodyDef.linearDamping = 0.0f;
             BodyDef.position.Set(_EmComp.OriginX_+i*0.01f, _EmComp.OriginY_);
             BodyDef.linearVelocity.Set(std::cos(DistAngle(_EmComp.Generator_))*
                                         (_EmComp.Velocity_+_EmComp.VelocityStdDev_),
@@ -36,7 +36,7 @@ void EmitterSystem::emit()
             BodyDef.angularVelocity = 0.5f*DistAngle(_EmComp.Generator_);
             Reg_.ctx<GameObjectFactory>().create(Debris, this, _EmComp.Type_,
                                                 DrawableGroupsTypeE::WEAPON, Col, BodyDef);
-            Reg_.emplace<FluidSourceComponent>(Debris, 10.0f, _EmComp.VelocityWeight_);
+            Reg_.emplace<FluidSourceComponent>(Debris, 1.0f, _EmComp.VelocityWeight_);
 
             //--- Adjust physics body for non-self collisions ---//
             auto& PhysComp = Reg_.get<PhysicsComponent>(Debris);

@@ -1,6 +1,7 @@
 #include "fluid_grid.h"
 
-#include <Corrade/Containers/ArrayViewStl.h>
+// #include <Corrade/Containers/ArrayViewStl.h>
+#include <Magnum/GL/BufferImage.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/TextureFormat.h>
 #include <Magnum/Math/Color.h>
@@ -9,6 +10,29 @@
 
 using namespace Magnum;
 
+FluidGrid::~FluidGrid()
+{
+    if (VelData0_ != nullptr)
+    {
+        delete VelData0_;
+        VelData0_ = nullptr;
+    }
+    if (VelData1_ != nullptr)
+    {
+        delete VelData1_;
+        VelData1_ = nullptr;
+    }
+    if (PBOVelocity0_ != nullptr)
+    {
+        delete PBOVelocity0_;
+        PBOVelocity0_ = nullptr;
+    }
+    if (PBOVelocity1_ != nullptr)
+    {
+        delete PBOVelocity1_;
+        PBOVelocity1_ = nullptr;
+    }
+}
 
 FluidGrid& FluidGrid::addDensity(const float x, const float y, const float d)
 {
@@ -24,7 +48,7 @@ FluidGrid& FluidGrid::addVelocity(const float x, const float y, const float Vx, 
     VelocitySourcesPoints_.push_back(y);
     VelocitySourcesPoints_.push_back(Vx);
     VelocitySourcesPoints_.push_back(Vy);
-    VelocitySourcesPoints_.push_back(1.0f);
+    VelocitySourcesPoints_.push_back(w);
     return *this;
 }
 
@@ -105,6 +129,13 @@ void FluidGrid::display(const Matrix3 CameraProjection,
                                   .draw(MeshDensityDisplay_);
             break;
         }
+        case FluidBufferE::VELOCITIES_LOW_RES:
+        {
+            ShaderVelocityDisplay_.bindTexture(TexVelocitiesLowRes_)
+                                  .setTransformation(CameraProjection)
+                                  .draw(MeshDensityDisplay_);
+            break;
+        }
         case FluidBufferE::DENSITY_DIFFUSION_FRONT:
         {
             ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_)
@@ -139,6 +170,17 @@ void FluidGrid::display(const Matrix3 CameraProjection,
 
 void FluidGrid::init()
 {
+    VelData0_ = new std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)>;
+    VelData1_ = new std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)>;
+    PBOVelocity0_ = new GL::BufferImage2D{PixelFormat::RG32F,
+                                            {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
+                                             FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
+                                            *VelData0_, GL::BufferUsage::DynamicRead};
+    PBOVelocity1_ = new GL::BufferImage2D{PixelFormat::RG32F,
+                                            {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
+                                             FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
+                                            *VelData1_, GL::BufferUsage::DynamicRead};
+
     TexBoundaries_ = GL::Texture2D{};
     TexDensityBase_ = GL::Texture2D{};
     TexDensitySources_ = GL::Texture2D{};
@@ -149,6 +191,7 @@ void FluidGrid::init()
     TexVelocitySources_ = GL::Texture2D{};
     TexVelocities0_ = GL::Texture2D{};
     TexVelocities1_ = GL::Texture2D{};
+    TexVelocitiesLowRes_ = GL::Texture2D{};
     // ShaderBoundaries_ = BoundariesShader();
     ShaderDensityAdvection_ = DensityAdvectionShader();
     ShaderDensityDiffusion_ = DensityDiffusionShader();
@@ -159,6 +202,7 @@ void FluidGrid::init()
     ShaderVelocityAdvection_ = VelocityAdvectionShader();
     ShaderVelocityDiffusion_ = VelocityDiffusionShader();
     ShaderVelocityDisplay_ = VelocityDisplayShader();
+    ShaderVelocityLowRes_ = Texture2D32FRender2D32FShader();
     ShaderVelocitySources_ = VelocitySourcesShader();
     
     assert(DensityBase_ != nullptr);
@@ -166,13 +210,13 @@ void FluidGrid::init()
     ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, *DensityBase_);
 
     std::vector<float> BoundariesTmp(FLUID_GRID_ARRAY_SIZE*2, 0.0f);
-    for (auto y=400u; y<600; ++y)
-    {
-        BoundariesTmp[1800+y*2048*2] = -0.7071f;
-        BoundariesTmp[1801+y*2048*2] = 0.7071f;
-        BoundariesTmp[1802+y*2048*2] = 0.7071f;
-        BoundariesTmp[1803+y*2048*2] = 0.7071f;
-    }
+    // for (auto y=400u; y<600; ++y)
+    // {
+    //     BoundariesTmp[1800+y*2048*2] = -0.7071f;
+    //     BoundariesTmp[1801+y*2048*2] = 0.7071f;
+    //     BoundariesTmp[1802+y*2048*2] = 0.7071f;
+    //     BoundariesTmp[1803+y*2048*2] = 0.7071f;
+    // }
 
     assert(BoundariesTmp.size() == FLUID_GRID_ARRAY_SIZE*2);
     ImageView2D ImageBoundaries(PixelFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, BoundariesTmp);
@@ -213,6 +257,10 @@ void FluidGrid::init()
                    .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
     TexVelocities1_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                    .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
+    TexVelocitiesLowRes_.setStorage(1, GL::TextureFormat::RG32F,
+                                    {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
+                                     FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE})
+                        .setMagnificationFilter(GL::SamplerFilter::Nearest);
     
     TexDensitiesBack_   = &TexDensities0_;
     TexDensitiesFront_  = &TexDensities1_;
@@ -246,6 +294,10 @@ void FluidGrid::init()
     FBOVelocities1_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBOVelocities1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexVelocities1_, 0)
                    .clearColor(0, Color4(0.0f, 0.0f));
+    FBOVelocitiesLowRes_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
+                                                    FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE}}};
+    FBOVelocitiesLowRes_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexVelocitiesLowRes_, 0)
+                        .clearColor(0, Color4(0.0f, 0.0f));
     
     FBODensitiesBack_ = &FBODensities0_;
     FBODensitiesFront_ = &FBODensities1_;
@@ -342,6 +394,8 @@ void FluidGrid::init()
                             .setDeltaT(1.0f/60.0f)
                             .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                             .bindTextures(TexVelocitySources_, *TexVelocitiesBack_);
+    ShaderVelocityLowRes_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                         .bindTexture(TexVelocities0_);
     ShaderDensitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}));
     ShaderVelocitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}));
     ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_);
@@ -437,6 +491,8 @@ void FluidGrid::process(const double SimTime)
 
     ShaderVelocityAdvection_.draw(MeshVelocityAdvection_);
 
+    this->readbackVelocities();
+
     //------------------------------------------------------------------
     // Distort ground
     //------------------------------------------------------------------
@@ -479,4 +535,37 @@ void FluidGrid::process(const double SimTime)
                                               *TexVelocitiesFront_);
 
     ShaderFluidFinalComposition_.draw(MeshFluidFinalComposition_);
+}
+
+void FluidGrid::readbackVelocities()
+{
+    //------------------------------------------------------------------
+    // Readback velocities via PBO
+    //------------------------------------------------------------------
+    // Measurements:
+    //
+    //  - No read back: GPU 7, CPU 5
+    //  - One PBO:  GPU 40, CPU 100
+    //  - Two PBOs: GPU 40, CPU 50
+    //  - Two PBOs+Backbuffer: GPU 40, CPU 50
+    //  - Two PBOs+LowRes(1/4 x 1/4): GPU 14, CPU 25
+    //  - Two PBOs+LowRes(1/4 x 1/4), mapRead: GPU 14, CPU 25
+    //  - Two PBOs, separate thread:
+    //
+    // -----------------------------------------------------------------
+    FBOVelocitiesLowRes_.bind();
+    ShaderVelocityLowRes_.bindTexture(*TexVelocitiesFront_)
+                         .draw(MeshVelocities_);
+
+    *PBOVelocity0_ = TexVelocitiesLowRes_.image(0, {Magnum::PixelFormat::RG32F}, GL::BufferUsage::DynamicRead);
+
+    auto MapData = reinterpret_cast<const float*>(PBOVelocity1_->buffer().mapRead());
+    for (auto i=0; i<(FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY); ++i)
+    {
+        VelReadback_[i] = MapData[i];
+    }
+
+    CORRADE_INTERNAL_ASSERT_OUTPUT(PBOVelocity1_->buffer().unmap());
+
+    std::swap(PBOVelocity0_, PBOVelocity1_);
 }

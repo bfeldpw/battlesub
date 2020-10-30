@@ -40,6 +40,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     GlobalResources::Get.getWorld()->SetContactListener(&Reg_.ctx<ContactListener>());
     
     if (!setSwapInterval(1))
+    // setSwapInterval(0);
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
         setMinimalLoopPeriod(1.0f/60.0f * 1000.0f);
     #endif
@@ -252,7 +253,7 @@ void BattleSub::drawEvent()
             // auto Meshes = PlayerSub_->Hull.getMeshes();
             // for (auto it = Meshes->begin(); it != Meshes->end(); it++)
             //     Shader.draw(*it);
-            CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
+            // CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
             CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
             FluidGrid_.process(SimTime_.time());
@@ -383,7 +384,7 @@ void BattleSub::updateGameObjects()
     // Update physics
     GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
 
-    FluidGrid_.addDensity(10.0, 0.0, 10.0)
+    FluidGrid_.addDensity(10.0, 0.0, 100.0)
               .addVelocity(10.0, 0.0, -20.0, 0.0,
                            10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -20.0, 0.0);
 
@@ -398,6 +399,30 @@ void BattleSub::updateGameObjects()
 
         FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length()*_FluidComp.DensityWeight_)
                   .addVelocity(Pos.x, Pos.y, Vel.x*_FluidComp.VelocityWeight_, Vel.y*_FluidComp.VelocityWeight_);
+    });
+    Reg_.view<PhysicsComponent, StatusComponent>().each([&](const auto& _PhysComp, const auto& _StatusComp)
+    {
+        auto Pos = _PhysComp.Body_->GetPosition();
+        auto Type = _StatusComp.Type_;
+
+        if (Type == GameObjectTypeE::PROJECTILE ||
+            Type == GameObjectTypeE::DEBRIS_LANDSCAPE)
+        {
+            float f = 0.0f;
+
+            if (Type == GameObjectTypeE::PROJECTILE)
+                f = 6.0f;
+            else if (Type == GameObjectTypeE::DEBRIS_LANDSCAPE)
+                f = 0.01f;
+
+
+            auto VelF = FluidGrid_.getVelocity((Pos.x+256.0f)*4.0f, (Pos.y+128.0f)*4.0f);
+            auto VelB = _PhysComp.Body_->GetLinearVelocity();
+            b2Vec2 Vel = {VelF.x() - VelB.x, VelF.y() - VelB.y};
+            _PhysComp.Body_->ApplyForceToCenter({Vel.x*f, Vel.y*f}, true);
+            // std::cout << "p0 = (" << Pos.x << ", " << Pos.y << ")" << std::endl;
+            // std::cout << "v  = (" << Vel.x << ", " << Vel.y << ")" << std::endl;
+        }
     });
 
     // for (auto Projectile : GlobalFactories::Projectiles.getEntities())
@@ -484,10 +509,11 @@ void BattleSub::updateUI()
                     ImGui::RadioButton("Velocity Sources", &Buffer, 3);
                     ImGui::RadioButton("Velocity Buffer Front", &Buffer, 4);
                     ImGui::RadioButton("Velocity Buffer Back", &Buffer, 5);
-                    ImGui::RadioButton("Density Buffer Front", &Buffer, 6);
-                    ImGui::RadioButton("Density Buffer Back", &Buffer, 7);
-                    ImGui::RadioButton("Ground Distorted", &Buffer, 8);
-                    ImGui::RadioButton("Final Composition", &Buffer, 9);
+                    ImGui::RadioButton("Velocity Buffer Readback", &Buffer, 6);
+                    ImGui::RadioButton("Density Buffer Front", &Buffer, 7);
+                    ImGui::RadioButton("Density Buffer Back", &Buffer, 8);
+                    ImGui::RadioButton("Ground Distorted", &Buffer, 9);
+                    ImGui::RadioButton("Final Composition", &Buffer, 10);
                     ImGui::NewLine();
                     ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
                         showTooltip("Show magnitude or show colour-coded direction, too.");

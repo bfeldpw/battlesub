@@ -72,7 +72,7 @@ void Submarine::fire(entt::registry& _Reg)
                              Body->GetWorldVector({GunPos, 8.75f}).y);
         BodyDef.angle = Body->GetAngle();
         BodyDef.angularDamping = 5.0f;
-        BodyDef.linearDamping = 1.0f;
+        BodyDef.linearDamping = 0.0f;
         BodyDef.bullet = true;
         _Reg.ctx<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, DrawableGroupsTypeE::WEAPON,
                                              {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);

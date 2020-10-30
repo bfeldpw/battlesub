@@ -14,6 +14,7 @@
 #include "fluid_final_composition_shader.h"
 #include "global_resources.h"
 #include "ground_distortion_shader.h"
+#include "texture_2d32f_render_2d32f_shader.h"
 #include "velocity_advection_shader.h"
 #include "velocity_diffusion_shader.h"
 #include "velocity_display_shader.h"
@@ -30,16 +31,34 @@ enum class FluidBufferE : int
     VELOCITY_SOURCES = 3,
     VELOCITIES_FRONT = 4,
     VELOCITIES_BACK = 5,
-    DENSITY_DIFFUSION_FRONT = 6,
-    DENSITY_DIFFUSION_BACK = 7,
-    GROUND_DISTORTED = 8,
-    FINAL_COMPOSITION = 9
+    VELOCITIES_LOW_RES = 6,
+    DENSITY_DIFFUSION_FRONT = 7,
+    DENSITY_DIFFUSION_BACK = 8,
+    GROUND_DISTORTED = 9,
+    FINAL_COMPOSITION = 10
 };
 
 class FluidGrid
 {
     public:
-        
+
+        ~FluidGrid();
+
+        Vector2 getVelocity(const float _x, const float _y) const
+        {
+                int x0 = int(_x) >> VELOCITY_READBACK_SUBSAMPLE;
+                int y0 = int(_y) >> VELOCITY_READBACK_SUBSAMPLE;
+
+                int x =  ((y0 << (FLUID_GRID_SIZE_X_BITS - VELOCITY_READBACK_SUBSAMPLE)) + x0) << 1;
+                int y = (((y0 << (FLUID_GRID_SIZE_X_BITS - VELOCITY_READBACK_SUBSAMPLE)) + x0) << 1) + 1;
+
+                auto Vx = VelReadback_[x];
+                auto Vy = VelReadback_[x+1];
+                return {Vx, Vy};
+        //                 // y << FLUID_GRID_SIZE_X_BITS
+        //                 // (x<<1)
+        }
+
         FluidGrid& addDensity(const float x, const float y, const float d);
         FluidGrid& addVelocity(const float x, const float y, const float Vx, const float Vy,
                                const float w = 1.0f);
@@ -59,9 +78,20 @@ class FluidGrid
         void process(const double);
         
     private:
-        
-        int I(const int x, const int y) const {return (y << FLUID_GRID_SIZE_X_BITS) + x;}
-        
+
+        void readbackVelocities();
+        // int  I(const int x, const int y) const {return (y << FLUID_GRID_SIZE_X_BITS) + x;}
+
+        static constexpr int VELOCITY_READBACK_SUBSAMPLE = 2;
+        static constexpr int VELOCITY_READBACK_SUBSAMPLE_XY = 3;
+        using VelocityReadbackDataType = std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)>;
+
+        VelocityReadbackDataType* VelData0_ = nullptr;
+        VelocityReadbackDataType* VelData1_ = nullptr;
+        VelocityReadbackDataType VelReadback_;
+
+        GL::BufferImage2D* PBOVelocity0_ = nullptr;
+        GL::BufferImage2D* PBOVelocity1_ = nullptr;
         GL::Framebuffer* FBODensitiesBack_{nullptr};
         GL::Framebuffer* FBODensitiesFront_{nullptr};
         GL::Framebuffer* FBOVelocitiesBack_{nullptr};
@@ -75,6 +105,7 @@ class FluidGrid
         GL::Framebuffer FBOVelocitySources_{NoCreate};
         GL::Framebuffer FBOVelocities0_{NoCreate};
         GL::Framebuffer FBOVelocities1_{NoCreate};
+        GL::Framebuffer FBOVelocitiesLowRes_{NoCreate};
 
         // BoundariesShader ShaderBoundaries_{NoCreate};
         DensityAdvectionShader ShaderDensityAdvection_{NoCreate};
@@ -83,6 +114,7 @@ class FluidGrid
         DensitySourcesShader ShaderDensitySources_{NoCreate};
         GroundDistortionShader ShaderGroundDistortion_{NoCreate};
         FluidFinalCompositionShader ShaderFluidFinalComposition_{NoCreate};
+        Texture2D32FRender2D32FShader ShaderVelocityLowRes_{NoCreate};
         VelocityAdvectionShader ShaderVelocityAdvection_{NoCreate};
         VelocityDiffusionShader ShaderVelocityDiffusion_{NoCreate};
         VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
@@ -111,6 +143,7 @@ class FluidGrid
         GL::Texture2D TexVelocitySources_{NoCreate};    // Velocity sources
         GL::Texture2D TexVelocities0_{NoCreate};        // Velocities back buffer
         GL::Texture2D TexVelocities1_{NoCreate};        // Velocities front buffer
+        GL::Texture2D TexVelocitiesLowRes_{NoCreate};
 
         std::vector<float>* DensityBase_{nullptr};
         std::vector<float> DensitySources_;

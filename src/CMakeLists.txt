@@ -31,6 +31,7 @@ set(HEADERS
         submarine.h
         submarine_definition.h
         submarine_factory.h
+        texture_2d32f_render_2d32f_shader.h
         timer.h
         velocity_advection_shader.h
         velocity_diffusion_shader.h
