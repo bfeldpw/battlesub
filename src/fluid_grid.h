@@ -44,20 +44,7 @@ class FluidGrid
 
         ~FluidGrid();
 
-        Vector2 getVelocity(const float _x, const float _y) const
-        {
-                int x0 = int(_x) >> VELOCITY_READBACK_SUBSAMPLE;
-                int y0 = int(_y) >> VELOCITY_READBACK_SUBSAMPLE;
-
-                int x =  ((y0 << (FLUID_GRID_SIZE_X_BITS - VELOCITY_READBACK_SUBSAMPLE)) + x0) << 1;
-                int y = (((y0 << (FLUID_GRID_SIZE_X_BITS - VELOCITY_READBACK_SUBSAMPLE)) + x0) << 1) + 1;
-
-                auto Vx = VelReadback_[x];
-                auto Vy = VelReadback_[x+1];
-                return {Vx, Vy};
-        //                 // y << FLUID_GRID_SIZE_X_BITS
-        //                 // (x<<1)
-        }
+        Vector2 getVelocity(const int _x, const int _y) const;
 
         FluidGrid& addDensity(const float x, const float y, const float d);
         FluidGrid& addVelocity(const float x, const float y, const float Vx, const float Vy,
@@ -80,14 +67,11 @@ class FluidGrid
     private:
 
         void readbackVelocities();
-        // int  I(const int x, const int y) const {return (y << FLUID_GRID_SIZE_X_BITS) + x;}
 
         static constexpr int VELOCITY_READBACK_SUBSAMPLE = 2;
         static constexpr int VELOCITY_READBACK_SUBSAMPLE_XY = 3;
-        using VelocityReadbackDataType = std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)>;
+        typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)> VelocityReadbackDataType;
 
-        VelocityReadbackDataType* VelData0_ = nullptr;
-        VelocityReadbackDataType* VelData1_ = nullptr;
         VelocityReadbackDataType VelReadback_;
 
         GL::BufferImage2D* PBOVelocity0_ = nullptr;

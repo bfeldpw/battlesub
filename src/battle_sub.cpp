@@ -420,8 +420,6 @@ void BattleSub::updateGameObjects()
             auto VelB = _PhysComp.Body_->GetLinearVelocity();
             b2Vec2 Vel = {VelF.x() - VelB.x, VelF.y() - VelB.y};
             _PhysComp.Body_->ApplyForceToCenter({Vel.x*f, Vel.y*f}, true);
-            // std::cout << "p0 = (" << Pos.x << ", " << Pos.y << ")" << std::endl;
-            // std::cout << "v  = (" << Vel.x << ", " << Vel.y << ")" << std::endl;
         }
     });
 

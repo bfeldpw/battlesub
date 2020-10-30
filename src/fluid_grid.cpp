@@ -12,16 +12,6 @@ using namespace Magnum;
 
 FluidGrid::~FluidGrid()
 {
-    if (VelData0_ != nullptr)
-    {
-        delete VelData0_;
-        VelData0_ = nullptr;
-    }
-    if (VelData1_ != nullptr)
-    {
-        delete VelData1_;
-        VelData1_ = nullptr;
-    }
     if (PBOVelocity0_ != nullptr)
     {
         delete PBOVelocity0_;
@@ -32,6 +22,18 @@ FluidGrid::~FluidGrid()
         delete PBOVelocity1_;
         PBOVelocity1_ = nullptr;
     }
+}
+
+Vector2 FluidGrid::getVelocity(const int _x, const int _y) const
+{
+    int x0 = _x >> VELOCITY_READBACK_SUBSAMPLE;
+    int y0 = _y >> VELOCITY_READBACK_SUBSAMPLE;
+
+    int x =  ((y0 << (FLUID_GRID_SIZE_X_BITS - VELOCITY_READBACK_SUBSAMPLE)) + x0) << 1;
+
+    auto Vx = VelReadback_[x];
+    auto Vy = VelReadback_[x+1];
+    return {Vx, Vy};
 }
 
 FluidGrid& FluidGrid::addDensity(const float x, const float y, const float d)
@@ -170,16 +172,16 @@ void FluidGrid::display(const Matrix3 CameraProjection,
 
 void FluidGrid::init()
 {
-    VelData0_ = new std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)>;
-    VelData1_ = new std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)>;
+    VelocityReadbackDataType VelData0_;
+    VelocityReadbackDataType VelData1_;
     PBOVelocity0_ = new GL::BufferImage2D{PixelFormat::RG32F,
                                             {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
                                              FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
-                                            *VelData0_, GL::BufferUsage::DynamicRead};
+                                            std::move(VelData0_), GL::BufferUsage::DynamicRead};
     PBOVelocity1_ = new GL::BufferImage2D{PixelFormat::RG32F,
                                             {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
                                              FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
-                                            *VelData1_, GL::BufferUsage::DynamicRead};
+                                            std::move(VelData1_), GL::BufferUsage::DynamicRead};
 
     TexBoundaries_ = GL::Texture2D{};
     TexDensityBase_ = GL::Texture2D{};
@@ -209,21 +211,8 @@ void FluidGrid::init()
     assert(DensityBase_->size() == FLUID_GRID_ARRAY_SIZE);
     ImageView2D Image(PixelFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, *DensityBase_);
 
-    std::vector<float> BoundariesTmp(FLUID_GRID_ARRAY_SIZE*2, 0.0f);
-    // for (auto y=400u; y<600; ++y)
-    // {
-    //     BoundariesTmp[1800+y*2048*2] = -0.7071f;
-    //     BoundariesTmp[1801+y*2048*2] = 0.7071f;
-    //     BoundariesTmp[1802+y*2048*2] = 0.7071f;
-    //     BoundariesTmp[1803+y*2048*2] = 0.7071f;
-    // }
-
-    assert(BoundariesTmp.size() == FLUID_GRID_ARRAY_SIZE*2);
-    ImageView2D ImageBoundaries(PixelFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}, BoundariesTmp);
-
     TexBoundaries_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
-                  .setMagnificationFilter(GL::SamplerFilter::Nearest)
-                  .setSubImage(0, {}, ImageBoundaries);
+                  .setMagnificationFilter(GL::SamplerFilter::Nearest);
     TexDensityBase_.setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                    .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                    .setSubImage(0, {}, Image);
@@ -233,24 +222,22 @@ void FluidGrid::init()
                   .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
                   .setWrapping(GL::SamplerWrapping::ClampToEdge)
                   .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-                  .setStorage(1/*Math::log2(FLUID_GRID_SIZE_X)+1*/, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
-                    //.generateMipmap();
+                  .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexDensities1_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                   .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
                   .setWrapping(GL::SamplerWrapping::ClampToEdge)
                   .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-                  .setStorage(1/*Math::log2(FLUID_GRID_SIZE_X)+1*/, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
-                    //.generateMipmap();
+                  .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexFluidFinalComposition_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                              .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
                              .setWrapping(GL::SamplerWrapping::ClampToEdge)
                              .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-                             .setStorage(1/*Math::log2(FLUID_GRID_SIZE_X)+1*/, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
+                             .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexGroundDistorted_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                        .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
                        .setWrapping(GL::SamplerWrapping::ClampToEdge)
                        .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-                       .setStorage(1/*Math::log2(FLUID_GRID_SIZE_X)+1*/, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
+                       .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexVelocitySources_.setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                        .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
     TexVelocities0_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
