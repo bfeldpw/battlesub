@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <vector>
 
+#include <Magnum/GL/BufferImage.h>
 #include <Magnum/GL/Framebuffer.h>
 
 #include "density_advection_shader.h"
@@ -42,8 +43,6 @@ class FluidGrid
 {
     public:
 
-        ~FluidGrid();
-
         Vector2 getVelocity(const int _x, const int _y) const;
 
         FluidGrid& addDensity(const float x, const float y, const float d);
@@ -74,8 +73,10 @@ class FluidGrid
 
         VelocityReadbackDataType VelReadback_;
 
-        GL::BufferImage2D* PBOVelocity0_ = nullptr;
-        GL::BufferImage2D* PBOVelocity1_ = nullptr;
+        GL::BufferImage2D* PBOVelocityFront_{nullptr};
+        GL::BufferImage2D* PBOVelocityBack_{nullptr};
+        GL::BufferImage2D PBOVelocity0_{NoCreate};
+        GL::BufferImage2D PBOVelocity1_{NoCreate};
         GL::Framebuffer* FBODensitiesBack_{nullptr};
         GL::Framebuffer* FBODensitiesFront_{nullptr};
         GL::Framebuffer* FBOVelocitiesBack_{nullptr};

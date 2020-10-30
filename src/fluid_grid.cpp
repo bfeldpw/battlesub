@@ -1,7 +1,6 @@
 #include "fluid_grid.h"
 
 // #include <Corrade/Containers/ArrayViewStl.h>
-#include <Magnum/GL/BufferImage.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/TextureFormat.h>
 #include <Magnum/Math/Color.h>
@@ -9,20 +8,6 @@
 #include <Magnum/PixelFormat.h>
 
 using namespace Magnum;
-
-FluidGrid::~FluidGrid()
-{
-    if (PBOVelocity0_ != nullptr)
-    {
-        delete PBOVelocity0_;
-        PBOVelocity0_ = nullptr;
-    }
-    if (PBOVelocity1_ != nullptr)
-    {
-        delete PBOVelocity1_;
-        PBOVelocity1_ = nullptr;
-    }
-}
 
 Vector2 FluidGrid::getVelocity(const int _x, const int _y) const
 {
@@ -174,14 +159,16 @@ void FluidGrid::init()
 {
     VelocityReadbackDataType VelData0_;
     VelocityReadbackDataType VelData1_;
-    PBOVelocity0_ = new GL::BufferImage2D{PixelFormat::RG32F,
-                                            {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
-                                             FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
-                                            std::move(VelData0_), GL::BufferUsage::DynamicRead};
-    PBOVelocity1_ = new GL::BufferImage2D{PixelFormat::RG32F,
-                                            {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
-                                             FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
-                                            std::move(VelData1_), GL::BufferUsage::DynamicRead};
+    PBOVelocity0_ = GL::BufferImage2D{PixelFormat::RG32F,
+                                      {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
+                                       FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
+                                       std::move(VelData0_), GL::BufferUsage::DynamicRead};
+    PBOVelocity1_ = GL::BufferImage2D{PixelFormat::RG32F,
+                                      {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
+                                       FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
+                                       std::move(VelData1_), GL::BufferUsage::DynamicRead};
+    PBOVelocityBack_ = &PBOVelocity0_;
+    PBOVelocityFront_ = &PBOVelocity1_;
 
     TexBoundaries_ = GL::Texture2D{};
     TexDensityBase_ = GL::Texture2D{};
@@ -544,15 +531,15 @@ void FluidGrid::readbackVelocities()
     ShaderVelocityLowRes_.bindTexture(*TexVelocitiesFront_)
                          .draw(MeshVelocities_);
 
-    *PBOVelocity0_ = TexVelocitiesLowRes_.image(0, {Magnum::PixelFormat::RG32F}, GL::BufferUsage::DynamicRead);
+    *PBOVelocityBack_ = TexVelocitiesLowRes_.image(0, {Magnum::PixelFormat::RG32F}, GL::BufferUsage::DynamicRead);
 
-    auto MapData = reinterpret_cast<const float*>(PBOVelocity1_->buffer().mapRead());
+    auto MapData = reinterpret_cast<const float*>(PBOVelocityFront_->buffer().mapRead());
     for (auto i=0; i<(FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY); ++i)
     {
         VelReadback_[i] = MapData[i];
     }
 
-    CORRADE_INTERNAL_ASSERT_OUTPUT(PBOVelocity1_->buffer().unmap());
+    CORRADE_INTERNAL_ASSERT_OUTPUT(PBOVelocityFront_->buffer().unmap());
 
-    std::swap(PBOVelocity0_, PBOVelocity1_);
+    std::swap(PBOVelocityBack_, PBOVelocityFront_);
 }
