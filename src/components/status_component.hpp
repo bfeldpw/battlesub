@@ -20,6 +20,7 @@ struct StatusComponent
     Timer Age_;
     bool  IsSinking_ = false;
     bool  IsSunk_ = false;
+    bool  IsToBeDeleted_ = false;
 };
 
 #endif // STATUS_COMPONENT

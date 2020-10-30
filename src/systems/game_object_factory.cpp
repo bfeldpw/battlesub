@@ -131,32 +131,40 @@ void GameObjectFactory::updateStatus()
 
                 if (_StatusComp.Age_.time() > 5.0f)
                 {
+                    _StatusComp.IsSunk_ = true;
+                }
+                if (_StatusComp.IsSunk_)
+                {
                     _PhysComp.Body_->SetLinearVelocity({0.0f, 0.0f});
                     _PhysComp.Body_->SetActive(false);
-                    _StatusComp.IsSunk_ = true;
                 }
                 if (_StatusComp.IsSunk_ && _VisComp.Scale_ < 0.1f)
                 {
-                    // Destroy physics data, Box2D will handle everything from here
-                    _PhysComp.World_->DestroyBody(_PhysComp.Body_);
-
-                    // Destroy graphics data, Magnum will handle everything from here
-                    // (including drawables)
-                    if (_VisComp.Visuals_ != nullptr)
-                    {
-                        delete _VisComp.Visuals_;
-                        _VisComp.Visuals_ = nullptr;
-                    }
-                    auto e = *static_cast<entt::entity*>(_PhysComp.Body_->GetUserData());
-
-                    EntityIDs.CountFree_++;
-                    EntityIDs.FreeIDs_[EntityIDs.CountFree_-1] = EntityIDs.IDMap_[id(e)];
-
-                    DBLK(printInternalEntityLists();)
-
-                    Reg_.destroy(e);
+                    _StatusComp.IsToBeDeleted_=true;
                 }
             }
+        }
+
+        if (_StatusComp.IsToBeDeleted_)
+        {
+            // Destroy physics data, Box2D will handle everything from here
+            _PhysComp.World_->DestroyBody(_PhysComp.Body_);
+
+            // Destroy graphics data, Magnum will handle everything from here
+            // (including drawables)
+            if (_VisComp.Visuals_ != nullptr)
+            {
+                delete _VisComp.Visuals_;
+                _VisComp.Visuals_ = nullptr;
+            }
+            auto e = *static_cast<entt::entity*>(_PhysComp.Body_->GetUserData());
+
+            EntityIDs.CountFree_++;
+            EntityIDs.FreeIDs_[EntityIDs.CountFree_-1] = EntityIDs.IDMap_[id(e)];
+
+            DBLK(printInternalEntityLists();)
+
+            Reg_.destroy(e);
         }
     });
 }
