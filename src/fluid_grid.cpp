@@ -157,15 +157,17 @@ void FluidGrid::display(const Matrix3 CameraProjection,
 
 void FluidGrid::init()
 {
-    VelocityReadbackDataType VelData0_;
-    VelocityReadbackDataType VelData1_;
+    VelocityReadbackFractionDataType VelData0_;
+    VelocityReadbackFractionDataType VelData1_;
     PBOVelocity0_ = GL::BufferImage2D{PixelFormat::RG32F,
                                       {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
-                                       FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
+                                       FLUID_GRID_SIZE_Y >>
+                                           (VELOCITY_READBACK_SUBSAMPLE+VELOCITY_READBACK_FRACTION_SIZE)},
                                        std::move(VelData0_), GL::BufferUsage::DynamicRead};
     PBOVelocity1_ = GL::BufferImage2D{PixelFormat::RG32F,
                                       {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
-                                       FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE},
+                                       FLUID_GRID_SIZE_Y >>
+                                           (VELOCITY_READBACK_SUBSAMPLE+VELOCITY_READBACK_FRACTION_SIZE)},
                                        std::move(VelData1_), GL::BufferUsage::DynamicRead};
     PBOVelocityBack_ = &PBOVelocity0_;
     PBOVelocityFront_ = &PBOVelocity1_;
@@ -465,7 +467,16 @@ void FluidGrid::process(const double SimTime)
 
     ShaderVelocityAdvection_.draw(MeshVelocityAdvection_);
 
-    this->readbackVelocities();
+    static int Fraction = 0;
+    this->readbackVelocities(Fraction++, VELOCITY_READBACK_FRACTION_SIZE);
+    if (Fraction == 1 << VELOCITY_READBACK_FRACTION_SIZE) Fraction = 0;
+
+    DBLK(
+            ImageView2D ImageVelReadback(PixelFormat::RG32F,
+                                         {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
+                                          FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE}, VelReadback_);
+            TexVelocitiesLowRes_.setSubImage(0, {}, ImageVelReadback);
+        )
 
     //------------------------------------------------------------------
     // Distort ground
@@ -511,11 +522,20 @@ void FluidGrid::process(const double SimTime)
     ShaderFluidFinalComposition_.draw(MeshFluidFinalComposition_);
 }
 
-void FluidGrid::readbackVelocities()
+void FluidGrid::readbackVelocities(const int _Fraction, const int _SubDivisionBase2)
 {
     //------------------------------------------------------------------
     // Readback velocities via PBO
     //------------------------------------------------------------------
+    //
+    // Data is transferred to PBO backbuffer, while PBO frontbuffer is
+    // readback to client memory.
+    // The data represents only a subsampled velocity front buffer in
+    // order to reduce frame rate. To further improve performance, in
+    // each frame only a fraction of the buffer is transferred to the
+    // PBO. This corresponds to updating the client side velocity field
+    // with a lower frequency (one stripe each frame).
+    //
     // Measurements:
     //
     //  - No read back: GPU 7, CPU 5
@@ -523,20 +543,28 @@ void FluidGrid::readbackVelocities()
     //  - Two PBOs: GPU 40, CPU 50
     //  - Two PBOs+Backbuffer: GPU 40, CPU 50
     //  - Two PBOs+LowRes(1/4 x 1/4): GPU 14, CPU 25
-    //  - Two PBOs+LowRes(1/4 x 1/4), mapRead: GPU 14, CPU 25
-    //  - Two PBOs, separate thread:
+    //  - Two PBOs+LowRes(1/4 x 1/4), 1/8 frequency, mapRead: GPU 8, CPU 12
     //
     // -----------------------------------------------------------------
     FBOVelocitiesLowRes_.bind();
     ShaderVelocityLowRes_.bindTexture(*TexVelocitiesFront_)
-                         .draw(MeshVelocities_);
+        .draw(MeshVelocities_);
 
-    *PBOVelocityBack_ = TexVelocitiesLowRes_.image(0, {Magnum::PixelFormat::RG32F}, GL::BufferUsage::DynamicRead);
+    const int FractionSize = FLUID_GRID_SIZE_Y >> (VELOCITY_READBACK_SUBSAMPLE+_SubDivisionBase2);
+    Math::Range<2, int> Range = {{0, _Fraction*FractionSize},
+                                 {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE, (_Fraction+1)*FractionSize}};
+    // Transfer data to PBO back buffer
+    *PBOVelocityBack_ = TexVelocitiesLowRes_.subImage(0, Range, {Magnum::PixelFormat::RG32F}, GL::BufferUsage::DynamicRead);
 
+    // Transfer PBO front buffer to client memory
+    // Since the front buffer PBO is delayed by one frame due PBO
+    // flip-flopping, the position in the client side memory has to be
+    // adjusted accordingly
+    auto f = _Fraction-1; if (f==-1) f=(1 << VELOCITY_READBACK_FRACTION_SIZE) - 1;
     auto MapData = reinterpret_cast<const float*>(PBOVelocityFront_->buffer().mapRead());
-    for (auto i=0; i<(FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY); ++i)
+    for (auto i=0; i<(FLUID_GRID_ARRAY_SIZE >> (VELOCITY_READBACK_SUBSAMPLE_XY+_SubDivisionBase2)); ++i)
     {
-        VelReadback_[i] = MapData[i];
+        VelReadback_[i+f*(FLUID_GRID_ARRAY_SIZE >> (VELOCITY_READBACK_SUBSAMPLE_XY+_SubDivisionBase2))] = MapData[i];
     }
 
     CORRADE_INTERNAL_ASSERT_OUTPUT(PBOVelocityFront_->buffer().unmap());

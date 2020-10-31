@@ -39,8 +39,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     
     GlobalResources::Get.getWorld()->SetContactListener(&Reg_.ctx<ContactListener>());
     
-    if (!setSwapInterval(1))
-    // setSwapInterval(0);
+    // if (!setSwapInterval(1))
+    setSwapInterval(0);
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
         setMinimalLoopPeriod(1.0f/60.0f * 1000.0f);
     #endif

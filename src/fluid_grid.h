@@ -65,11 +65,15 @@ class FluidGrid
         
     private:
 
-        void readbackVelocities();
+        void readbackVelocities(const int _Fraction, const int _SubDivisionBase2);
 
         static constexpr int VELOCITY_READBACK_SUBSAMPLE = 2;
         static constexpr int VELOCITY_READBACK_SUBSAMPLE_XY = 3;
+        static constexpr int VELOCITY_READBACK_FRACTION_SIZE = 3;
         typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)> VelocityReadbackDataType;
+        typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >>
+                                   (VELOCITY_READBACK_SUBSAMPLE_XY+
+                                    VELOCITY_READBACK_FRACTION_SIZE))> VelocityReadbackFractionDataType;
 
         VelocityReadbackDataType VelReadback_;
 
