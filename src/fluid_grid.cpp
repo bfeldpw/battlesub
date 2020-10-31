@@ -543,7 +543,8 @@ void FluidGrid::readbackVelocities(const int _Fraction, const int _SubDivisionBa
     //  - Two PBOs: GPU 40, CPU 50
     //  - Two PBOs+Backbuffer: GPU 40, CPU 50
     //  - Two PBOs+LowRes(1/4 x 1/4): GPU 14, CPU 25
-    //  - Two PBOs+LowRes(1/4 x 1/4), 1/8 frequency, mapRead: GPU 8, CPU 12
+    //  - Two PBOs+LowRes(1/4 x 1/4), 1/8 frequency: GPU 8, CPU 12
+    //  - Two PBOs+LowRes(1/4 x 1/4), 1/8 frequency, parallel Box2D thread: GPU 8, CPU 7
     //
     // -----------------------------------------------------------------
     FBOVelocitiesLowRes_.bind();

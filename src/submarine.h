@@ -63,6 +63,11 @@ class Submarine : public Entity
             RudderJoint->SetMotorSpeed(1.0f);
             Rudder_ = 10.0f;
         }
+        void rudderStop()
+        {
+            RudderJoint->SetMotorSpeed(0.0f);
+            Rudder_ = 0.0f;
+        }
         void throttleForward()
         {
             if (Throttle_ < 60000.0f) Throttle_ += 2000.0f;

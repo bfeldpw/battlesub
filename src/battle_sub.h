@@ -42,6 +42,7 @@ class BattleSub : public Platform::Application
         void updateCameraDynamics();
         void updateGameObjects();
         void updateUI();
+        void updateWorld();
 
         void setupECS();
         void setupWindow();
@@ -61,6 +62,7 @@ class BattleSub : public Platform::Application
         //--- World ---//
         int   WindowResolutionX_ = WINDOW_RESOLUTION_MAX_X;
         int   WindowResolutionY_ = WINDOW_RESOLUTION_MAX_Y;
+        float Frequency_ = 60.0f;
 
         //--- Framebuffer related ---//
         GL::Framebuffer FBOMainDisplay_{NoCreate};

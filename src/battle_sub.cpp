@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <thread>
+
 #include <Box2D/Box2D.h>
 #include <Corrade/Utility/Arguments.h>
 #include <Corrade/Utility/ConfigurationValue.h>
@@ -42,7 +44,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     // if (!setSwapInterval(1))
     setSwapInterval(0);
     #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
-        setMinimalLoopPeriod(1.0f/60.0f * 1000.0f);
+        setMinimalLoopPeriod(1.0f/Frequency_ * 1000.0f);
     #endif
 
     SimTime_.start();
@@ -191,12 +193,14 @@ void BattleSub::drawEvent()
         GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.0f, 1.0f));
         
         if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
-        if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
+        else if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
+        else PlayerSub_->rudderStop();
         if (KeyPressedMap["s"] == true) PlayerSub_->throttleReverse();
         if (KeyPressedMap["w"] == true) PlayerSub_->throttleForward();
         if (KeyPressedMap["down"] == true) PlayerSub2_->throttleReverse();
         if (KeyPressedMap["left"] == true) PlayerSub2_->rudderLeft();
-        if (KeyPressedMap["right"] == true) PlayerSub2_->rudderRight();
+        else if (KeyPressedMap["right"] == true) PlayerSub2_->rudderRight();
+        else PlayerSub2_->rudderStop();
         if (KeyPressedMap["up"] == true) PlayerSub2_->throttleForward();
         if (KeyPressedMap["shift_l"] == true) PlayerSub_->fire(Reg_);
         if (KeyPressedMap["shift_r"] == true) PlayerSub2_->fire(Reg_);
@@ -256,8 +260,12 @@ void BattleSub::drawEvent()
             // CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
             CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
+            std::thread ThreadPhysics(&BattleSub::updateWorld, this);
+
             FluidGrid_.process(SimTime_.time());
             IsStepForward_ = false;
+
+            ThreadPhysics.join();
         }
 
         //----------------------------------
@@ -381,9 +389,6 @@ void BattleSub::updateCameraDynamics()
 
 void BattleSub::updateGameObjects()
 {
-    // Update physics
-    GlobalResources::Get.getWorld()->Step(1.0f/60.0f, 40, 15);
-
     FluidGrid_.addDensity(10.0, 0.0, 100.0)
               .addVelocity(10.0, 0.0, -20.0, 0.0,
                            10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -20.0, 0.0);
@@ -664,6 +669,12 @@ void BattleSub::updateUI()
     ImGUI_.drawFrame();
 
     GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
+}
+
+void BattleSub::updateWorld()
+{
+    // Update physics
+    GlobalResources::Get.getWorld()->Step(1.0f/Frequency_, 40, 15);
 }
 
 void BattleSub::setupECS()

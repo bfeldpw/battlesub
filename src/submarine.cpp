@@ -115,6 +115,4 @@ void Submarine::update(entt::registry& _Reg)
     HullBody->ApplyForceToCenter(HullBody->GetWorldVector({0.0f, Throttle_}), true);
     HullBody->ApplyForce(RudderBody->GetWorldVector({-WaterResistanceOnRudder, 0.0f }),
                            HullBody->GetWorldPoint({0.0f, -6.0f}), true);
-
-    RudderJoint->SetMotorSpeed(0.0f);
 }
