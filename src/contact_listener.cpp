@@ -90,6 +90,7 @@ void ContactListener::emitLandscapeDebris(b2Contact* const _Contact, b2Body* con
     EmComp.ScaleStdDev_ = Velocity.Length()*0.05f+Mass*0.0001f;
     EmComp.Velocity_ = Velocity.Length()*0.02f+1.0f;
     EmComp.VelocityStdDev_ = Velocity.Length()*0.02f;
+    EmComp.VelocityWeight_ = 0.2f;
 }
 
 void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
@@ -145,7 +146,7 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
     EmComp.ScaleStdDev_ = Scale;
     EmComp.Velocity_ = Velocity.Length()*0.01f+1.0f;
     EmComp.VelocityStdDev_ = Velocity.Length()*0.01f;
-    EmComp.VelocityWeight_ = 1.0f;
+    EmComp.VelocityWeight_ = 0.1f;
 }
 
 void ContactListener::testGameObjectTypes(b2Contact* const _Contact, StatusComponent& _Status1, StatusComponent& _Status2,

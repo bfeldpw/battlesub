@@ -77,7 +77,11 @@ void Submarine::fire(entt::registry& _Reg)
         _Reg.ctx<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, DrawableGroupsTypeE::WEAPON,
                                              {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
-        _Reg.emplace<FluidSourceComponent>(Bullet, 10.0f, 0.1f);
+        auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
+        FldSrcComp.VelocityBackProjection_ = 1.0f/60.0f;
+        FldSrcComp.DensityWeight_ = 10.0f;
+        FldSrcComp.VelocityWeight_ = 0.1f;
+
 
         b2Filter Filter;
         Filter.categoryBits = 0x0004;

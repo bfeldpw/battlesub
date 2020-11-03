@@ -43,23 +43,23 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
 
             setUniform(uniformLocation("u_tex_density_sources"), TexUnitDensitySources);
             setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
-            DeltaTUniform_ = uniformLocation("u_dt");
-            GridResUniform_ = uniformLocation("u_grid_res");
+            AlphaUniform_ = uniformLocation("u_alpha");
+            DissipationUniform_ = uniformLocation("u_dissipation");
             TransformationUniform_ = uniformLocation("u_matrix");
             
-            setUniform(DeltaTUniform_, 1.0f/60.0f);
-            setUniform(GridResUniform_, 2);
+            setUniform(AlphaUniform_, 1.0f);
+            setUniform(DissipationUniform_, 1.0f);
         }
 
-        DensityDiffusionShader& setDeltaT(const Float dt)
+        DensityDiffusionShader& setAlpha(const Float a)
         {
-            setUniform(DeltaTUniform_, dt);
+            setUniform(AlphaUniform_, a);
             return *this;
         }
         
-        DensityDiffusionShader& setGridRes(const Int r)
+        DensityDiffusionShader& setDissipation(const Float d)
         {
-            setUniform(GridResUniform_, r);
+            setUniform(DissipationUniform_, d);
             return *this;
         }
         
@@ -87,8 +87,8 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
 
         std::string Path_{SHADER_PATH};
 
-        Float   DeltaTUniform_;
-        Int     GridResUniform_;
+        Float   AlphaUniform_;
+        Float   DissipationUniform_;
         Int     TransformationUniform_;
 };
 

@@ -403,7 +403,11 @@ void BattleSub::updateGameObjects()
         auto Vel = _PhysComp.Body_->GetLinearVelocity();
 
         FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length()*_FluidComp.DensityWeight_)
-                  .addVelocity(Pos.x, Pos.y, Vel.x*_FluidComp.VelocityWeight_, Vel.y*_FluidComp.VelocityWeight_);
+                  .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
+                               Pos.x-Vel.x*_FluidComp.VelocityBackProjection_,
+                               Pos.y-Vel.y*_FluidComp.VelocityBackProjection_,
+                               Vel.x, Vel.y,
+                               _FluidComp.VelocityWeight_);
     });
     Reg_.view<PhysicsComponent, StatusComponent>().each([&](const auto& _PhysComp, const auto& _StatusComp)
     {
@@ -411,15 +415,16 @@ void BattleSub::updateGameObjects()
         auto Type = _StatusComp.Type_;
 
         if (Type == GameObjectTypeE::PROJECTILE ||
-            Type == GameObjectTypeE::DEBRIS_LANDSCAPE)
+            Type == GameObjectTypeE::DEBRIS_LANDSCAPE ||
+            Type == GameObjectTypeE::DEBRIS_SUBMARINE)
         {
             float f = 0.0f;
 
             if (Type == GameObjectTypeE::PROJECTILE)
                 f = 6.0f;
-            else if (Type == GameObjectTypeE::DEBRIS_LANDSCAPE)
+            else if (Type == GameObjectTypeE::DEBRIS_LANDSCAPE ||
+                     Type == GameObjectTypeE::DEBRIS_SUBMARINE)
                 f = 0.01f;
-
 
             auto VelF = FluidGrid_.getVelocity((Pos.x+256.0f)*4.0f, (Pos.y+128.0f)*4.0f);
             auto VelB = _PhysComp.Body_->GetLinearVelocity();
@@ -533,6 +538,16 @@ void BattleSub::updateUI()
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
                 ImGui::NewLine();
+                static int IterationsDensityDiffusion = 5;
+                ImGui::SliderInt("Density Diffsion Iterations", &IterationsDensityDiffusion, 1, 20);
+                    showTooltip("Number of iterations for numerical diffusion calculation.");
+                FluidGrid_.setIterationsDensityDiffusion(IterationsDensityDiffusion);
+                static float DensityDissipation = 0.2;
+                ImGui::SliderFloat("Density Dissipation", &DensityDissipation, 0.0f, 1.0f);
+                    showTooltip("Defines how fast the densities converge to zero.\n"
+                                "  Value 0.0: Density just diffuses, but builds up over time.\n"
+                                "  Value 1.0: Density quickly converges to zero.");
+                FluidGrid_.setDensityDissipation(DensityDissipation);
                 ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
                     showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
                                 "Base density (background) will be distorted by x * advection, e.g.:\n"

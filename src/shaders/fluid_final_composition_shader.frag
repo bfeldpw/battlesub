@@ -9,6 +9,6 @@ void main()
 {
     frag_col = (0.2 * texelFetch(u_tex_density_base, ivec2(gl_FragCoord.xy), 0).x +
                0.4 * texelFetch(u_tex_ground_distorted, ivec2(gl_FragCoord.xy), 0).x +
-               0.01 * length(texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy),0))) *
-               (0.5+0.02 * texelFetch(u_tex_density_buffer, ivec2(gl_FragCoord.xy), 0).x);
+               0.05 * length(texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy),0))) *
+               (0.5+1.0 * texelFetch(u_tex_density_buffer, ivec2(gl_FragCoord.xy), 0).x);
 }

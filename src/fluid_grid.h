@@ -52,6 +52,8 @@ class FluidGrid
                                const float x1, const float y1, const float Vx1, const float Vy1,
                                const float w = 1.0f);
         FluidGrid& setDensityDistortion(const float f) {ShaderGroundDistortion_.setDistortion(f); return *this;}
+        FluidGrid& setDensityDissipation(const float f) {ShaderDensityDiffusion_.setDissipation(f); return *this;}
+        FluidGrid& setIterationsDensityDiffusion(const int n) {IterationsDensityDiffusion_ = n; ShaderDensityDiffusion_.setAlpha(getDensityDiffusionAlpha()); return *this;}
         FluidGrid& setVelocityAdvectionFactor(const float f) {ShaderVelocityAdvection_.setAdvectionFactor(f); return *this;}
         FluidGrid& setVelocityDisplayScale(const float f) {ShaderVelocityDisplay_.setScale(f); return *this;}
         FluidGrid& setVelocityDisplayShowOnlyMagnitude(const bool b) {ShaderVelocityDisplay_.setShowOnlyMagnitude(b); return *this;}
@@ -65,7 +67,14 @@ class FluidGrid
         
     private:
 
+        float getDensityDiffusionAlpha()
+        {
+            auto Res = FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X;
+            return Res*Res / IterationsDensityDiffusion_ * 60.0f;
+        }
         void readbackVelocities(const int _Fraction, const int _SubDivisionBase2);
+
+        int IterationsDensityDiffusion_ = 5;
 
         static constexpr int VELOCITY_READBACK_SUBSAMPLE = 2;
         static constexpr int VELOCITY_READBACK_SUBSAMPLE_XY = 3;

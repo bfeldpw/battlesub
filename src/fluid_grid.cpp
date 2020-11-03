@@ -353,8 +353,8 @@ void FluidGrid::init()
                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                            .bindTextures(*TexDensitiesBack_, *TexVelocitiesBack_);
     ShaderDensityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
-                           .setDeltaT(1.0f/60.0f)
-                           .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
+                           .setAlpha(this->getDensityDiffusionAlpha())
+                           .setDissipation(0.2f)
                            .bindTextures(TexDensitySources_, *TexDensitiesBack_);
     ShaderGroundDistortion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                            .setDistortion(100.0f)
@@ -490,13 +490,16 @@ void FluidGrid::process(const double SimTime)
     //------------------------------------------------------------------
     // Diffuse densities
     //------------------------------------------------------------------
-    std::swap(FBODensitiesFront_, FBODensitiesBack_);
-    std::swap(TexDensitiesFront_, TexDensitiesBack_);
-    FBODensitiesFront_->bind();
-    
-    ShaderDensityDiffusion_.bindTextures(TexDensitySources_, *TexDensitiesBack_);
-    
-    ShaderDensityDiffusion_.draw(MeshDensityDiffusion_);
+    for (int i=0; i<IterationsDensityDiffusion_; ++i)
+    {
+        std::swap(FBODensitiesFront_, FBODensitiesBack_);
+        std::swap(TexDensitiesFront_, TexDensitiesBack_);
+        FBODensitiesFront_->bind();
+
+        ShaderDensityDiffusion_.bindTextures(TexDensitySources_, *TexDensitiesBack_);
+
+        ShaderDensityDiffusion_.draw(MeshDensityDiffusion_);
+    }
     
     //------------------------------------------------------------------
     // Advect densities
