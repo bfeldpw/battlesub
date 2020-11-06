@@ -36,10 +36,10 @@ void EmitterSystem::emit()
             BodyDef.angularVelocity = 0.5f*DistAngle(_EmComp.Generator_);
             Reg_.ctx<GameObjectFactory>().create(Debris, this, _EmComp.Type_,
                                                 DrawableGroupsTypeE::WEAPON, Col, BodyDef);
-            auto& FlSrcComp = Reg_.emplace<FluidSourceComponent>(Debris);
-            FlSrcComp.VelocityBackProjection_ = 1.0f/60.0f;
-            FlSrcComp.DensityWeight_ = 1.0f;
-            FlSrcComp.VelocityWeight_ = _EmComp.VelocityWeight_;
+            auto& FldSrcComp = Reg_.emplace<FluidSourceComponent>(Debris);
+            FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
+            FldSrcComp.DensityWeight_ = 1.0f;
+            FldSrcComp.VelocityWeight_ = _EmComp.VelocityWeight_;
 
             //--- Adjust physics body for non-self collisions ---//
             auto& PhysComp = Reg_.get<PhysicsComponent>(Debris);

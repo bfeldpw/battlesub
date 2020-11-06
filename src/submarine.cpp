@@ -78,7 +78,7 @@ void Submarine::fire(entt::registry& _Reg)
                                              {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
-        FldSrcComp.VelocityBackProjection_ = 1.0f/60.0f;
+        FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
         FldSrcComp.DensityWeight_ = 10.0f;
         FldSrcComp.VelocityWeight_ = 0.1f;
 

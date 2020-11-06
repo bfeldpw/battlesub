@@ -402,7 +402,9 @@ void BattleSub::updateGameObjects()
         auto Pos = _PhysComp.Body_->GetPosition();
         auto Vel = _PhysComp.Body_->GetLinearVelocity();
 
-        FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length()*_FluidComp.DensityWeight_)
+        FluidGrid_.addDensity(Pos.x, Pos.y,
+                              Pos.x-Vel.x*1.0f/30.0f, Pos.y-Vel.y*1.0f/30.0f,
+                              Vel.Length()*_FluidComp.DensityWeight_)
                   .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
                                Pos.x-Vel.x*_FluidComp.VelocityBackProjection_,
                                Pos.y-Vel.y*_FluidComp.VelocityBackProjection_,
@@ -433,40 +435,6 @@ void BattleSub::updateGameObjects()
         }
     });
 
-    // for (auto Projectile : GlobalFactories::Projectiles.getEntities())
-    // {
-    //     Projectile.second->update();
-    //     auto Pos = Projectile.second->getBody()->GetPosition();
-    //     auto Vel = Projectile.second->getBody()->GetLinearVelocity();
-
-    //     if (Projectile.second->isSunk())
-    //     {
-    //         GlobalFactories::Projectiles.destroy(Projectile.second);
-    //         break;
-    //     }
-    //     else
-    //     {
-    //         FluidGrid_.addDensity(Pos.x, Pos.y, Vel.Length() * 10.0f)
-    //                   .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
-    //                                Pos.x-Vel.x*VelocitySourceBackprojection_,
-    //                                Pos.y-Vel.y*VelocitySourceBackprojection_,
-    //                                Vel.x, Vel.y);
-    //     }
-    // }
-
-    // std::vector<EntityIDType> EmittersToBeDeleted;
-    // for (auto Emitter : GlobalEmitterFactory::Get.getEntities())
-    // {
-    //     if (Emitter.second->isFinished())
-    //     {
-    //         EmittersToBeDeleted.push_back(Emitter.second->ID);
-    //     }
-    //     Emitter.second->emit(Reg_);
-    // }
-    // for (auto d : EmittersToBeDeleted)
-    // {
-    //     GlobalEmitterFactory::Get.destroy(GlobalEmitterFactory::Get.getEntities().at(d));
-    // }
     for (auto Sub : GlobalFactories::Submarines.getEntities())
     {
         Sub.second->update(Reg_);
