@@ -45,9 +45,11 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
             setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
             AlphaUniform_ = uniformLocation("u_alpha");
             DissipationUniform_ = uniformLocation("u_dissipation");
+            DiffusionRateUniform_ = uniformLocation("u_diffusion_rate");
             TransformationUniform_ = uniformLocation("u_matrix");
             
             setUniform(AlphaUniform_, 1.0f);
+            setUniform(DiffusionRateUniform_, 20.0f);
             setUniform(DissipationUniform_, 1.0f);
         }
 
@@ -56,7 +58,13 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
             setUniform(AlphaUniform_, a);
             return *this;
         }
-        
+
+        DensityDiffusionShader& setDiffusionRate(const Float d)
+        {
+            setUniform(DiffusionRateUniform_, d);
+            return *this;
+        }
+
         DensityDiffusionShader& setDissipation(const Float d)
         {
             setUniform(DissipationUniform_, d);
@@ -88,6 +96,7 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
         std::string Path_{SHADER_PATH};
 
         Float   AlphaUniform_;
+        Float   DiffusionRateUniform_;
         Float   DissipationUniform_;
         Int     TransformationUniform_;
 };
