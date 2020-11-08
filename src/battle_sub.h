@@ -80,6 +80,10 @@ class BattleSub : public Platform::Application
         bool IsStepForward_ = false;
         bool IsSplitscreen_ = false;
         bool IsTooltipsEnabled_ = true;
+        struct
+        {
+            bool IsVelocityProbesEnabled = false;
+        } DebugRender;
 
         //-- UI --//
         ImGuiStyle* UIStyle_{nullptr};

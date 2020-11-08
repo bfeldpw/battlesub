@@ -29,8 +29,8 @@ namespace BattleSub{
 
 BattleSub::BattleSub(const Arguments& arguments): Platform::Application{arguments, NoCreate}
 {
-    this->setupECS();
     this->setupWindow();
+    this->setupECS();
     this->setupFrameBuffersMainScreen();
     this->setupMainDisplayMesh();
 
@@ -303,6 +303,12 @@ void BattleSub::drawEvent()
         {
             CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
             CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+
+            if (DebugRender.IsVelocityProbesEnabled)
+            {
+                Reg_.ctx<DebugRenderSystem>().renderVelocityProbes(CameraCurrentPlayer_->projectionMatrix()*
+                                                                   CameraCurrentPlayer_->cameraMatrix());
+            }
         }
 
         // In case of splitscreen, also render the second view
@@ -322,6 +328,12 @@ void BattleSub::drawEvent()
             {
                 CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
                 CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+
+                if (DebugRender.IsVelocityProbesEnabled)
+                {
+                    Reg_.ctx<DebugRenderSystem>().renderVelocityProbes(CameraOtherPlayer_->projectionMatrix()*
+                                                                       CameraOtherPlayer_->cameraMatrix());
+                }
             }
         }
 
@@ -329,7 +341,7 @@ void BattleSub::drawEvent()
         // Render final scene, i.e. render FBOMainDisplay to default framebuffer
         //-----------------------------------------------------------------------
         GL::defaultFramebuffer.bind();
-        
+
         ShaderMainDisplay_.bindTexture(TexMainDisplay_)
                           .setTexScale(std::min(1.0f, float(WindowResolutionX_)/WINDOW_RESOLUTION_MAX_X),
                                        std::min(1.0f, float(WindowResolutionY_)/WINDOW_RESOLUTION_MAX_Y));
@@ -433,6 +445,12 @@ void BattleSub::updateUI()
                 ImGui::Indent();
                     ImGui::Text("%.3f ms; (%.1f FPS)",
                         1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
+                ImGui::Unindent();
+
+                ImGui::NewLine();
+                ImGui::TextColored(ImVec4(1,1,0,1), "Debug Renderer");
+                ImGui::Indent();
+                    ImGui::Checkbox("Velocity Probes", &DebugRender.IsVelocityProbesEnabled);
                 ImGui::Unindent();
 
                 int Buffer = static_cast<int>(FluidBuffer_);
@@ -623,7 +641,7 @@ void BattleSub::updateWorld()
 void BattleSub::setupECS()
 {
     Reg_.set<ContactListener>(Reg_);
-    Reg_.set<DebugRenderSystem>();
+    Reg_.set<DebugRenderSystem>(Reg_);
     Reg_.set<EmitterSystem>(Reg_);
     Reg_.set<FluidInteractionSystem>(Reg_, FluidGrid_);
     Reg_.set<GameObjectFactory>(Reg_);
