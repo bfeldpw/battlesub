@@ -9,6 +9,7 @@ set(HEADERS
         components/visuals_component.hpp
         systems/debug_render_system.hpp
         systems/emitter_system.hpp
+        systems/fluid_interaction_system.hpp
         systems/game_object_factory.hpp
         battle_sub.h
         camera_dynamics.h
@@ -51,6 +52,7 @@ set(SOURCES
         ${ImGui_INCLUDE_DIR}/imgui.cpp
         components/emitter_component.cpp
         systems/emitter_system.cpp
+        systems/fluid_interaction_system.cpp
         systems/game_object_factory.cpp
         battle_sub.cpp
         camera_dynamics.cpp
