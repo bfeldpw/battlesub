@@ -16,6 +16,7 @@
 
 #include "battle_sub.h"
 #include "common.h"
+#include "debug_render_system.hpp"
 #include "emitter_system.hpp"
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
@@ -654,6 +655,7 @@ void BattleSub::updateWorld()
 void BattleSub::setupECS()
 {
     Reg_.set<ContactListener>(Reg_);
+    Reg_.set<DebugRenderSystem>();
     Reg_.set<EmitterSystem>(Reg_);
     Reg_.set<GameObjectFactory>(Reg_);
     Reg_.set<MessageHandler>();

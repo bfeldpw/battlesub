@@ -1,4 +1,5 @@
 set(HEADERS
+        components/debug_render_velocity_probes_component.hpp
         components/emitter_component.hpp
         components/fluid_probes_component.hpp
         components/fluid_source_component.hpp
@@ -6,6 +7,7 @@ set(HEADERS
         components/physics_component.hpp
         components/status_component.hpp
         components/visuals_component.hpp
+        systems/debug_render_system.hpp
         systems/emitter_system.hpp
         systems/game_object_factory.hpp
         battle_sub.h
