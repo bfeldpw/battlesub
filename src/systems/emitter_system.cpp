@@ -3,6 +3,7 @@
 #include <Box2D/Box2D.h>
 #include <Magnum/Math/Color.h>
 #include <entt/entity/helper.hpp>
+#include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
 #include "game_object_factory.hpp"
 
@@ -36,6 +37,13 @@ void EmitterSystem::emit()
             BodyDef.angularVelocity = 0.5f*DistAngle(_EmComp.Generator_);
             Reg_.ctx<GameObjectFactory>().create(Debris, this, _EmComp.Type_,
                                                 DrawableGroupsTypeE::WEAPON, Col, BodyDef);
+
+            auto& FldProbesComp = Reg_.emplace<FluidProbesComponent>(Debris);
+            FldProbesComp.MassFactor_ = 0.0001;
+            FldProbesComp.N_=1;
+            FldProbesComp.ProbeX_[0] = 0.0f;
+            FldProbesComp.ProbeY_[0] = 0.0f;
+
             auto& FldSrcComp = Reg_.emplace<FluidSourceComponent>(Debris);
             FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
             FldSrcComp.DensityWeight_ = 1.0f;

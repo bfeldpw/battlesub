@@ -1,5 +1,6 @@
 set(HEADERS
         components/emitter_component.hpp
+        components/fluid_probes_component.hpp
         components/fluid_source_component.hpp
         components/parent_component.hpp
         components/physics_component.hpp

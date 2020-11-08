@@ -1,5 +1,6 @@
 #include "submarine.h"
 
+#include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
 
 void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY, const float Angle)
@@ -10,12 +11,32 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         BodyDef.active = true;
         BodyDef.position.Set(PosX, PosY);
         BodyDef.angle = Angle;
-        BodyDef.angularDamping = 0.8f;
-        BodyDef.linearDamping = 0.2f;
+        BodyDef.angularDamping = 0.0f;
+        BodyDef.linearDamping = 0.0f;
 
         Hull = _Reg.create();
         _Reg.ctx<GameObjectFactory>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDef);
+
+        auto& FldProbesComp = _Reg.emplace<FluidProbesComponent>(Hull);
+        FldProbesComp.MassFactor_ = 30.0e1f;
+        FldProbesComp.N_=8;
+        FldProbesComp.ProbeX_[0] = -1.7f;
+        FldProbesComp.ProbeY_[0] = -7.2f;
+        FldProbesComp.ProbeX_[1] = 1.7f;
+        FldProbesComp.ProbeY_[1] = -7.2f;
+        FldProbesComp.ProbeX_[2] = 2.1f;
+        FldProbesComp.ProbeY_[2] = 0.5f;
+        FldProbesComp.ProbeX_[3] = 1.7f;
+        FldProbesComp.ProbeY_[3] = 8.2f;
+        FldProbesComp.ProbeX_[4] = 0.7f;
+        FldProbesComp.ProbeY_[4] = 9.2f;
+        FldProbesComp.ProbeX_[5] = -0.7f;
+        FldProbesComp.ProbeY_[5] = 9.2f;
+        FldProbesComp.ProbeX_[6] = -1.7f;
+        FldProbesComp.ProbeY_[6] = 8.2f;
+        FldProbesComp.ProbeX_[7] = -2.1f;
+        FldProbesComp.ProbeY_[7] = 0.5f;
 
         b2BodyDef BodyDefRudder;
         BodyDefRudder.type = b2_dynamicBody;
@@ -76,6 +97,11 @@ void Submarine::fire(entt::registry& _Reg)
         BodyDef.bullet = true;
         _Reg.ctx<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, DrawableGroupsTypeE::WEAPON,
                                              {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
+
+        auto& FldProbesComp = _Reg.emplace<FluidProbesComponent>(Bullet);
+        FldProbesComp.N_=1;
+        FldProbesComp.ProbeX_[0] = 0.0f;
+        FldProbesComp.ProbeY_[0] = 0.0f;
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
         FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;

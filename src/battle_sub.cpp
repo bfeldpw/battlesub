@@ -17,6 +17,7 @@
 #include "battle_sub.h"
 #include "common.h"
 #include "emitter_system.hpp"
+#include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
 #include "global_factories.h"
 #include "global_resources.h"
@@ -258,7 +259,7 @@ void BattleSub::drawEvent()
             // for (auto it = Meshes->begin(); it != Meshes->end(); it++)
             //     Shader.draw(*it);
             // CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
-            CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
+            // CameraBoundaries_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
             std::thread ThreadPhysics(&BattleSub::updateWorld, this);
 
@@ -411,27 +412,25 @@ void BattleSub::updateGameObjects()
                                Vel.x, Vel.y,
                                _FluidComp.VelocityWeight_);
     });
-    Reg_.view<PhysicsComponent, StatusComponent>().each([&](const auto& _PhysComp, const auto& _StatusComp)
+    Reg_.view<FluidProbesComponent, PhysicsComponent>().each(
+        [&](const auto& _ProbesComp, const auto& _PhysComp)
     {
-        auto Pos = _PhysComp.Body_->GetPosition();
-        auto Type = _StatusComp.Type_;
 
-        if (Type == GameObjectTypeE::PROJECTILE ||
-            Type == GameObjectTypeE::DEBRIS_LANDSCAPE ||
-            Type == GameObjectTypeE::DEBRIS_SUBMARINE)
+        for (int i=0; i<_ProbesComp.N_; ++i)
         {
-            float f = 0.0f;
 
-            if (Type == GameObjectTypeE::PROJECTILE)
-                f = 6.0f;
-            else if (Type == GameObjectTypeE::DEBRIS_LANDSCAPE ||
-                     Type == GameObjectTypeE::DEBRIS_SUBMARINE)
-                f = 0.01f;
+            const float f = _ProbesComp.MassFactor_/_ProbesComp.N_*60.0f;
+            const float m = _PhysComp.Body_->GetMass();
 
-            auto VelF = FluidGrid_.getVelocity((Pos.x+256.0f)*4.0f, (Pos.y+128.0f)*4.0f);
-            auto VelB = _PhysComp.Body_->GetLinearVelocity();
+            b2Vec2 ProbePos = {_ProbesComp.ProbeX_[i], _ProbesComp.ProbeY_[i]};
+            b2Vec2 ProbePosGlobal = _PhysComp.Body_->GetWorldPoint(ProbePos);
+
+            auto VelF = FluidGrid_.getVelocity((ProbePosGlobal.x+256.0f)*4.0f, (ProbePosGlobal.y+128.0f)*4.0f);
+
+            auto VelB = _PhysComp.Body_->GetLinearVelocityFromLocalPoint(ProbePos);
             b2Vec2 Vel = {VelF.x() - VelB.x, VelF.y() - VelB.y};
-            _PhysComp.Body_->ApplyForceToCenter({Vel.x*f, Vel.y*f}, true);
+
+            _PhysComp.Body_->ApplyForce({Vel.x*f, Vel.y*f}, _PhysComp.Body_->GetWorldPoint(ProbePos), true);
         }
     });
 
@@ -443,17 +442,9 @@ void BattleSub::updateGameObjects()
 
         auto Propellor = HullBody->GetWorldPoint({0.0f, -7.0f});
         auto Direction = RudderBody->GetWorldVector({0.0f, -1.0f});
-        auto Front     = HullBody->GetWorldPoint({0.0f,  8.0f});
-        auto Back      = HullBody->GetWorldPoint({0.0f, -7.0f});
 
         FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.001f*std::abs(Sub.second->getThrottle()))
                   .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*Sub.second->getThrottle(), 0.001f*Direction.y*Sub.second->getThrottle());
-
-        FluidGrid_.addDensity(Front.x, Front.y, std::abs(HullBody->GetLinearVelocity().Length())*1.0f)
-                  .addVelocity(Front.x, Front.y, HullBody->GetLinearVelocity().x,
-                                                 HullBody->GetLinearVelocity().y,
-                               Back.x,   Back.y, HullBody->GetLinearVelocity().x,
-                                                 HullBody->GetLinearVelocity().y);
     }
 }
 
