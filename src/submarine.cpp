@@ -17,9 +17,13 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         Hull = _Reg.create();
         _Reg.ctx<GameObjectFactory>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDef);
+        DBLK(
+            _Reg.ctx<MessageHandler>().reportDebug("created submarine hull");
+            _Reg.ctx<MessageHandler>().reportDebug("  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Hull).Body_->GetMass()));
+        )
 
-        auto& FldProbesComp = _Reg.emplace<FluidProbesComponent>(Hull);
-        FldProbesComp.MassFactor_ = 30.0e1f;
+        auto& FldProbesComp = _Reg.emplace<FluidProbesComponent<8>>(Hull);
+        FldProbesComp.Mass_ = 300.0f;
         FldProbesComp.N_=8;
         FldProbesComp.ProbeX_[0] = -1.7f;
         FldProbesComp.ProbeY_[0] = -7.2f;
@@ -37,18 +41,52 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         FldProbesComp.ProbeY_[6] = 8.2f;
         FldProbesComp.ProbeX_[7] = -2.1f;
         FldProbesComp.ProbeY_[7] = 0.5f;
+        FldProbesComp.ProbeNormX_[0] = -0.7071f;
+        FldProbesComp.ProbeNormY_[0] = -0.7071f;
+        FldProbesComp.ProbeNormX_[1] =  0.7071f;
+        FldProbesComp.ProbeNormY_[1] = -0.7071f;
+        FldProbesComp.ProbeNormX_[2] =  1.0f;
+        FldProbesComp.ProbeNormY_[2] =  0.0f;
+        FldProbesComp.ProbeNormX_[3] = 0.7071f;
+        FldProbesComp.ProbeNormY_[3] = 0.7071f;
+        FldProbesComp.ProbeNormX_[4] = 0.0f;
+        FldProbesComp.ProbeNormY_[4] = 1.0f;
+        FldProbesComp.ProbeNormX_[5] = 0.0f;
+        FldProbesComp.ProbeNormY_[5] = 1.0f;
+        FldProbesComp.ProbeNormX_[6] = -0.7071f;
+        FldProbesComp.ProbeNormY_[6] =  0.7071f;
+        FldProbesComp.ProbeNormX_[7] = -1.0f;
+        FldProbesComp.ProbeNormY_[7] = 0.0f;
 
         b2BodyDef BodyDefRudder;
         BodyDefRudder.type = b2_dynamicBody;
         BodyDefRudder.active = true;
         BodyDefRudder.position.Set(PosX+8.0f*std::sin(Angle), PosY-8.0f*std::cos(Angle));
         BodyDefRudder.angle = Angle;
-        BodyDefRudder.angularDamping = 0.8f;
-        BodyDefRudder.linearDamping = 0.2f;
+        // BodyDefRudder.angularDamping = 0.8f;
+        // BodyDefRudder.linearDamping = 0.2f;
+        BodyDefRudder.angularDamping = 0.0f;
+        BodyDefRudder.linearDamping = 0.0f;
 
         Rudder = _Reg.create();
         _Reg.ctx<GameObjectFactory>().create(Rudder, this, GameObjectTypeE::SUBMARINE_RUDDER, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDefRudder);
+        DBLK(
+            _Reg.ctx<MessageHandler>().reportDebug("created submarine rudder");
+            _Reg.ctx<MessageHandler>().reportDebug("  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Rudder).Body_->GetMass()));
+        )
+        auto& FluidProbesComponentRudder = _Reg.emplace<FluidProbesComponent<8>>(Rudder);
+        FluidProbesComponentRudder.Mass_ = 50.0f;
+        FluidProbesComponentRudder.N_=2;
+        FluidProbesComponentRudder.ProbeX_[0] = -0.1f;
+        FluidProbesComponentRudder.ProbeY_[0] = -1.0f;
+        FluidProbesComponentRudder.ProbeX_[1] =  0.1f;
+        FluidProbesComponentRudder.ProbeY_[1] = -1.0f;
+        FluidProbesComponentRudder.ProbeNormX_[0] = -1.0f;
+        FluidProbesComponentRudder.ProbeNormY_[0] =  0.0f;
+        FluidProbesComponentRudder.ProbeNormX_[1] =  1.0f;
+        FluidProbesComponentRudder.ProbeNormY_[1] =  0.0f;
+
 
         // auto Joint = _Reg.create();
         {
@@ -62,7 +100,7 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
             jointDef.localAnchorA = {0.0f, -6.0f};
             jointDef.bodyB = _Reg.get<PhysicsComponent>(Rudder).Body_;
             jointDef.localAnchorB = {0.0f,  1.0f};
-            jointDef.maxMotorTorque = 10000.0f;
+            jointDef.maxMotorTorque = 100000.0f;
             jointDef.motorSpeed = 0.0f;
             jointDef.enableMotor = true;
             jointDef.collideConnected = false;
@@ -98,10 +136,9 @@ void Submarine::fire(entt::registry& _Reg)
         _Reg.ctx<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, DrawableGroupsTypeE::WEAPON,
                                              {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
-        auto& FldProbesComp = _Reg.emplace<FluidProbesComponent>(Bullet);
-        FldProbesComp.N_=1;
-        FldProbesComp.ProbeX_[0] = 0.0f;
-        FldProbesComp.ProbeY_[0] = 0.0f;
+        auto& FldProbesComp = _Reg.emplace<FluidProbeComponent>(Bullet);
+        FldProbesComp.ProbeX_ = 0.0f;
+        FldProbesComp.ProbeY_ = 0.0f;
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
         FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
@@ -127,22 +164,7 @@ void Submarine::fire(entt::registry& _Reg)
 void Submarine::update(entt::registry& _Reg)
 {
     b2Body* const HullBody = _Reg.get<PhysicsComponent>(Hull).Body_;
-    b2Body* const RudderBody = _Reg.get<PhysicsComponent>(Rudder).Body_;
     assert(HullBody != nullptr);
-    assert(RudderBody != nullptr);
-    
-    constexpr float WATER_FORCE_FACTOR = 5000.0f;
-    constexpr float RUDDER_LENGTH = 2.0f;
 
-    // b2Vec2 Force = {-(Rudder.getBody()->GetLocalVector(Hull.getBody()->GetLinearVelocity())).x*WATER_FORCE_FACTOR, 0.0f};
-    // b2Vec2 POA = {Rudder.getBody()->GetWorldPoint({0.0f, 0.0f})};
-
-    // Hull.getBody()->ApplyForceToCenter(Hull.getBody()->GetWorldVector({0.0f, Throttle_}), true);
-    // Rudder.getBody()->ApplyForce(Force, POA, true);
-
-    float WaterResistanceOnRudder = RUDDER_LENGTH * RudderBody->GetLocalVector(HullBody->GetLinearVelocity()).x * WATER_FORCE_FACTOR;
-    
     HullBody->ApplyForceToCenter(HullBody->GetWorldVector({0.0f, Throttle_}), true);
-    HullBody->ApplyForce(RudderBody->GetWorldVector({-WaterResistanceOnRudder, 0.0f }),
-                           HullBody->GetWorldPoint({0.0f, -6.0f}), true);
 }

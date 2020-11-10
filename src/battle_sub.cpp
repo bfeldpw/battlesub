@@ -641,7 +641,7 @@ void BattleSub::updateWorld()
 void BattleSub::setupECS()
 {
     Reg_.set<ContactListener>(Reg_);
-    Reg_.set<DebugRenderSystem>(Reg_);
+    Reg_.set<DebugRenderSystem>(Reg_, FluidGrid_);
     Reg_.set<EmitterSystem>(Reg_);
     Reg_.set<FluidInteractionSystem>(Reg_, FluidGrid_);
     Reg_.set<GameObjectFactory>(Reg_);

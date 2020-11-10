@@ -9,15 +9,18 @@
 
 using namespace Magnum;
 
-Vector2 FluidGrid::getVelocity(const int _x, const int _y) const
+Vector2 FluidGrid::getVelocity(const float _x, const float _y) const
 {
-    int x0 = _x >> VELOCITY_READBACK_SUBSAMPLE;
-    int y0 = _y >> VELOCITY_READBACK_SUBSAMPLE;
+    auto x = int((_x + WORLD_SIZE_DEFAULT_X*0.5f)*float(FLUID_GRID_SIZE_X)/WORLD_SIZE_DEFAULT_X);
+    auto y = int((_y + WORLD_SIZE_DEFAULT_Y*0.5f)*float(FLUID_GRID_SIZE_Y)/WORLD_SIZE_DEFAULT_Y);
 
-    int x =  ((y0 << (FLUID_GRID_SIZE_X_BITS - VELOCITY_READBACK_SUBSAMPLE)) + x0) << 1;
+    int x0 = x >> VELOCITY_READBACK_SUBSAMPLE;
+    int y0 = y >> VELOCITY_READBACK_SUBSAMPLE;
 
-    auto Vx = VelReadback_[x];
-    auto Vy = VelReadback_[x+1];
+    int xi =  ((y0 << (FLUID_GRID_SIZE_X_BITS - VELOCITY_READBACK_SUBSAMPLE)) + x0) << 1;
+
+    auto Vx = VelReadback_[xi];
+    auto Vy = VelReadback_[xi+1];
     return {Vx, Vy};
 }
 

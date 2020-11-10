@@ -43,7 +43,7 @@ class FluidGrid
 {
     public:
 
-        Vector2 getVelocity(const int _x, const int _y) const;
+        Vector2 getVelocity(const float _x, const float _y) const;
 
         FluidGrid& addDensity(const float x, const float y, const float d);
         FluidGrid& addDensity(const float x0, const float y0,

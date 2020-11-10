@@ -38,11 +38,10 @@ void EmitterSystem::emit()
             Reg_.ctx<GameObjectFactory>().create(Debris, this, _EmComp.Type_,
                                                 DrawableGroupsTypeE::WEAPON, Col, BodyDef);
 
-            auto& FldProbesComp = Reg_.emplace<FluidProbesComponent>(Debris);
-            FldProbesComp.MassFactor_ = 0.0001;
-            FldProbesComp.N_=1;
-            FldProbesComp.ProbeX_[0] = 0.0f;
-            FldProbesComp.ProbeY_[0] = 0.0f;
+            auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Debris);
+            FldProbesComp.Mass_ = 0.0001;
+            FldProbesComp.ProbeX_ = 0.0f;
+            FldProbesComp.ProbeY_ = 0.0f;
 
             auto& FldSrcComp = Reg_.emplace<FluidSourceComponent>(Debris);
             FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
