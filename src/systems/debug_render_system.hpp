@@ -6,6 +6,7 @@
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/GL/Shader.h>
 #include <Magnum/Primitives/Circle.h>
+#include <Magnum/Primitives/Line.h>
 #include <Magnum/Shaders/Flat.h>
 #include <Magnum/Trade/MeshData.h>
 
@@ -20,10 +21,13 @@ class DebugRenderSystem
 
     public:
 
-        explicit DebugRenderSystem(entt::registry& _Reg, FluidGrid& _FluidGrid) : Reg_(_Reg),
-                                                                                  FluidGrid_(_FluidGrid)
+        explicit DebugRenderSystem(entt::registry& _Reg, FluidGrid& _FluidGrid) :
+                                        Reg_(_Reg),
+                                        FluidGrid_(_FluidGrid),
+                                        MeshCircle_(MeshTools::compile(Primitives::circle2DSolid(16))),
+                                        MeshLine_(MeshTools::compile(Primitives::line2D()))
+
         {
-            Mesh_ = MeshTools::compile(Primitives::circle2DSolid(32));
             Shader_.setColor({1.0f, 0.0f, 0.0f, 0.2f});
         }
 
@@ -34,7 +38,8 @@ class DebugRenderSystem
             Reg_.view<FluidProbeComponent, PhysicsComponent>().each(
                 [&](const auto& _ProbeComp, const auto& _PhysComp)
             {
-                Matrix3 TransformationMatrix;
+                Matrix3 MatTransformation;
+                Matrix3 MatRotation;
                 b2Body* Body = _PhysComp.Body_;
 
                 auto ProbePos = Body->GetWorldPoint({_ProbeComp.ProbeX_, _ProbeComp.ProbeY_});
@@ -42,16 +47,23 @@ class DebugRenderSystem
                 auto VelB = Body->GetLinearVelocityFromLocalPoint({_ProbeComp.ProbeX_, _ProbeComp.ProbeY_});
                 b2Vec2 Vel = {VelF.x() - VelB.x, VelF.y() - VelB.y};
 
-                TransformationMatrix = Matrix3::translation({ProbePos.x, ProbePos.y})*
-                                       Matrix3::scaling({0.1f+Vel.Length()*0.2f, 0.1f+Vel.Length()*0.2f});
-                Shader_.setTransformationProjectionMatrix(ProjectionMatrix*TransformationMatrix);
-                Shader_.draw(Mesh_);
+                MatTransformation = Matrix3::translation({ProbePos.x, ProbePos.y})*
+                                    Matrix3::scaling({0.1f+Vel.Length()*0.2f, 0.1f+Vel.Length()*0.2f});
+                MatRotation = Matrix3::rotation(Magnum::Rad(std::atan2(VelF.y(), VelF.x())));
+
+                Shader_.setTransformationProjectionMatrix(ProjectionMatrix*MatTransformation)
+                       .setColor({1.0f, 0.0f, 0.0f, 0.2f})
+                       .draw(MeshCircle_);
+                Shader_.setTransformationProjectionMatrix(ProjectionMatrix*MatTransformation*MatRotation)
+                       .setColor({1.0f, 0.0f, 0.0f, 0.5f})
+                       .draw(MeshLine_);
             });
             Reg_.view<FluidProbesComponent<8>, PhysicsComponent>().each([&](const auto& _ProbesComp, const auto& _PhysComp)
             {
                 for (int i=0; i<_ProbesComp.N_; ++i)
                 {
-                    Matrix3 TransformationMatrix;
+                    Matrix3 MatTransformation;
+                    Matrix3 MatRotation;
                     b2Body* Body = _PhysComp.Body_;
 
                     auto ProbePos = Body->GetWorldPoint({_ProbesComp.ProbeX_[i], _ProbesComp.ProbeY_[i]});
@@ -62,21 +74,28 @@ class DebugRenderSystem
                     NormB.Normalize(); // Just in case
                     b2Vec2 Vel = b2Dot(VelR, NormB)*NormB;
 
-                    TransformationMatrix = Matrix3::translation({ProbePos.x, ProbePos.y})*
-                                           Matrix3::scaling({0.1f+Vel.Length()*0.2f, 0.1f+Vel.Length()*0.2f});
-                    Shader_.setTransformationProjectionMatrix(ProjectionMatrix*TransformationMatrix);
-                    Shader_.draw(Mesh_);
+                    MatTransformation = Matrix3::translation({ProbePos.x, ProbePos.y})*
+                                        Matrix3::scaling({0.1f+Vel.Length()*0.2f, 0.1f+Vel.Length()*0.2f});
+                    MatRotation = Matrix3::rotation(Magnum::Rad(std::atan2(VelF.y(), VelF.x())));
+
+                    Shader_.setTransformationProjectionMatrix(ProjectionMatrix*MatTransformation)
+                           .setColor({1.0f, 0.0f, 0.0f, 0.2f})
+                           .draw(MeshCircle_);
+                    Shader_.setTransformationProjectionMatrix(ProjectionMatrix*MatTransformation*MatRotation)
+                           .setColor({1.0f, 0.0f, 0.0f, 0.5f})
+                           .draw(MeshLine_);
                 }
             });
         }
 
     private:
 
-        GL::Mesh Mesh_;
-        Shaders::Flat2D Shader_;
-
         entt::registry& Reg_;
         FluidGrid& FluidGrid_;
+
+        GL::Mesh MeshCircle_;
+        GL::Mesh MeshLine_;
+        Shaders::Flat2D Shader_;
 
 };
 
