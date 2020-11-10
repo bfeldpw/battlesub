@@ -1,5 +1,4 @@
 set(HEADERS
-        components/debug_render_velocity_probes_component.hpp
         components/emitter_component.hpp
         components/fluid_probes_component.hpp
         components/fluid_source_component.hpp
