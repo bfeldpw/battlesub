@@ -3,6 +3,7 @@
 #include <Box2D/Box2D.h>
 #include <Magnum/Math/Color.h>
 #include <entt/entity/helper.hpp>
+#include "fluid_interaction_system.hpp"
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
 #include "game_object_factory.hpp"
@@ -39,9 +40,7 @@ void EmitterSystem::emit()
                                                 DrawableGroupsTypeE::WEAPON, Col, BodyDef);
 
             auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Debris);
-            FldProbesComp.Mass_ = 0.0001;
-            FldProbesComp.ProbeX_ = 0.0f;
-            FldProbesComp.ProbeY_ = 0.0f;
+            Reg_.ctx<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.001f, 0.0f, 0.0f);
 
             auto& FldSrcComp = Reg_.emplace<FluidSourceComponent>(Debris);
             FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;

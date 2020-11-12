@@ -3,21 +3,21 @@
 
 struct FluidProbeComponent
 {
-    float Mass_ = 0.1f;
-    float ProbeX_ = 0.0f;
-    float ProbeY_ = 0.0f;
+    float M_ = 0.1f;
+    float X_ = 0.0f;
+    float Y_ = 0.0f;
 };
 
-template<int n>
+template<int N>
 struct FluidProbesComponent
 {
-    float Mass_ = 0.1f;
+    int N_ = 0;
+    float M_ = 0.1f;
 
-    float N_ = 0;
-    float ProbeX_[n];
-    float ProbeY_[n];
-    float ProbeNormX_[n];
-    float ProbeNormY_[n];
+    float X_[N];
+    float Y_[N];
+    float NormX_[N];
+    float NormY_[N];
 
 };
 
