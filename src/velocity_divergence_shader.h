@@ -1,5 +1,5 @@
-#ifndef DENSITY_DISPLAY_SHADER_H
-#define DENSITY_DISPLAY_SHADER_H
+#ifndef VELOCITY_DIVERGENCE_SHADER_H
+#define VELOCITY_DIVERGENCE_SHADER_H
 
 #include <string>
 
@@ -15,7 +15,7 @@
 
 using namespace Magnum;
 
-class DensityDisplayShader : public GL::AbstractShaderProgram
+class VelocityDivergenceShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -23,9 +23,9 @@ class DensityDisplayShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit DensityDisplayShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit VelocityDivergenceShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit DensityDisplayShader()
+        explicit VelocityDivergenceShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -33,7 +33,7 @@ class DensityDisplayShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile(Path_+"texture_base_shader.vert");
-            Frag.addFile(Path_+"density_display_shader.frag");
+            Frag.addFile(Path_+"velocity_divergence_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -41,38 +41,32 @@ class DensityDisplayShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-            setUniform(uniformLocation("u_texture"), TextureUnit);
-            ScaleUniform_ = uniformLocation("u_scale");
-            TransformationMatrixUniform_ = uniformLocation("u_matrix");
+            setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
+            TransformationUniform_ = uniformLocation("u_matrix");
         }
-
-        DensityDisplayShader& setScale(const Float s)
+        
+        VelocityDivergenceShader& setTransformation(const Matrix3& t)
         {
-            setUniform(ScaleUniform_, s);
+            setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        DensityDisplayShader& setTransformation(const Matrix3& t)
+        VelocityDivergenceShader& bindTexture(GL::Texture2D& TexVelocityBuffer)
         {
-            setUniform(TransformationMatrixUniform_, t);
-            return *this;
-        }
-
-        DensityDisplayShader& bindTexture(GL::Texture2D& Texture)
-        {
-            Texture.bind(TextureUnit);
+            TexVelocityBuffer.bind(TexUnitVelocityBuffer);
             return *this;
         }
 
     private:
         
-        enum: Int { TextureUnit = 0 };
+        enum: Int
+        {
+            TexUnitVelocityBuffer = 0
+        };
 
         std::string Path_{SHADER_PATH};
 
-        Int TransformationMatrixUniform_;
-        Float ScaleUniform_ = 1.0f;
-
+        Int     TransformationUniform_;
 };
 
-#endif // DENSITY_DISPLAY_SHADER_H
+#endif // VELOCITY_DIVERGENCE_SHADER_H

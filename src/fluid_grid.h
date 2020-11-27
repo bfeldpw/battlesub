@@ -7,18 +7,21 @@
 #include <Magnum/GL/BufferImage.h>
 #include <Magnum/GL/Framebuffer.h>
 
-#include "density_advection_shader.h"
-#include "density_diffusion_shader.h"
+#include "advect1d_shader.h"
+#include "advect2d_shader.h"
 #include "density_display_shader.h"
 #include "density_sources_shader.h"
 #include "drawable_generic.h"
 #include "fluid_final_composition_shader.h"
 #include "global_resources.h"
 #include "ground_distortion_shader.h"
+#include "jacobi_shader.h"
+#include "source1d_shader.h"
+#include "source2d_shader.h"
 #include "texture_2d32f_render_2d32f_shader.h"
-#include "velocity_advection_shader.h"
-#include "velocity_diffusion_shader.h"
 #include "velocity_display_shader.h"
+#include "velocity_divergence_shader.h"
+#include "velocity_gradient_substraction_shader.h"
 #include "velocity_sources_shader.h"
 #include "world_def.h"
 
@@ -33,17 +36,24 @@ enum class FluidBufferE : int
     VELOCITIES_FRONT = 4,
     VELOCITIES_BACK = 5,
     VELOCITIES_LOW_RES = 6,
-    DENSITY_DIFFUSION_FRONT = 7,
-    DENSITY_DIFFUSION_BACK = 8,
-    GROUND_DISTORTED = 9,
-    FINAL_COMPOSITION = 10
+    VELOCITY_DIVERGENCE = 7,
+    PRESSURE = 8,
+    DENSITY_DIFFUSION_FRONT = 9,
+    DENSITY_DIFFUSION_BACK = 10,
+    GROUND_DISTORTED = 11,
+    FINAL_COMPOSITION = 12
 };
 
 class FluidGrid
 {
     public:
 
+        static constexpr int VELOCITY_READBACK_SUBSAMPLE = 2;
+        static constexpr int VELOCITY_READBACK_SUBSAMPLE_XY = 3;
+        typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)> VelocityReadbackDataType;
+
         Vector2 getVelocity(const float _x, const float _y) const;
+        const VelocityReadbackDataType& getVelocityReadback() const {return VelReadback_;};
 
         FluidGrid& addDensity(const float x, const float y, const float d);
         FluidGrid& addDensity(const float x0, const float y0,
@@ -54,14 +64,15 @@ class FluidGrid
                                const float x1, const float y1, const float Vx1, const float Vy1,
                                const float w = 1.0f);
         FluidGrid& setDensityDistortion(const float f) {ShaderGroundDistortion_.setDistortion(f); return *this;}
-        FluidGrid& setDensityDissipation(const float f) {ShaderDensityDiffusion_.setDissipation(f); return *this;}
+        FluidGrid& setDensityDissipation(const float f) {/*ShaderAdvect1d_.setDissipation(f); */return *this;}
         FluidGrid& setIterationsDensityDiffusion(const int n)
         {
             IterationsDensityDiffusion_ = n;
-            ShaderDensityDiffusion_.setAlpha(getDensityDiffusionAlpha());
+            ShaderJacobi1d_.setAlpha(getDensityDiffusionAlpha());
             return *this;
         }
-        FluidGrid& setVelocityAdvectionFactor(const float f) {ShaderVelocityAdvection_.setAdvectionFactor(f); return *this;}
+        FluidGrid& setScalarFieldDisplayScale(const float f) {ShaderDensityDisplay_.setScale(f); return *this;}
+        FluidGrid& setVelocityAdvectionFactor(const float f) {ShaderAdvect2d_.setAdvectionFactor(f); return *this;}
         FluidGrid& setVelocityDisplayScale(const float f) {ShaderVelocityDisplay_.setScale(f); return *this;}
         FluidGrid& setVelocityDisplayShowOnlyMagnitude(const bool b) {ShaderVelocityDisplay_.setShowOnlyMagnitude(b); return *this;}
         FluidGrid& setDensityBase(std::vector<float>* const DensityBase);
@@ -74,6 +85,19 @@ class FluidGrid
         
     private:
 
+        static constexpr float FLUID_FREQUENCY = 60.0f;
+        static constexpr float FLUID_TIMESTEP = 1.0f/FLUID_FREQUENCY;
+
+        static constexpr int VELOCITY_READBACK_FRACTION_SIZE = 3;
+        typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >>
+                                   (VELOCITY_READBACK_SUBSAMPLE_XY+
+                                    VELOCITY_READBACK_FRACTION_SIZE))> VelocityReadbackFractionDataType;
+        static constexpr Magnum::Range2Di ViewportFull{{0, 0}, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}};
+        static constexpr Magnum::Range2Di ViewportTop{{0, 0}, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y>>1}};
+        static constexpr Magnum::Range2Di ViewportBottom{{0, FLUID_GRID_SIZE_Y>>1}, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}};
+        const Magnum::Range2Di* ViewportCurrent = &ViewportTop;
+        const Magnum::Range2Di* ViewportNext = &ViewportBottom;
+
         float getDensityDiffusionAlpha()
         {
             float Res = float(FLUID_GRID_SIZE_X) / WORLD_SIZE_DEFAULT_X;
@@ -81,18 +105,17 @@ class FluidGrid
         }
         void readbackVelocities(const int _Fraction, const int _SubDivisionBase2);
 
+        void advectDensities();
+        void advectVelocities();
+        void calculateDivergence();
+        void calculatePressure();
+        void calculatePressureGradient();
+        void diffuseDensities();
+        void diffuseVelocities();
+        void renderDensitySources();
+        void renderVelocitySources();
+
         int IterationsDensityDiffusion_ = 5;
-
-        static constexpr float FLUID_FREQUENCY = 30.0f;
-        static constexpr float FLUID_TIMESTEP = 1.0f/FLUID_FREQUENCY;
-
-        static constexpr int VELOCITY_READBACK_SUBSAMPLE = 2;
-        static constexpr int VELOCITY_READBACK_SUBSAMPLE_XY = 3;
-        static constexpr int VELOCITY_READBACK_FRACTION_SIZE = 3;
-        typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)> VelocityReadbackDataType;
-        typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >>
-                                   (VELOCITY_READBACK_SUBSAMPLE_XY+
-                                    VELOCITY_READBACK_FRACTION_SIZE))> VelocityReadbackFractionDataType;
 
         VelocityReadbackDataType VelReadback_;
 
@@ -102,6 +125,8 @@ class FluidGrid
         GL::BufferImage2D PBOVelocity1_{NoCreate};
         GL::Framebuffer* FBODensitiesBack_{nullptr};
         GL::Framebuffer* FBODensitiesFront_{nullptr};
+        GL::Framebuffer* FBOPressureBack_{nullptr};
+        GL::Framebuffer* FBOPressureFront_{nullptr};
         GL::Framebuffer* FBOVelocitiesBack_{nullptr};
         GL::Framebuffer* FBOVelocitiesFront_{nullptr};
         GL::Framebuffer FBOBoundaries_{NoCreate};
@@ -110,37 +135,38 @@ class FluidGrid
         GL::Framebuffer FBODensities1_{NoCreate};
         GL::Framebuffer FBOFluidFinalComposition_{NoCreate};
         GL::Framebuffer FBOGroundDistorted_{NoCreate};
+        GL::Framebuffer FBOPressure0_{NoCreate};
+        GL::Framebuffer FBOPressure1_{NoCreate};
         GL::Framebuffer FBOVelocitySources_{NoCreate};
         GL::Framebuffer FBOVelocities0_{NoCreate};
         GL::Framebuffer FBOVelocities1_{NoCreate};
         GL::Framebuffer FBOVelocitiesLowRes_{NoCreate};
+        GL::Framebuffer FBOVelocityDivergence_{NoCreate};
 
-        // BoundariesShader ShaderBoundaries_{NoCreate};
-        DensityAdvectionShader ShaderDensityAdvection_{NoCreate};
-        DensityDiffusionShader ShaderDensityDiffusion_{NoCreate};
+        Advect1dShader ShaderAdvect1d_{NoCreate};
+        Advect2dShader ShaderAdvect2d_{NoCreate};
         DensityDisplayShader ShaderDensityDisplay_{NoCreate};
         DensitySourcesShader ShaderDensitySources_{NoCreate};
         GroundDistortionShader ShaderGroundDistortion_{NoCreate};
         FluidFinalCompositionShader ShaderFluidFinalComposition_{NoCreate};
+        JacobiShader ShaderJacobi1d_{NoCreate};
+        JacobiShader ShaderJacobi2d_{NoCreate};
+        Source1dShader ShaderSource1d_{NoCreate};
+        Source2dShader ShaderSource2d_{NoCreate};
         Texture2D32FRender2D32FShader ShaderVelocityLowRes_{NoCreate};
-        VelocityAdvectionShader ShaderVelocityAdvection_{NoCreate};
-        VelocityDiffusionShader ShaderVelocityDiffusion_{NoCreate};
         VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
+        VelocityDivergenceShader ShaderVelocityDivergence_{NoCreate};
+        VelocityGradientSubstractionShader ShaderVelocityGradientSubstraction_{NoCreate};
         VelocitySourcesShader ShaderVelocitySources_{NoCreate};
 
-        GL::Mesh MeshBoundaries_{NoCreate};
-        GL::Mesh MeshDensityAdvection_{NoCreate};
-        GL::Mesh MeshDensityDisplay_{NoCreate};
-        GL::Mesh MeshDensityDiffusion_{NoCreate};
-        GL::Mesh MeshFluidFinalComposition_{NoCreate};
-        GL::Mesh MeshGroundDistorted_{NoCreate};
-        GL::Mesh MeshVelocities_{NoCreate};
-        GL::Mesh MeshVelocityAdvection_{NoCreate};
-        
+        GL::Mesh MeshFluidGridBuffer_{NoCreate};
+
         GL::Texture2D* TexVelocitiesBack_{nullptr};
         GL::Texture2D* TexVelocitiesFront_{nullptr};
         GL::Texture2D* TexDensitiesBack_{nullptr};
         GL::Texture2D* TexDensitiesFront_{nullptr};
+        GL::Texture2D* TexPressureBack_{nullptr};
+        GL::Texture2D* TexPressureFront_{nullptr};
         GL::Texture2D TexBoundaries_{NoCreate};
         GL::Texture2D TexDensityBase_{NoCreate};        // Heightmap
         GL::Texture2D TexDensitySources_{NoCreate};     // Density sources
@@ -148,9 +174,12 @@ class FluidGrid
         GL::Texture2D TexDensities1_{NoCreate};         // Density buffer
         GL::Texture2D TexFluidFinalComposition_{NoCreate};
         GL::Texture2D TexGroundDistorted_{NoCreate};
+        GL::Texture2D TexPressure0_{NoCreate};        
+        GL::Texture2D TexPressure1_{NoCreate};
         GL::Texture2D TexVelocitySources_{NoCreate};    // Velocity sources
         GL::Texture2D TexVelocities0_{NoCreate};        // Velocities back buffer
         GL::Texture2D TexVelocities1_{NoCreate};        // Velocities front buffer
+        GL::Texture2D TexVelocityDivergence_{NoCreate};
         GL::Texture2D TexVelocitiesLowRes_{NoCreate};
 
         std::vector<float>* DensityBase_{nullptr};

@@ -1,5 +1,5 @@
-#ifndef VELOCITY_ADVECTION_SHADER_H
-#define VELOCITY_ADVECTION_SHADER_H
+#ifndef ADVECT1D_SHADER_H
+#define ADVECT1D_SHADER_H
 
 #include <string>
 
@@ -15,7 +15,7 @@
 
 using namespace Magnum;
 
-class VelocityAdvectionShader : public GL::AbstractShaderProgram
+class Advect1dShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -23,9 +23,9 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit VelocityAdvectionShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit Advect1dShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit VelocityAdvectionShader()
+        explicit Advect1dShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -33,7 +33,7 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile(Path_+"texture_base_shader.vert");
-            Frag.addFile(Path_+"velocity_advection_shader.frag");
+            Frag.addFile(Path_+"advect1d_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -41,47 +41,47 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-            setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
-            setUniform(uniformLocation("u_tex_boundary_buffer"), TexUnitBoundaryBuffer);
+            setUniform(uniformLocation("u_tex_buffer"), TexUnitBuffer);
+            setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
             AdvectionFactorUniform_ = uniformLocation("u_advection_factor");
             DeltaTUniform_ = uniformLocation("u_dt");
             GridResolutionUniform_ = uniformLocation("u_grid_res");
             TransformationUniform_ = uniformLocation("u_matrix");
             
-            setUniform(AdvectionFactorUniform_, 0.5);
+            setUniform(AdvectionFactorUniform_, 100.0f);
             setUniform(DeltaTUniform_, 1.0f/60.0f);
             setUniform(GridResolutionUniform_, 2.0f);
         }
 
-        VelocityAdvectionShader& setAdvectionFactor(const Float a)
+        Advect1dShader& setAdvectionFactor(const Float f)
         {
-            setUniform(AdvectionFactorUniform_, a);
+            setUniform(AdvectionFactorUniform_, f);
             return *this;
         }
 
-        VelocityAdvectionShader& setDeltaT(const Float dt)
+        Advect1dShader& setDeltaT(const Float dt)
         {
             setUniform(DeltaTUniform_, dt);
             return *this;
         }
         
-        VelocityAdvectionShader& setGridRes(const Float r)
+        Advect1dShader& setGridRes(const Float r)
         {
             setUniform(GridResolutionUniform_, r);
             return *this;
         }
         
-        VelocityAdvectionShader& setTransformation(const Matrix3& t)
+        Advect1dShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        VelocityAdvectionShader& bindTextures(GL::Texture2D& TexVelocityBuffer,
-                                              GL::Texture2D& TexBoundaryBuffer)
+        Advect1dShader& bindTextures(GL::Texture2D& TexBuffer,
+                                     GL::Texture2D& TexVelocities)
         {
-            TexVelocityBuffer.bind(TexUnitVelocityBuffer);
-            TexBoundaryBuffer.bind(TexUnitBoundaryBuffer);
+            TexBuffer.bind(TexUnitBuffer);
+            TexVelocities.bind(TexUnitVelocities);
             return *this;
         }
 
@@ -89,8 +89,8 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
         
         enum: Int
         {
-            TexUnitVelocityBuffer = 0,
-            TexUnitBoundaryBuffer = 1
+            TexUnitBuffer = 0,
+            TexUnitVelocities = 1
         };
 
         std::string Path_{SHADER_PATH};
@@ -101,4 +101,4 @@ class VelocityAdvectionShader : public GL::AbstractShaderProgram
         Int     TransformationUniform_;
 };
 
-#endif // VELOCITY_ADVECTION_SHADER_H
+#endif // ADVECT1D_SHADER_H

@@ -93,77 +93,91 @@ void FluidGrid::display(const Matrix3 CameraProjection,
         {
             ShaderVelocityDisplay_.bindTexture(TexBoundaries_)
                                   .setTransformation(CameraProjection)
-                                  .draw(MeshDensityDisplay_);
+                                  .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::DENSITY_SOURCES:
         {
             ShaderDensityDisplay_.bindTexture(TexDensitySources_)
                                  .setTransformation(CameraProjection)
-                                 .draw(MeshDensityDisplay_);
+                                 .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::DENSITY_BASE:
         {
             ShaderDensityDisplay_.bindTexture(TexDensityBase_)
                                  .setTransformation(CameraProjection)
-                                 .draw(MeshDensityDisplay_);
+                                 .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::VELOCITY_SOURCES:
         {
             ShaderVelocityDisplay_.bindTexture(TexVelocitySources_)
                                   .setTransformation(CameraProjection)
-                                  .draw(MeshDensityDisplay_);
+                                  .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::VELOCITIES_BACK:
         {
             ShaderVelocityDisplay_.bindTexture(*TexVelocitiesBack_)
                                   .setTransformation(CameraProjection)
-                                  .draw(MeshDensityDisplay_);
+                                  .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::VELOCITIES_FRONT:
         {
             ShaderVelocityDisplay_.bindTexture(*TexVelocitiesFront_)
                                   .setTransformation(CameraProjection)
-                                  .draw(MeshDensityDisplay_);
+                                  .draw(MeshFluidGridBuffer_);
+            break;
+        }
+        case FluidBufferE::VELOCITY_DIVERGENCE:
+        {
+            ShaderDensityDisplay_.bindTexture(TexVelocityDivergence_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshFluidGridBuffer_);
+            break;
+        }
+        case FluidBufferE::PRESSURE:
+        {
+            ShaderDensityDisplay_.bindTexture(*TexPressureBack_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::VELOCITIES_LOW_RES:
         {
             ShaderVelocityDisplay_.bindTexture(TexVelocitiesLowRes_)
                                   .setTransformation(CameraProjection)
-                                  .draw(MeshDensityDisplay_);
+                                  .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::DENSITY_DIFFUSION_FRONT:
         {
             ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_)
                                  .setTransformation(CameraProjection)
-                                 .draw(MeshDensityDisplay_);
+                                 .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::DENSITY_DIFFUSION_BACK:
         {
             ShaderDensityDisplay_.bindTexture(*TexDensitiesBack_)
                                  .setTransformation(CameraProjection)
-                                 .draw(MeshDensityDisplay_);
+                                 .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::GROUND_DISTORTED:
         {
             ShaderDensityDisplay_.bindTexture(TexGroundDistorted_)
                                  .setTransformation(CameraProjection)
-                                 .draw(MeshDensityDisplay_);
+                                 .draw(MeshFluidGridBuffer_);
             break;
         }
         case FluidBufferE::FINAL_COMPOSITION:
         {
             ShaderDensityDisplay_.bindTexture(TexFluidFinalComposition_)
                                  .setTransformation(CameraProjection)
-                                 .draw(MeshDensityDisplay_);
+                                 .draw(MeshFluidGridBuffer_);
             break;
         }
         default: break;
@@ -194,21 +208,27 @@ void FluidGrid::init()
     TexDensities1_ = GL::Texture2D{};
     TexFluidFinalComposition_ = GL::Texture2D{};
     TexGroundDistorted_ = GL::Texture2D{};
+    TexPressure0_ = GL::Texture2D{};
+    TexPressure1_ = GL::Texture2D{};
     TexVelocitySources_ = GL::Texture2D{};
     TexVelocities0_ = GL::Texture2D{};
     TexVelocities1_ = GL::Texture2D{};
     TexVelocitiesLowRes_ = GL::Texture2D{};
-    // ShaderBoundaries_ = BoundariesShader();
-    ShaderDensityAdvection_ = DensityAdvectionShader();
-    ShaderDensityDiffusion_ = DensityDiffusionShader();
+    TexVelocityDivergence_ = GL::Texture2D{};
+    ShaderAdvect1d_ = Advect1dShader();
+    ShaderAdvect2d_ = Advect2dShader();
     ShaderDensityDisplay_ = DensityDisplayShader();
     ShaderDensitySources_ = DensitySourcesShader();
     ShaderGroundDistortion_ = GroundDistortionShader();
+    ShaderJacobi1d_ = JacobiShader(JacobiShaderVersionE::SCALAR);
+    ShaderJacobi2d_ = JacobiShader(JacobiShaderVersionE::VECTOR);
     ShaderFluidFinalComposition_ = FluidFinalCompositionShader();
-    ShaderVelocityAdvection_ = VelocityAdvectionShader();
-    ShaderVelocityDiffusion_ = VelocityDiffusionShader();
+    ShaderSource1d_ = Source1dShader{};
+    ShaderSource2d_ = Source2dShader{};
     ShaderVelocityDisplay_ = VelocityDisplayShader();
+    ShaderVelocityDivergence_ = VelocityDivergenceShader();
     ShaderVelocityLowRes_ = Texture2D32FRender2D32FShader();
+    ShaderVelocityGradientSubstraction_ = VelocityGradientSubstractionShader();
     ShaderVelocitySources_ = VelocitySourcesShader();
     
     assert(DensityBase_ != nullptr);
@@ -223,15 +243,9 @@ void FluidGrid::init()
     TexDensitySources_.setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                       .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
     TexDensities0_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
-                  .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
-                  .setWrapping(GL::SamplerWrapping::ClampToEdge)
-                  .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-                  .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
+                  .setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexDensities1_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
-                  .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
-                  .setWrapping(GL::SamplerWrapping::ClampToEdge)
-                  .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
-                  .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
+                  .setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexFluidFinalComposition_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                              .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
                              .setWrapping(GL::SamplerWrapping::ClampToEdge)
@@ -242,6 +256,10 @@ void FluidGrid::init()
                        .setWrapping(GL::SamplerWrapping::ClampToEdge)
                        .setMaxAnisotropy(GL::Sampler::maxMaxAnisotropy())
                        .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
+    TexPressure0_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
+                 .setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
+    TexPressure1_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
+                 .setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexVelocitySources_.setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                        .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
     TexVelocities0_.setStorage(1, GL::TextureFormat::RG32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
@@ -252,9 +270,13 @@ void FluidGrid::init()
                                     {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
                                      FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE})
                         .setMagnificationFilter(GL::SamplerFilter::Nearest);
+    TexVelocityDivergence_.setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
+                          .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
     
     TexDensitiesBack_   = &TexDensities0_;
     TexDensitiesFront_  = &TexDensities1_;
+    TexPressureBack_    = &TexPressure0_;
+    TexPressureFront_   = &TexPressure1_;
     TexVelocitiesBack_  = &TexVelocities0_;
     TexVelocitiesFront_ = &TexVelocities1_;
 
@@ -266,16 +288,22 @@ void FluidGrid::init()
                       .clearColor(0, Color4(0.0f));
     FBODensities0_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBODensities0_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexDensities0_, 0)
-                  .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+                  .clearColor(0, Color4(0.0f));
     FBODensities1_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBODensities1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexDensities1_, 0)
-                  .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+                  .clearColor(0, Color4(0.0f));
     FBOFluidFinalComposition_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBOFluidFinalComposition_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexFluidFinalComposition_, 0)
                              .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
     FBOGroundDistorted_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBOGroundDistorted_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexGroundDistorted_, 0)
                        .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
+    FBOPressure0_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
+    FBOPressure0_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPressure0_, 0)
+                 .clearColor(0, Color4(0.0f));
+    FBOPressure1_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
+    FBOPressure1_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexPressure1_, 0)
+                 .clearColor(0, Color4(0.0f));
     FBOVelocitySources_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
     FBOVelocitySources_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexVelocitySources_, 0)
                        .clearColor(0, Color4(0.0f, 0.0f, 0.0f));
@@ -289,9 +317,14 @@ void FluidGrid::init()
                                                     FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE}}};
     FBOVelocitiesLowRes_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexVelocitiesLowRes_, 0)
                         .clearColor(0, Color4(0.0f, 0.0f));
+    FBOVelocityDivergence_ = GL::Framebuffer{{{0, 0},{FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}}};
+    FBOVelocityDivergence_.attachTexture(GL::Framebuffer::ColorAttachment{0}, TexVelocityDivergence_, 0)
+                          .clearColor(0, Color4(0.0f, 0.0f));
     
     FBODensitiesBack_ = &FBODensities0_;
     FBODensitiesFront_ = &FBODensities1_;
+    FBOPressureBack_ = &FBOPressure0_;
+    FBOPressureFront_ = &FBOPressure1_;
     FBOVelocitiesBack_ = &FBOVelocities0_;
     FBOVelocitiesFront_ = &FBOVelocities1_;
     
@@ -309,84 +342,50 @@ void FluidGrid::init()
         {{ x, -y}, { 1.0f,  0.0f}},
         {{ x,  y}, { 1.0f,  1.0f}}
     };
+    typedef GL::Attribute<0, Vector2> Position;
+    typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
     GL::Buffer Buffer;
     Buffer.setData(Data, GL::BufferUsage::StaticDraw);
 
-    MeshDensityAdvection_ = GL::Mesh{};
-    MeshDensityAdvection_.setCount(6)
-                         .setPrimitive(GL::MeshPrimitive::Triangles)
-                         .addVertexBuffer(Buffer, 0,
-                                          DensityAdvectionShader::Position{},
-                                          DensityAdvectionShader::TextureCoordinates{});
-    
-    MeshDensityDiffusion_ = GL::Mesh{};
-    MeshDensityDiffusion_.setCount(6)
-                         .setPrimitive(GL::MeshPrimitive::Triangles)
-                         .addVertexBuffer(Buffer, 0,
-                                          DensityDiffusionShader::Position{},
-                                          DensityDiffusionShader::TextureCoordinates{});
-
-    MeshFluidFinalComposition_= GL::Mesh{};
-    MeshFluidFinalComposition_.setCount(6)
-                              .setPrimitive(GL::MeshPrimitive::Triangles)
-                              .addVertexBuffer(Buffer, 0,
-                                          FluidFinalCompositionShader::Position{},
-                                          FluidFinalCompositionShader::TextureCoordinates{});
-
-    MeshGroundDistorted_= GL::Mesh{};
-    MeshGroundDistorted_.setCount(6)
+    MeshFluidGridBuffer_ = GL::Mesh{};
+    MeshFluidGridBuffer_.setCount(6)
                         .setPrimitive(GL::MeshPrimitive::Triangles)
                         .addVertexBuffer(Buffer, 0,
-                                    GroundDistortionShader::Position{},
-                                    GroundDistortionShader::TextureCoordinates{});
-
-    MeshVelocityAdvection_ = GL::Mesh{};
-    MeshVelocityAdvection_.setCount(6)
-                          .setPrimitive(GL::MeshPrimitive::Triangles)
-                          .addVertexBuffer(Buffer, 0,
-                                           VelocityAdvectionShader::Position{},
-                                           VelocityAdvectionShader::TextureCoordinates{});
-         
-    MeshVelocities_ = GL::Mesh{};
-    MeshVelocities_.setCount(6)
-                   .setPrimitive(GL::MeshPrimitive::Triangles)
-                   .addVertexBuffer(Buffer, 0,
-                                    VelocityDiffusionShader::Position{},
-                                    VelocityDiffusionShader::TextureCoordinates{});
-            
-    MeshDensityDisplay_ = GL::Mesh{};
-    MeshDensityDisplay_.setCount(6)
-                       .setPrimitive(GL::MeshPrimitive::Triangles)
-                       .addVertexBuffer(std::move(Buffer), 0,
-                                        DensityDisplayShader::Position{},
-                                        DensityDisplayShader::TextureCoordinates{});
-
-    ShaderDensityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
-                           .setAdvectionFactor(0.8f)
-                           .setDeltaT(FLUID_TIMESTEP)
-                           .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
-                           .bindTextures(*TexDensitiesBack_, *TexVelocitiesBack_);
-    ShaderDensityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
-                           .setAlpha(this->getDensityDiffusionAlpha())
-                           .setDissipation(0.2f)
-                           .bindTextures(TexDensitySources_, *TexDensitiesBack_);
+                                          Position{},
+                                          TextureCoordinates{});
+    
+    ShaderAdvect1d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                   .setAdvectionFactor(0.8f)
+                   .setDeltaT(FLUID_TIMESTEP)
+                   .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
+                   .bindTextures(*TexDensitiesBack_, *TexVelocitiesBack_);
+    ShaderAdvect2d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                   .setAdvectionFactor(0.8f)
+                   .setDeltaT(FLUID_TIMESTEP)
+                   .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
+                   .bindTexture(*TexVelocitiesBack_);
     ShaderGroundDistortion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                            .setDistortion(100.0f)
                            .setDeltaT(FLUID_TIMESTEP)
                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                            .bindTextures(TexDensityBase_, *TexVelocitiesBack_);
-    ShaderVelocityAdvection_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
-                            .setAdvectionFactor(0.5)
-                            .setDeltaT(FLUID_TIMESTEP)
-                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
-                            .bindTextures(*TexVelocitiesBack_, TexBoundaries_);
-    ShaderVelocityDiffusion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
-                            .setDeltaT(FLUID_TIMESTEP)
-                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
-                            .bindTextures(TexVelocitySources_, *TexVelocitiesBack_);
+    ShaderJacobi1d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                   .setAlpha(this->getDensityDiffusionAlpha())
+                   .bindTextures(*TexDensitiesBack_, *TexDensitiesBack_);
+    ShaderJacobi2d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                   .setAlpha(this->getDensityDiffusionAlpha())
+                   .bindTextures(*TexDensitiesBack_, *TexDensitiesBack_);
+    ShaderSource1d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                   .bindTextures(*TexDensitiesBack_, TexDensitySources_);
+    ShaderSource2d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                   .bindTextures(*TexVelocitiesBack_, TexVelocitySources_);
+    ShaderVelocityDivergence_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                             .bindTexture(*TexVelocitiesBack_);
     ShaderVelocityLowRes_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                          .bindTexture(TexVelocities0_);
+    ShaderVelocityGradientSubstraction_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
+                                       .bindTextures(*TexVelocitiesBack_, TexVelocityDivergence_);
     ShaderDensitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}));
     ShaderVelocitySources_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}));
     ShaderDensityDisplay_.bindTexture(*TexDensitiesFront_);
@@ -409,112 +408,40 @@ void FluidGrid::process(const double SimTime)
     // On frame calculates the upper half, the next frame the lower half
     // of the fluid.
     //
-    // Use some local statics for toggling between upper and lower half
-    // of the viewports
-    static Magnum::Range2Di ViewportTop{{0, 0}, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y>>1}};
-    static Magnum::Range2Di ViewportBottom{{0, FLUID_GRID_SIZE_Y>>1}, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y}};
-    static Magnum::Range2Di* ViewportCurrent = &ViewportTop;
-    static Magnum::Range2Di* ViewportNext = &ViewportBottom;
-
     // Swap viewport on every call of this function
-    std::swap(ViewportCurrent, ViewportNext);
+    // std::swap(ViewportCurrent, ViewportNext);
 
-    //------------------------------------------------------------------
-    // Create mesh (points) representing density sources
-    //------------------------------------------------------------------
-    GL::Buffer DensitySourcesBufferPoints;
-    DensitySourcesBufferPoints.setData(DensitySourcesPoints_, GL::BufferUsage::StreamDraw);
-    
-    GL::Mesh MeshDensitySourcesPoints;
-    MeshDensitySourcesPoints.setCount(DensitySourcesPoints_.size()/3)
-                            .setPrimitive(GL::MeshPrimitive::Points)
-                            .addVertexBuffer(std::move(DensitySourcesBufferPoints), 0,
-                                             DensitySourcesShader::Position{},
-                                             DensitySourcesShader::Amount{});
+    // FBOVelocitiesFront_->setViewport(ViewportFull);
+    // FBOVelocitiesBack_->setViewport(ViewportFull);
 
-    GL::Buffer DensitySourcesBufferLines;
-    DensitySourcesBufferLines.setData(DensitySourcesLines_, GL::BufferUsage::StreamDraw);
 
-    GL::Mesh MeshDensitySourcesLines;
-    MeshDensitySourcesLines.setCount(DensitySourcesLines_.size()/3)
-                           .setPrimitive(GL::MeshPrimitive::Lines)
-                           .addVertexBuffer(std::move(DensitySourcesBufferLines), 0,
-                                            DensitySourcesShader::Position{},
-                                            DensitySourcesShader::Amount{});
+    // FBOVelocitiesFront_->setViewport(*ViewportCurrent);
+    // FBOVelocitiesBack_->setViewport(*ViewportNext);
 
-    DensitySourcesPoints_.clear();
-    DensitySourcesLines_.clear();
+    this->renderVelocitySources();
+    this->diffuseVelocities();
+    this->advectVelocities();
 
-    //------------------------------------------------------------------
-    // Create mesh (points/lines) representing velocity sources
-    //------------------------------------------------------------------
-    GL::Buffer VelocitySourcesBufferPoints;
-    VelocitySourcesBufferPoints.setData(VelocitySourcesPoints_, GL::BufferUsage::StreamDraw);
-    
-    GL::Mesh MeshVelocitySourcesPoints;
-    MeshVelocitySourcesPoints.setCount(VelocitySourcesPoints_.size()/5)
-                             .setPrimitive(GL::MeshPrimitive::Points)
-                             .addVertexBuffer(std::move(VelocitySourcesBufferPoints), 0,
-                                              VelocitySourcesShader::Position{},
-                                              VelocitySourcesShader::Velocity{},
-                                              VelocitySourcesShader::Weight{});
-                             
-    GL::Buffer VelocitySourcesBufferLines;
-    VelocitySourcesBufferLines.setData(VelocitySourcesLines_, GL::BufferUsage::StreamDraw);
-    
-    GL::Mesh MeshVelocitySourcesLines;
-    MeshVelocitySourcesLines.setCount(VelocitySourcesLines_.size()/5)
-                            .setPrimitive(GL::MeshPrimitive::Lines)
-                            .addVertexBuffer(std::move(VelocitySourcesBufferLines), 0,
-                                             VelocitySourcesShader::Position{},
-                                             VelocitySourcesShader::Velocity{},
-                                             VelocitySourcesShader::Weight{});
+    this->calculateDivergence();
+    this->calculatePressure();
+    this->calculatePressureGradient();
 
-    VelocitySourcesPoints_.clear();
-    VelocitySourcesLines_.clear();
+    // FBODensitiesFront_->setViewport(ViewportFull);
+    // FBODensitiesBack_->setViewport(ViewportFull);
 
-    // FBOBoundaries_.clearColor(0, Color4(0.0f))
-    //               .bind();
-    
-    //------------------------------------------------------------------
-    // Draw densities
-    //------------------------------------------------------------------
-    FBODensitySources_.clearColor(0, Color4(0.0f, 0.0f))
-                      .bind();
-    ShaderDensitySources_.draw(MeshDensitySourcesPoints);
-    ShaderDensitySources_.draw(MeshDensitySourcesLines);
-    
-    //------------------------------------------------------------------
-    // Draw velocities
-    //------------------------------------------------------------------
-    FBOVelocitySources_.clearColor(0, Color4(0.0f, 0.0f, 0.0f))
-                       .bind();
-    ShaderVelocitySources_.draw(MeshVelocitySourcesPoints);
-    ShaderVelocitySources_.draw(MeshVelocitySourcesLines);
+    this->renderDensitySources();
+    this->diffuseDensities();
+    this->advectDensities();
 
-    //------------------------------------------------------------------
-    // Diffuse velocities
-    //------------------------------------------------------------------
-    std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
-    std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
+    // FBODensitiesFront_->setViewport(*ViewportCurrent);
+    // FBODensitiesBack_->setViewport(*ViewportNext);
 
-    FBOVelocitiesFront_->setViewport(*ViewportCurrent)
-                        .bind(); // FBOVelocities0_
-    ShaderVelocityDiffusion_.bindTextures(TexVelocitySources_, *TexVelocitiesBack_); // TexVelocities1_
-    
-    ShaderVelocityDiffusion_.draw(MeshVelocities_);
 
-    //------------------------------------------------------------------
-    // Advect velocities
-    //------------------------------------------------------------------
-    std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
-    std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
+    // for (int i=0; i<10; ++i)
+    // {
 
-    FBOVelocitiesFront_->setViewport(*ViewportCurrent)
-                        .bind(); // FBOVelocities1_
-    ShaderVelocityAdvection_.bindTextures(*TexVelocitiesBack_, TexBoundaries_); // TexVelocities0_
-
-    ShaderVelocityAdvection_.draw(MeshVelocityAdvection_);
+        // std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
+        // std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
 
     static int Fraction = 0;
     this->readbackVelocities(Fraction++, VELOCITY_READBACK_FRACTION_SIZE);
@@ -526,61 +453,32 @@ void FluidGrid::process(const double SimTime)
                                           FLUID_GRID_SIZE_Y >> VELOCITY_READBACK_SUBSAMPLE}, VelReadback_);
             TexVelocitiesLowRes_.setSubImage(0, {}, ImageVelReadback);
         )
-
     //------------------------------------------------------------------
     // Distort ground
     //------------------------------------------------------------------
-    FBOGroundDistorted_.setViewport(*ViewportCurrent)
-                       .bind();
-    ShaderGroundDistortion_.bindTextures(TexDensityBase_, *TexVelocitiesFront_)
-                           .setTime(SimTime);
+    // FBOGroundDistorted_.setViewport(*ViewportCurrent)
+    //                    .bind();
+    // ShaderGroundDistortion_.bindTextures(TexDensityBase_, *TexVelocitiesFront_)
+    //                        .setTime(SimTime);
 
-    ShaderGroundDistortion_.draw(MeshGroundDistorted_);
+    // ShaderGroundDistortion_.draw(MeshFluidGridBuffer_);
 
-    //------------------------------------------------------------------
-    // Diffuse densities
-    //------------------------------------------------------------------
-    FBODensitiesFront_->setViewport(*ViewportCurrent);
-    FBODensitiesBack_->setViewport(*ViewportNext);
-    for (int i=0; i<IterationsDensityDiffusion_; ++i)
-    {
-        std::swap(FBODensitiesFront_, FBODensitiesBack_);
-        std::swap(TexDensitiesFront_, TexDensitiesBack_);
-        FBODensitiesFront_->bind();
+    // FBODensitiesFront_->setViewport(*ViewportCurrent);
+    // FBODensitiesBack_->setViewport(*ViewportNext);
 
-        ShaderDensityDiffusion_.bindTextures(TexDensitySources_, *TexDensitiesBack_);
 
-        ShaderDensityDiffusion_.draw(MeshDensityDiffusion_);
-    }
-    // One more swap if an even number of iterations is used
-    if (IterationsDensityDiffusion_ % 2 == 0)
-    {
-        std::swap(FBODensitiesFront_, FBODensitiesBack_);
-        std::swap(TexDensitiesFront_, TexDensitiesBack_);
-    }
-    
-    //------------------------------------------------------------------
-    // Advect densities
-    //------------------------------------------------------------------
-    std::swap(FBODensitiesFront_, FBODensitiesBack_);
-    std::swap(TexDensitiesFront_, TexDensitiesBack_);
-    FBODensitiesFront_->bind();
-    
-    ShaderDensityAdvection_.bindTextures(*TexDensitiesBack_, *TexVelocitiesFront_);
-    
-    ShaderDensityAdvection_.draw(MeshDensityAdvection_);
 
     //-----------------------------------------------------------------------
     // Final composition of density base, advected densities, and velocities
     //-----------------------------------------------------------------------
-    FBOFluidFinalComposition_.setViewport(*ViewportCurrent).bind();
+    // FBOFluidFinalComposition_.setViewport(*ViewportCurrent).bind();
 
-    ShaderFluidFinalComposition_.bindTextures(TexDensityBase_,
-                                              *TexDensitiesFront_,
-                                              TexGroundDistorted_,
-                                              *TexVelocitiesFront_);
+    // ShaderFluidFinalComposition_.bindTextures(TexDensityBase_,
+    //                                           *TexDensitiesFront_,
+    //                                           TexGroundDistorted_,
+    //                                           *TexVelocitiesFront_);
 
-    ShaderFluidFinalComposition_.draw(MeshFluidFinalComposition_);
+    // ShaderFluidFinalComposition_.draw(MeshFluidGridBuffer_);
 }
 
 void FluidGrid::readbackVelocities(const int _Fraction, const int _SubDivisionBase2)
@@ -610,7 +508,7 @@ void FluidGrid::readbackVelocities(const int _Fraction, const int _SubDivisionBa
     // -----------------------------------------------------------------
     FBOVelocitiesLowRes_.bind();
     ShaderVelocityLowRes_.bindTexture(*TexVelocitiesFront_)
-        .draw(MeshVelocities_);
+        .draw(MeshFluidGridBuffer_);
 
     const int FractionSize = FLUID_GRID_SIZE_Y >> (VELOCITY_READBACK_SUBSAMPLE+_SubDivisionBase2);
     Math::Range<2, int> Range = {{0, _Fraction*FractionSize},
@@ -632,4 +530,202 @@ void FluidGrid::readbackVelocities(const int _Fraction, const int _SubDivisionBa
     CORRADE_INTERNAL_ASSERT_OUTPUT(PBOVelocityFront_->buffer().unmap());
 
     std::swap(PBOVelocityBack_, PBOVelocityFront_);
+}
+
+void FluidGrid::advectDensities()
+{
+    std::swap(FBODensitiesFront_, FBODensitiesBack_);
+    std::swap(TexDensitiesFront_, TexDensitiesBack_);
+
+    FBODensitiesFront_->bind();
+    ShaderAdvect1d_.bindTextures(*TexDensitiesBack_, *TexVelocitiesFront_)
+                   .draw(MeshFluidGridBuffer_);
+}
+
+void FluidGrid::advectVelocities()
+{
+    std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
+    std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
+
+    FBOVelocitiesFront_->bind();
+    ShaderAdvect2d_.bindTexture(*TexVelocitiesBack_ )
+                   .draw(MeshFluidGridBuffer_);
+}
+
+void FluidGrid::calculatePressure()
+{
+    FBOPressureFront_->clearColor(0, Color4(0.0f));
+    FBOPressureBack_->clearColor(0, Color4(0.0f));
+    ShaderJacobi1d_.setAlpha(-0.25f)
+                   .setRBeta(0.25f);
+    for (int i=0; i<10; ++i)
+    {    
+        std::swap(FBOPressureFront_, FBOPressureBack_);
+        std::swap(TexPressureFront_, TexPressureBack_);
+
+        FBOPressureFront_->bind();
+        ShaderJacobi1d_.bindTextures(*TexPressureBack_, TexVelocityDivergence_)
+                       .draw(MeshFluidGridBuffer_);
+    }
+    // One more swap if an even number of iterations is used
+    // if (20 % 2 == 0)
+    // {
+    //     std::swap(FBOPressureFront_, FBOPressureBack_);
+    //     std::swap(TexPressureFront_, TexPressureBack_);
+    // }
+}
+
+void FluidGrid::calculatePressureGradient()
+{
+    std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
+    std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
+
+    FBOVelocitiesFront_->bind();
+    ShaderVelocityGradientSubstraction_.bindTextures(*TexVelocitiesBack_, *TexPressureFront_);
+    ShaderVelocityGradientSubstraction_.draw(MeshFluidGridBuffer_);
+}
+
+void FluidGrid::calculateDivergence()
+{
+    FBOVelocityDivergence_.bind();
+    ShaderVelocityDivergence_.bindTexture(*TexVelocitiesBack_);
+    ShaderVelocityDivergence_.draw(MeshFluidGridBuffer_);
+}
+
+void FluidGrid::diffuseDensities()
+{
+    ShaderJacobi1d_.setAlpha(this->getDensityDiffusionAlpha())
+                   .setRBeta(1.0f/(4.0f+this->getDensityDiffusionAlpha()));
+    for (int i=0; i<IterationsDensityDiffusion_; ++i)
+    {
+        std::swap(FBODensitiesFront_, FBODensitiesBack_);
+        std::swap(TexDensitiesFront_, TexDensitiesBack_);
+
+        FBODensitiesFront_->bind();
+        ShaderJacobi1d_.bindTextures(*TexDensitiesBack_, *TexDensitiesBack_)
+                       .draw(MeshFluidGridBuffer_);
+    }
+    // One more swap if an even number of iterations is used
+    // if (IterationsDensityDiffusion_ % 2 == 0)
+    // {
+    //     std::swap(FBODensitiesFront_, FBODensitiesBack_);
+    //     std::swap(TexDensitiesFront_, TexDensitiesBack_);
+    // }
+}
+
+void FluidGrid::diffuseVelocities()
+{
+    ShaderJacobi2d_.setAlpha(this->getDensityDiffusionAlpha())
+                   .setRBeta(1.0f/(4.0f+this->getDensityDiffusionAlpha()));
+    for (int i=0; i<IterationsDensityDiffusion_; ++i)
+    {
+        std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
+        std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
+
+        FBOVelocitiesFront_->bind();
+        ShaderJacobi2d_.bindTextures(*TexVelocitiesBack_, *TexVelocitiesBack_)
+                       .draw(MeshFluidGridBuffer_);
+    }
+    // One more swap if an even number of iterations is used
+    // if (IterationsDensityDiffusion_ % 2 == 0)
+    // {
+    //     std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
+    //     std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
+    // }
+}
+
+void FluidGrid::renderDensitySources()
+{
+    //------------------------------------------------------------------
+    // Create mesh representing density sources
+    //------------------------------------------------------------------
+    GL::Buffer DensitySourcesBufferPoints;
+    DensitySourcesBufferPoints.setData(DensitySourcesPoints_, GL::BufferUsage::StreamDraw);
+
+    GL::Mesh MeshDensitySourcesPoints;
+    MeshDensitySourcesPoints.setCount(DensitySourcesPoints_.size()/3)
+                            .setPrimitive(GL::MeshPrimitive::Points)
+                            .addVertexBuffer(std::move(DensitySourcesBufferPoints), 0,
+                                             DensitySourcesShader::Position{},
+                                             DensitySourcesShader::Amount{});
+
+    GL::Buffer DensitySourcesBufferLines;
+    DensitySourcesBufferLines.setData(DensitySourcesLines_, GL::BufferUsage::StreamDraw);
+
+    GL::Mesh MeshDensitySourcesLines;
+    MeshDensitySourcesLines.setCount(DensitySourcesLines_.size()/3)
+                           .setPrimitive(GL::MeshPrimitive::Lines)
+                           .addVertexBuffer(std::move(DensitySourcesBufferLines), 0,
+                                            DensitySourcesShader::Position{},
+                                            DensitySourcesShader::Amount{});
+
+    DensitySourcesPoints_.clear();
+    DensitySourcesLines_.clear();
+
+    //------------------------------------------------------------------
+    // Render sources to texture
+    //------------------------------------------------------------------
+    FBODensitySources_.clearColor(0, Color4(0.0f))
+                      .bind();
+    ShaderDensitySources_.draw(MeshDensitySourcesPoints);
+    ShaderDensitySources_.draw(MeshDensitySourcesLines);
+
+    //------------------------------------------------------------------
+    // Add sources to density field
+    //------------------------------------------------------------------
+    std::swap(FBODensitiesFront_, FBODensitiesBack_);
+    std::swap(TexDensitiesFront_, TexDensitiesBack_);
+
+    FBODensitiesFront_->bind();
+    ShaderSource1d_.bindTextures(*TexDensitiesBack_, TexDensitySources_)
+                   .draw(MeshFluidGridBuffer_);
+}
+
+void FluidGrid::renderVelocitySources()
+{
+    //------------------------------------------------------------------
+    // Create mesh representing velocity sources
+    //------------------------------------------------------------------
+    GL::Buffer VelocitySourcesBufferPoints;
+    VelocitySourcesBufferPoints.setData(VelocitySourcesPoints_, GL::BufferUsage::StreamDraw);
+
+    GL::Mesh MeshVelocitySourcesPoints;
+    MeshVelocitySourcesPoints.setCount(VelocitySourcesPoints_.size()/5)
+                             .setPrimitive(GL::MeshPrimitive::Points)
+                             .addVertexBuffer(std::move(VelocitySourcesBufferPoints), 0,
+                                              VelocitySourcesShader::Position{},
+                                              VelocitySourcesShader::Velocity{},
+                                              VelocitySourcesShader::Weight{});
+
+    GL::Buffer VelocitySourcesBufferLines;
+    VelocitySourcesBufferLines.setData(VelocitySourcesLines_, GL::BufferUsage::StreamDraw);
+
+    GL::Mesh MeshVelocitySourcesLines;
+    MeshVelocitySourcesLines.setCount(VelocitySourcesLines_.size()/5)
+                            .setPrimitive(GL::MeshPrimitive::Lines)
+                            .addVertexBuffer(std::move(VelocitySourcesBufferLines), 0,
+                                             VelocitySourcesShader::Position{},
+                                             VelocitySourcesShader::Velocity{},
+                                             VelocitySourcesShader::Weight{});
+
+    VelocitySourcesPoints_.clear();
+    VelocitySourcesLines_.clear();
+
+    //------------------------------------------------------------------
+    // Render sources to texture
+    //------------------------------------------------------------------
+    FBOVelocitySources_.clearColor(0, Color4(0.0f, 0.0f, 0.0f))
+                       .bind();
+    ShaderVelocitySources_.draw(MeshVelocitySourcesPoints);
+    ShaderVelocitySources_.draw(MeshVelocitySourcesLines);
+
+    //------------------------------------------------------------------
+    // Add sources to density field
+    //------------------------------------------------------------------
+    std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
+    std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
+
+    FBOVelocitiesFront_->bind();
+    ShaderSource2d_.bindTextures(*TexVelocitiesBack_, TexVelocitySources_)
+                   .draw(MeshFluidGridBuffer_);
 }

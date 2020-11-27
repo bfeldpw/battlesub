@@ -1,5 +1,5 @@
-#ifndef DENSITY_DIFFUSION_SHADER_H
-#define DENSITY_DIFFUSION_SHADER_H
+#ifndef JACOBI_SHADER_H
+#define JACOBI_SHADER_H
 
 #include <string>
 
@@ -15,7 +15,13 @@
 
 using namespace Magnum;
 
-class DensityDiffusionShader : public GL::AbstractShaderProgram
+enum class JacobiShaderVersionE : int
+{
+    SCALAR = 0,
+    VECTOR = 1
+};
+
+class JacobiShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -23,9 +29,9 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit DensityDiffusionShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit JacobiShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit DensityDiffusionShader()
+        explicit JacobiShader(const JacobiShaderVersionE _ShaderVersion)
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -33,7 +39,10 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile(Path_+"texture_base_shader.vert");
-            Frag.addFile(Path_+"density_diffusion_shader.frag");
+            if (_ShaderVersion == JacobiShaderVersionE::SCALAR)
+                Frag.addFile(Path_+"jacobi1d_shader.frag");
+            else
+                Frag.addFile(Path_+"jacobi2d_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -41,64 +50,63 @@ class DensityDiffusionShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-            setUniform(uniformLocation("u_tex_density_sources"), TexUnitDensitySources);
-            setUniform(uniformLocation("u_tex_density_buffer"), TexUnitDensityBuffer);
+            setUniform(uniformLocation("u_tex_x"), TexUnitX);
+            setUniform(uniformLocation("u_tex_b"), TexUnitB);
             AlphaUniform_ = uniformLocation("u_alpha");
-            DissipationUniform_ = uniformLocation("u_dissipation");
+            RBetaUniform_ = uniformLocation("u_r_beta");
             DiffusionRateUniform_ = uniformLocation("u_diffusion_rate");
             TransformationUniform_ = uniformLocation("u_matrix");
             
             setUniform(AlphaUniform_, 1.0f);
-            setUniform(DiffusionRateUniform_, 20.0f);
-            setUniform(DissipationUniform_, 1.0f);
+            setUniform(RBetaUniform_, 1.0f/4.0f);
+            setUniform(DiffusionRateUniform_, 1.0f);
         }
 
-        DensityDiffusionShader& setAlpha(const Float a)
+        JacobiShader& setAlpha(const Float a)
         {
             setUniform(AlphaUniform_, a);
             return *this;
         }
 
-        DensityDiffusionShader& setDiffusionRate(const Float d)
+        JacobiShader& setRBeta(const Float b)
+        {
+            setUniform(RBetaUniform_, b);
+            return *this;
+        }
+
+        JacobiShader& setDiffusionRate(const Float d)
         {
             setUniform(DiffusionRateUniform_, d);
             return *this;
         }
 
-        DensityDiffusionShader& setDissipation(const Float d)
-        {
-            setUniform(DissipationUniform_, d);
-            return *this;
-        }
-        
-        DensityDiffusionShader& setTransformation(const Matrix3& t)
+        JacobiShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        DensityDiffusionShader& bindTextures(GL::Texture2D& TexDensitySources,
-                                             GL::Texture2D& TexDensityBuffer)
+        JacobiShader& bindTextures(GL::Texture2D& TexX, GL::Texture2D& TexB)
         {
-            TexDensitySources.bind(TexUnitDensitySources);
-            TexDensityBuffer.bind(TexUnitDensityBuffer);
+            TexX.bind(TexUnitX);
+            TexB.bind(TexUnitB);
             return *this;
         }
 
     private:
-        
+
         enum: Int
         {
-            TexUnitDensitySources = 0,
-            TexUnitDensityBuffer = 1
+            TexUnitX = 0,
+            TexUnitB = 1
         };
 
         std::string Path_{SHADER_PATH};
 
         Float   AlphaUniform_;
+        Float   RBetaUniform_;
         Float   DiffusionRateUniform_;
-        Float   DissipationUniform_;
         Int     TransformationUniform_;
 };
 
-#endif // DENSITY_DIFFUSION_SHADER_H
+#endif // JACOBI_SHADER_H

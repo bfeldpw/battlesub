@@ -1,5 +1,5 @@
-#ifndef DENSITY_DISPLAY_SHADER_H
-#define DENSITY_DISPLAY_SHADER_H
+#ifndef SOURCE1D_SHADER_H
+#define SOURCE1D_SHADER_H
 
 #include <string>
 
@@ -15,7 +15,7 @@
 
 using namespace Magnum;
 
-class DensityDisplayShader : public GL::AbstractShaderProgram
+class Source1dShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -23,9 +23,9 @@ class DensityDisplayShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit DensityDisplayShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit Source1dShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit DensityDisplayShader()
+        explicit Source1dShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -33,7 +33,7 @@ class DensityDisplayShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile(Path_+"texture_base_shader.vert");
-            Frag.addFile(Path_+"density_display_shader.frag");
+            Frag.addFile(Path_+"source1d_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -41,38 +41,36 @@ class DensityDisplayShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-            setUniform(uniformLocation("u_texture"), TextureUnit);
-            ScaleUniform_ = uniformLocation("u_scale");
-            TransformationMatrixUniform_ = uniformLocation("u_matrix");
+            setUniform(uniformLocation("u_tex_buffer"), TexUnitBuffer);
+            setUniform(uniformLocation("u_tex_sources"), TexUnitSources);
+            TransformationUniform_ = uniformLocation("u_matrix");
         }
 
-        DensityDisplayShader& setScale(const Float s)
+        Source1dShader& setTransformation(const Matrix3& t)
         {
-            setUniform(ScaleUniform_, s);
+            setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        DensityDisplayShader& setTransformation(const Matrix3& t)
+        Source1dShader& bindTextures(GL::Texture2D& TexBuffer,
+                                     GL::Texture2D& TexSources)
         {
-            setUniform(TransformationMatrixUniform_, t);
-            return *this;
-        }
-
-        DensityDisplayShader& bindTexture(GL::Texture2D& Texture)
-        {
-            Texture.bind(TextureUnit);
+            TexBuffer.bind(TexUnitBuffer);
+            TexSources.bind(TexUnitSources);
             return *this;
         }
 
     private:
         
-        enum: Int { TextureUnit = 0 };
+        enum: Int
+        {
+            TexUnitBuffer = 0,
+            TexUnitSources = 1
+        };
 
         std::string Path_{SHADER_PATH};
 
-        Int TransformationMatrixUniform_;
-        Float ScaleUniform_ = 1.0f;
-
+        Int     TransformationUniform_;
 };
 
-#endif // DENSITY_DISPLAY_SHADER_H
+#endif // SOURCE1D_SHADER_H

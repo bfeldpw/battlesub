@@ -14,7 +14,7 @@ DebugRenderSystem::DebugRenderSystem(entt::registry& _Reg, FluidGrid& _FluidGrid
                                      MeshLine_(MeshTools::compile(Primitives::line2D()))
 {}
 
-void DebugRenderSystem::renderVelocityProbes(const Matrix3& ProjectionMatrix)
+void DebugRenderSystem::renderVelocityProbes(const Matrix3& _ProjectionMatrix)
 {
     Reg_.view<FluidProbeComponent, PhysicsComponent>().each(
         [&](const auto& _ProbeComp, const auto& _PhysComp)
@@ -32,10 +32,10 @@ void DebugRenderSystem::renderVelocityProbes(const Matrix3& ProjectionMatrix)
                             Matrix3::scaling({0.1f+Vel.Length()*0.2f, 0.1f+Vel.Length()*0.2f});
         MatRotation = Matrix3::rotation(Magnum::Rad(std::atan2(VelF.y(), VelF.x())));
 
-        Shader_.setTransformationProjectionMatrix(ProjectionMatrix*MatTransformation)
+        Shader_.setTransformationProjectionMatrix(_ProjectionMatrix*MatTransformation)
                .setColor({1.0f, 0.0f, 0.0f, 0.2f})
                .draw(MeshCircle_);
-        Shader_.setTransformationProjectionMatrix(ProjectionMatrix*MatTransformation*MatRotation)
+        Shader_.setTransformationProjectionMatrix(_ProjectionMatrix*MatTransformation*MatRotation)
                .setColor({1.0f, 0.0f, 0.0f, 0.5f})
                .draw(MeshLine_);
     });
@@ -58,12 +58,48 @@ void DebugRenderSystem::renderVelocityProbes(const Matrix3& ProjectionMatrix)
                                 Matrix3::scaling({0.1f+Vel.Length()*0.2f, 0.1f+Vel.Length()*0.2f});
             MatRotation = Matrix3::rotation(Magnum::Rad(std::atan2(VelF.y(), VelF.x())));
 
-            Shader_.setTransformationProjectionMatrix(ProjectionMatrix*MatTransformation)
+            Shader_.setTransformationProjectionMatrix(_ProjectionMatrix*MatTransformation)
                    .setColor({1.0f, 0.0f, 0.0f, 0.2f})
                    .draw(MeshCircle_);
-            Shader_.setTransformationProjectionMatrix(ProjectionMatrix*MatTransformation*MatRotation)
+            Shader_.setTransformationProjectionMatrix(_ProjectionMatrix*MatTransformation*MatRotation)
                    .setColor({1.0f, 0.0f, 0.0f, 0.5f})
                    .draw(MeshLine_);
         }
     });
+}
+
+void DebugRenderSystem::renderVelocityVectors(const Matrix3& _ProjectionMatrix)
+{
+    GL::Mesh Mesh;
+    GL::Buffer Buffer;
+
+    constexpr auto GRID_X = FLUID_GRID_SIZE_X >> FluidGrid::VELOCITY_READBACK_SUBSAMPLE;
+    constexpr auto GRID_Y = FLUID_GRID_SIZE_Y >> FluidGrid::VELOCITY_READBACK_SUBSAMPLE;
+    constexpr auto CELL_X = WORLD_SIZE_DEFAULT_X/GRID_X;
+    constexpr auto CELL_Y = WORLD_SIZE_DEFAULT_Y/GRID_Y;
+
+    for (auto y=0; y<GRID_Y; ++y)
+    {
+        for (auto x=0; x<GRID_X; ++x)
+        {
+            int IndFlat = GRID_X*y+x;
+            float PosX0 = float(x)*CELL_X-0.5f*WORLD_SIZE_DEFAULT_X+CELL_X*0.5f;
+            float PosY0 = float(y)*CELL_Y-0.5f*WORLD_SIZE_DEFAULT_Y+CELL_Y*0.5f;
+            float PosX1 = PosX0 + FluidGrid_.getVelocityReadback()[IndFlat*2]*0.3f;
+            float PosY1 = PosY0 + FluidGrid_.getVelocityReadback()[IndFlat*2+1]*0.3f;
+            VelocityVectors_[IndFlat*4] = PosX0;
+            VelocityVectors_[IndFlat*4+1] = PosY0;
+            VelocityVectors_[IndFlat*4+2] = PosX1;
+            VelocityVectors_[IndFlat*4+3] = PosY1;
+        }
+    }
+
+    Buffer.setData(VelocityVectors_, GL::BufferUsage::StreamDraw);
+    Mesh.setCount(VelocityVectors_.size())
+        .setPrimitive(GL::MeshPrimitive::Lines)
+        .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+
+    Shader_.setTransformationProjectionMatrix(_ProjectionMatrix)
+           .setColor({0.7f, 0.7f, 0.7f, 0.5f})
+           .draw(Mesh);
 }

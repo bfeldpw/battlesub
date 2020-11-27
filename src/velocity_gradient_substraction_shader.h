@@ -1,5 +1,5 @@
-#ifndef VELOCITY_DIFFUSION_SHADER_H
-#define VELOCITY_DIFFUSION_SHADER_H
+#ifndef VELOCITY_GRADIENT_SUBSTRACTION_SHADER_H
+#define VELOCITY_GRADIENT_SUBSTRACTION_SHADER_H
 
 #include <string>
 
@@ -15,7 +15,7 @@
 
 using namespace Magnum;
 
-class VelocityDiffusionShader : public GL::AbstractShaderProgram
+class VelocityGradientSubstractionShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -23,9 +23,9 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit VelocityDiffusionShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit VelocityGradientSubstractionShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit VelocityDiffusionShader()
+        explicit VelocityGradientSubstractionShader()
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -33,7 +33,7 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile(Path_+"texture_base_shader.vert");
-            Frag.addFile(Path_+"velocity_diffusion_shader.frag");
+            Frag.addFile(Path_+"velocity_gradient_substraction_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -41,39 +41,22 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-            setUniform(uniformLocation("u_tex_velocity_sources"), TexUnitVelocitySources);
             setUniform(uniformLocation("u_tex_velocity_buffer"), TexUnitVelocityBuffer);
-            DeltaTUniform_ = uniformLocation("u_dt");
-            GridResUniform_ = uniformLocation("u_grid_res");
+            setUniform(uniformLocation("u_tex_velocity_divergence_buffer"), TexUnitVelocityDivergenceBuffer);
             TransformationUniform_ = uniformLocation("u_matrix");
-            
-            setUniform(DeltaTUniform_, 1.0f/60.0f);
-            setUniform(GridResUniform_, 2);
-        }
-
-        VelocityDiffusionShader& setDeltaT(const Float dt)
-        {
-            setUniform(DeltaTUniform_, dt);
-            return *this;
         }
         
-        VelocityDiffusionShader& setGridRes(const Int r)
-        {
-            setUniform(GridResUniform_, r);
-            return *this;
-        }
-        
-        VelocityDiffusionShader& setTransformation(const Matrix3& t)
+        VelocityGradientSubstractionShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        VelocityDiffusionShader& bindTextures(GL::Texture2D& TexVelocitySources,
-                                              GL::Texture2D& TexVelocityBuffer)
+        VelocityGradientSubstractionShader& bindTextures(GL::Texture2D& TexVelocityBuffer,
+                                                         GL::Texture2D& TexVelocityDivergenceBuffer)
         {
-            TexVelocitySources.bind(TexUnitVelocitySources);
             TexVelocityBuffer.bind(TexUnitVelocityBuffer);
+            TexVelocityDivergenceBuffer.bind(TexUnitVelocityDivergenceBuffer);
             return *this;
         }
 
@@ -81,15 +64,13 @@ class VelocityDiffusionShader : public GL::AbstractShaderProgram
         
         enum: Int
         {
-            TexUnitVelocitySources = 0,
-            TexUnitVelocityBuffer = 1
+            TexUnitVelocityBuffer = 0,
+            TexUnitVelocityDivergenceBuffer = 1
         };
 
         std::string Path_{SHADER_PATH};
 
-        Float   DeltaTUniform_;
-        Int     GridResUniform_;
         Int     TransformationUniform_;
 };
 
-#endif // VELOCITY_DIFFUSION_SHADER_H
+#endif // VELOCITY_GRADIENT_SUBSTRACTION_SHADER_H

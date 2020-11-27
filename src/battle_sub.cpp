@@ -214,6 +214,7 @@ void BattleSub::drawEvent()
                                                                  WindowResolutionY_/VisRes_*Cam2Zoom_.Value()}));
         
         FluidGrid_.setDensityDistortion(DensityDistortion_)
+                  .setScalarFieldDisplayScale(ScalarFieldDisplayScale_)
                   .setVelocityAdvectionFactor(VelocityAdvectionFactor_)
                   .setVelocityDisplayScale(1.0f/VelocityDisplayScale_)
                   .setVelocityDisplayShowOnlyMagnitude(VelocityDisplayShowOnlyMagnitude_);
@@ -304,10 +305,15 @@ void BattleSub::drawEvent()
             CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
             CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
-            if (DebugRender.IsVelocityProbesEnabled)
+            if (DebugRender_.IsVelocityProbesEnabled)
             {
                 Reg_.ctx<DebugRenderSystem>().renderVelocityProbes(CameraCurrentPlayer_->projectionMatrix()*
                                                                    CameraCurrentPlayer_->cameraMatrix());
+            }
+            if (DebugRender_.IsVelocityVectorsEnabled)
+            {
+                Reg_.ctx<DebugRenderSystem>().renderVelocityVectors(CameraCurrentPlayer_->projectionMatrix()*
+                                                                    CameraCurrentPlayer_->cameraMatrix());
             }
         }
 
@@ -329,10 +335,15 @@ void BattleSub::drawEvent()
                 CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
                 CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
-                if (DebugRender.IsVelocityProbesEnabled)
+                if (DebugRender_.IsVelocityProbesEnabled)
                 {
                     Reg_.ctx<DebugRenderSystem>().renderVelocityProbes(CameraOtherPlayer_->projectionMatrix()*
                                                                        CameraOtherPlayer_->cameraMatrix());
+                }
+                if (DebugRender_.IsVelocityVectorsEnabled)
+                {
+                    Reg_.ctx<DebugRenderSystem>().renderVelocityVectors(CameraCurrentPlayer_->projectionMatrix()*
+                                                                        CameraCurrentPlayer_->cameraMatrix());
                 }
             }
         }
@@ -424,8 +435,8 @@ void BattleSub::updateGameObjects()
         auto Propellor = HullBody->GetWorldPoint({0.0f, -7.0f});
         auto Direction = RudderBody->GetWorldVector({0.0f, -1.0f});
 
-        FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.001f*std::abs(Sub.second->getThrottle()))
-                  .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*Sub.second->getThrottle(), 0.001f*Direction.y*Sub.second->getThrottle());
+        // FluidGrid_.addDensity(Propellor.x, Propellor.y, 0.001f*std::abs(Sub.second->getThrottle()))
+                  // .addVelocity(Propellor.x, Propellor.y, 0.001f*Direction.x*Sub.second->getThrottle(), 0.001f*Direction.y*Sub.second->getThrottle());
     }
 }
 
@@ -450,7 +461,8 @@ void BattleSub::updateUI()
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Debug Renderer");
                 ImGui::Indent();
-                    ImGui::Checkbox("Velocity Probes", &DebugRender.IsVelocityProbesEnabled);
+                    ImGui::Checkbox("Velocity Probes", &DebugRender_.IsVelocityProbesEnabled);
+                    ImGui::Checkbox("Velocity Vectors", &DebugRender_.IsVelocityVectorsEnabled);
                 ImGui::Unindent();
 
                 int Buffer = static_cast<int>(FluidBuffer_);
@@ -464,10 +476,12 @@ void BattleSub::updateUI()
                     ImGui::RadioButton("Velocity Buffer Front", &Buffer, 4);
                     ImGui::RadioButton("Velocity Buffer Back", &Buffer, 5);
                     ImGui::RadioButton("Velocity Buffer Readback", &Buffer, 6);
-                    ImGui::RadioButton("Density Buffer Front", &Buffer, 7);
-                    ImGui::RadioButton("Density Buffer Back", &Buffer, 8);
-                    ImGui::RadioButton("Ground Distorted", &Buffer, 9);
-                    ImGui::RadioButton("Final Composition", &Buffer, 10);
+                    ImGui::RadioButton("Velocity Divergence Buffer", &Buffer, 7);
+                    ImGui::RadioButton("Pressure Buffer", &Buffer, 8);
+                    ImGui::RadioButton("Density Buffer Front", &Buffer, 9);
+                    ImGui::RadioButton("Density Buffer Back", &Buffer, 10);
+                    ImGui::RadioButton("Ground Distorted", &Buffer, 11);
+                    ImGui::RadioButton("Final Composition", &Buffer, 12);
                     ImGui::NewLine();
                     ImGui::Checkbox("Velocity: Show only magnitude", &VelocityDisplayShowOnlyMagnitude_);
                         showTooltip("Show magnitude or show colour-coded direction, too.");
@@ -477,6 +491,7 @@ void BattleSub::updateUI()
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");
                 ImGui::NewLine();
+                ImGui::SliderFloat("Scalar Field Display Scale", &ScalarFieldDisplayScale_, 0.01, 10.0f);
                 ImGui::SliderFloat("Velocity Display Scale [0, x] m/s", &VelocityDisplayScale_, 0.1f, 100.0f);
                     showTooltip("Scale colour values for displaying velocity\n"
                                 "The given value defines the upper bound in m/s, everything above is capped.\n"

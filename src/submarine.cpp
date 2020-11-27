@@ -103,7 +103,7 @@ void Submarine::fire(entt::registry& _Reg)
                                              {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
         auto& FldProbesComp = _Reg.emplace<FluidProbeComponent>(Bullet);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.0f);
+        _Reg.ctx<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.06f);
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
         FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;

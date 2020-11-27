@@ -82,8 +82,9 @@ class BattleSub : public Platform::Application
         bool IsTooltipsEnabled_ = true;
         struct
         {
-            bool IsVelocityProbesEnabled = false;
-        } DebugRender;
+           bool IsVelocityProbesEnabled = false;
+           bool IsVelocityVectorsEnabled = false;
+        } DebugRender_;
 
         //-- UI --//
         ImGuiStyle* UIStyle_{nullptr};
@@ -104,6 +105,7 @@ class BattleSub : public Platform::Application
         FluidGrid FluidGrid_;
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
         float DensityDistortion_ = 300.0f;
+        float ScalarFieldDisplayScale_ = 1.0f;
         float VelocityAdvectionFactor_ = 0.9f;
         float VelocityDisplayScale_ = 20.0f;
         bool  VelocityDisplayShowOnlyMagnitude_ = false;

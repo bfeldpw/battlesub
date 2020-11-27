@@ -10,12 +10,12 @@ set(HEADERS
         systems/emitter_system.hpp
         systems/fluid_interaction_system.hpp
         systems/game_object_factory.hpp
+        advect1d_shader.h
+        advect2d_shader.h
         battle_sub.h
         camera_dynamics.h
         common.h
         contact_listener.h
-        density_advection_shader.h
-        density_diffusion_shader.h
         density_display_shader.h
         density_sources_shader.h
         drawable_generic.h
@@ -26,19 +26,22 @@ set(HEADERS
         fluid_grid.h
         global_factories.h
         global_resources.h
+        jacobi_shader.h
         main_display_shader.h
         memory_pool.h
         message_handler.h
         resource_storage.h
         shader_path.h
+        source1d_shader.h
+        source2d_shader.h
         submarine.h
         submarine_definition.h
         submarine_factory.h
         texture_2d32f_render_2d32f_shader.h
         timer.h
-        velocity_advection_shader.h
-        velocity_diffusion_shader.h
         velocity_display_shader.h
+        velocity_divergence_shader.h
+        velocity_gradient_substraction_shader.h
         velocity_sources_shader.h
         world_def.h
 )

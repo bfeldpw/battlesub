@@ -1,0 +1,28 @@
+uniform sampler2D u_tex_buffer;
+uniform sampler2D u_tex_sources;
+
+in vec2 v_tex;
+
+out vec2 frag_value;
+
+void main()
+{
+    vec2 v_src = texelFetch(u_tex_sources, ivec2(gl_FragCoord.xy), 0).xy;
+    vec2 v_buf = texelFetch(u_tex_buffer, ivec2(gl_FragCoord.xy), 0).xy;
+
+    // vec2 v_prj;
+    // if (length(v_buf) > 0)
+    // {
+        vec2 v_buf_unit = normalize(v_buf+vec2(-0.1, 0.1));
+        vec2 v_prj = dot(v_src, v_buf_unit)*v_buf_unit;
+    // }
+    // else
+    //     {
+    //         v_prj = vec2(0.0, 0.0);
+    //     }
+
+
+    frag_value = v_buf.xy+(v_src.xy-v_prj.xy)*0.9999;
+    // frag_value = (texelFetch(u_tex_buffer, ivec2(gl_FragCoord.xy), 0).xy +
+    //               texelFetch(u_tex_sources, ivec2(gl_FragCoord.xy), 0).xy)*0.9999;
+}

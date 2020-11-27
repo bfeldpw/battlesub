@@ -19,12 +19,19 @@ class DebugRenderSystem
         explicit DebugRenderSystem(entt::registry& _Reg, FluidGrid& _FluidGrid);
         DebugRenderSystem() = delete;
 
-        void renderVelocityProbes(const Matrix3& ProjectionMatrix);
+        void renderVelocityProbes(const Matrix3& _ProjectionMatrix);
+        void renderVelocityVectors(const Matrix3& _ProjectionMatrix);
 
     private:
 
         entt::registry& Reg_;
         FluidGrid& FluidGrid_;
+
+        static constexpr int VEL_VEC_ARRAY_SIZE = (FLUID_GRID_ARRAY_SIZE >> (FluidGrid::VELOCITY_READBACK_SUBSAMPLE_XY-1));
+        // static constexpr int VEL_VEC_ARRAY_SIZE = (FLUID_GRID_ARRAY_SIZE >> (FluidGrid::VELOCITY_READBACK_SUBSAMPLE_XY));
+        typedef std::array<float, VEL_VEC_ARRAY_SIZE> VelocityVectorFieldDataType;
+
+        VelocityVectorFieldDataType VelocityVectors_;
 
         GL::Mesh MeshCircle_;
         GL::Mesh MeshLine_;
