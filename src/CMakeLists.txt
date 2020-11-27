@@ -6,41 +6,41 @@ set(HEADERS
         components/physics_component.hpp
         components/status_component.hpp
         components/visuals_component.hpp
+        shaders/advect_shader.h
+        shaders/density_display_shader.h
+        shaders/density_sources_shader.h
+        shaders/fluid_final_composition_shader.h
+        shaders/jacobi_shader.h
+        shaders/main_display_shader.h
+        shaders/source_shader.h
+        shaders/texture_2d32f_render_2d32f_shader.h
+        shaders/velocity_display_shader.h
+        shaders/velocity_divergence_shader.h
+        shaders/velocity_gradient_substraction_shader.h
+        shaders/velocity_sources_shader.h
         systems/debug_render_system.hpp
         systems/emitter_system.hpp
         systems/fluid_interaction_system.hpp
         systems/game_object_factory.hpp
-        advect_shader.h
         battle_sub.h
         camera_dynamics.h
         common.h
         contact_listener.h
-        density_display_shader.h
-        density_sources_shader.h
         drawable_generic.h
         entity.h
         entity_factory.h
         error_handler.h
-        fluid_final_composition_shader.h
         fluid_grid.h
         global_factories.h
         global_resources.h
-        jacobi_shader.h
-        main_display_shader.h
         memory_pool.h
         message_handler.h
         resource_storage.h
         shader_path.h
-        source_shader.h
         submarine.h
         submarine_definition.h
         submarine_factory.h
-        texture_2d32f_render_2d32f_shader.h
         timer.h
-        velocity_display_shader.h
-        velocity_divergence_shader.h
-        velocity_gradient_substraction_shader.h
-        velocity_sources_shader.h
         world_def.h
 )
 
@@ -70,6 +70,7 @@ add_executable(battle_sub ${LIB_NOISE_HEADERS} ${HEADERS} ${SOURCES})
 
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/components/")
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/shaders/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/systems/")
 target_include_directories(battle_sub PRIVATE ${MAGNUM_INCLUDE_DIR})
 target_include_directories(battle_sub PRIVATE ${ImGui_INCLUDE_DIR})

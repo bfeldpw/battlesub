@@ -342,8 +342,8 @@ void BattleSub::drawEvent()
                 }
                 if (DebugRender_.IsVelocityVectorsEnabled)
                 {
-                    Reg_.ctx<DebugRenderSystem>().renderVelocityVectors(CameraCurrentPlayer_->projectionMatrix()*
-                                                                        CameraCurrentPlayer_->cameraMatrix());
+                    Reg_.ctx<DebugRenderSystem>().renderVelocityVectors(CameraOtherPlayer_->projectionMatrix()*
+                                                                        CameraOtherPlayer_->cameraMatrix());
                 }
             }
         }
