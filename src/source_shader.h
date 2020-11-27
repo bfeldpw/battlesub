@@ -1,5 +1,5 @@
-#ifndef SOURCE2D_SHADER_H
-#define SOURCE2D_SHADER_H
+#ifndef SOURCE_SHADER_H
+#define SOURCE_SHADER_H
 
 #include <string>
 
@@ -15,7 +15,13 @@
 
 using namespace Magnum;
 
-class Source2dShader : public GL::AbstractShaderProgram
+enum class SourceShaderVersionE : int
+{
+    SCALAR = 0,
+    VECTOR = 1
+};
+
+class SourceShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -23,9 +29,9 @@ class Source2dShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit Source2dShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit SourceShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit Source2dShader()
+        explicit SourceShader(const SourceShaderVersionE _ShaderVersion)
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -33,7 +39,10 @@ class Source2dShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile(Path_+"texture_base_shader.vert");
-            Frag.addFile(Path_+"source2d_shader.frag");
+            if (_ShaderVersion == SourceShaderVersionE::SCALAR)
+                Frag.addFile(Path_+"source1d_shader.frag");
+            else
+                Frag.addFile(Path_+"source2d_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -46,14 +55,14 @@ class Source2dShader : public GL::AbstractShaderProgram
             TransformationUniform_ = uniformLocation("u_matrix");
         }
 
-        Source2dShader& setTransformation(const Matrix3& t)
+        SourceShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        Source2dShader& bindTextures(GL::Texture2D& TexBuffer,
-                                     GL::Texture2D& TexSources)
+        SourceShader& bindTextures(GL::Texture2D& TexBuffer,
+                                   GL::Texture2D& TexSources)
         {
             TexBuffer.bind(TexUnitBuffer);
             TexSources.bind(TexUnitSources);
@@ -73,4 +82,4 @@ class Source2dShader : public GL::AbstractShaderProgram
         Int     TransformationUniform_;
 };
 
-#endif // SOURCE2D_SHADER_H
+#endif // SOURCE_SHADER_H

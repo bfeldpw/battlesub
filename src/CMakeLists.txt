@@ -10,8 +10,7 @@ set(HEADERS
         systems/emitter_system.hpp
         systems/fluid_interaction_system.hpp
         systems/game_object_factory.hpp
-        advect1d_shader.h
-        advect2d_shader.h
+        advect_shader.h
         battle_sub.h
         camera_dynamics.h
         common.h
@@ -32,8 +31,7 @@ set(HEADERS
         message_handler.h
         resource_storage.h
         shader_path.h
-        source1d_shader.h
-        source2d_shader.h
+        source_shader.h
         submarine.h
         submarine_definition.h
         submarine_factory.h

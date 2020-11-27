@@ -7,8 +7,7 @@
 #include <Magnum/GL/BufferImage.h>
 #include <Magnum/GL/Framebuffer.h>
 
-#include "advect1d_shader.h"
-#include "advect2d_shader.h"
+#include "advect_shader.h"
 #include "density_display_shader.h"
 #include "density_sources_shader.h"
 #include "drawable_generic.h"
@@ -16,8 +15,7 @@
 #include "global_resources.h"
 #include "ground_distortion_shader.h"
 #include "jacobi_shader.h"
-#include "source1d_shader.h"
-#include "source2d_shader.h"
+#include "source_shader.h"
 #include "texture_2d32f_render_2d32f_shader.h"
 #include "velocity_display_shader.h"
 #include "velocity_divergence_shader.h"
@@ -143,16 +141,16 @@ class FluidGrid
         GL::Framebuffer FBOVelocitiesLowRes_{NoCreate};
         GL::Framebuffer FBOVelocityDivergence_{NoCreate};
 
-        Advect1dShader ShaderAdvect1d_{NoCreate};
-        Advect2dShader ShaderAdvect2d_{NoCreate};
+        AdvectShader ShaderAdvect1d_{NoCreate};
+        AdvectShader ShaderAdvect2d_{NoCreate};
         DensityDisplayShader ShaderDensityDisplay_{NoCreate};
         DensitySourcesShader ShaderDensitySources_{NoCreate};
         GroundDistortionShader ShaderGroundDistortion_{NoCreate};
         FluidFinalCompositionShader ShaderFluidFinalComposition_{NoCreate};
         JacobiShader ShaderJacobi1d_{NoCreate};
         JacobiShader ShaderJacobi2d_{NoCreate};
-        Source1dShader ShaderSource1d_{NoCreate};
-        Source2dShader ShaderSource2d_{NoCreate};
+        SourceShader ShaderSource1d_{NoCreate};
+        SourceShader ShaderSource2d_{NoCreate};
         Texture2D32FRender2D32FShader ShaderVelocityLowRes_{NoCreate};
         VelocityDisplayShader ShaderVelocityDisplay_{NoCreate};
         VelocityDivergenceShader ShaderVelocityDivergence_{NoCreate};

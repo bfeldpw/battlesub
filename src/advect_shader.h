@@ -1,5 +1,5 @@
-#ifndef ADVECT2D_SHADER_H
-#define ADVECT2D_SHADER_H
+#ifndef ADVECT_SHADER_H
+#define ADVECT_SHADER_H
 
 #include <string>
 
@@ -15,7 +15,13 @@
 
 using namespace Magnum;
 
-class Advect2dShader : public GL::AbstractShaderProgram
+enum class AdvectShaderVersionE : int
+{
+    SCALAR = 0,
+    VECTOR = 1
+};
+
+class AdvectShader : public GL::AbstractShaderProgram
 {
 
     public:
@@ -23,9 +29,9 @@ class Advect2dShader : public GL::AbstractShaderProgram
         typedef GL::Attribute<0, Vector2> Position;
         typedef GL::Attribute<1, Vector2> TextureCoordinates;
 
-        explicit Advect2dShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
+        explicit AdvectShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         
-        explicit Advect2dShader()
+        explicit AdvectShader(const AdvectShaderVersionE _ShaderVersion)
         {
             MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
@@ -33,7 +39,10 @@ class Advect2dShader : public GL::AbstractShaderProgram
             GL::Shader Frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
             Vert.addFile(Path_+"texture_base_shader.vert");
-            Frag.addFile(Path_+"advect2d_shader.frag");
+            if (_ShaderVersion == AdvectShaderVersionE::SCALAR)
+                Frag.addFile(Path_+"advect1d_shader.frag");
+            else
+                Frag.addFile(Path_+"advect2d_shader.frag");
 
             CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({Vert, Frag}));
 
@@ -42,6 +51,7 @@ class Advect2dShader : public GL::AbstractShaderProgram
             CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
             setUniform(uniformLocation("u_tex_buffer"), TexUnitBuffer);
+            setUniform(uniformLocation("u_tex_velocities"), TexUnitVelocities);
             AdvectionFactorUniform_ = uniformLocation("u_advection_factor");
             DeltaTUniform_ = uniformLocation("u_dt");
             GridResolutionUniform_ = uniformLocation("u_grid_res");
@@ -52,33 +62,35 @@ class Advect2dShader : public GL::AbstractShaderProgram
             setUniform(GridResolutionUniform_, 2.0f);
         }
 
-        Advect2dShader& setAdvectionFactor(const Float f)
+        AdvectShader& setAdvectionFactor(const Float f)
         {
             setUniform(AdvectionFactorUniform_, f);
             return *this;
         }
 
-        Advect2dShader& setDeltaT(const Float dt)
+        AdvectShader& setDeltaT(const Float dt)
         {
             setUniform(DeltaTUniform_, dt);
             return *this;
         }
         
-        Advect2dShader& setGridRes(const Float r)
+        AdvectShader& setGridRes(const Float r)
         {
             setUniform(GridResolutionUniform_, r);
             return *this;
         }
         
-        Advect2dShader& setTransformation(const Matrix3& t)
+        AdvectShader& setTransformation(const Matrix3& t)
         {
             setUniform(TransformationUniform_, t);
             return *this;
         }
 
-        Advect2dShader& bindTexture(GL::Texture2D& TexBuffer)
+        AdvectShader& bindTextures(GL::Texture2D& TexBuffer,
+                                   GL::Texture2D& TexVelocities)
         {
             TexBuffer.bind(TexUnitBuffer);
+            TexVelocities.bind(TexUnitVelocities);
             return *this;
         }
 
@@ -86,7 +98,8 @@ class Advect2dShader : public GL::AbstractShaderProgram
         
         enum: Int
         {
-            TexUnitBuffer = 0
+            TexUnitBuffer = 0,
+            TexUnitVelocities = 1
         };
 
         std::string Path_{SHADER_PATH};
@@ -97,4 +110,4 @@ class Advect2dShader : public GL::AbstractShaderProgram
         Int     TransformationUniform_;
 };
 
-#endif // ADVECT2D_SHADER_H
+#endif // ADVECT_SHADER_H

@@ -215,16 +215,16 @@ void FluidGrid::init()
     TexVelocities1_ = GL::Texture2D{};
     TexVelocitiesLowRes_ = GL::Texture2D{};
     TexVelocityDivergence_ = GL::Texture2D{};
-    ShaderAdvect1d_ = Advect1dShader();
-    ShaderAdvect2d_ = Advect2dShader();
+    ShaderAdvect1d_ = AdvectShader(AdvectShaderVersionE::SCALAR);
+    ShaderAdvect2d_ = AdvectShader(AdvectShaderVersionE::VECTOR);
     ShaderDensityDisplay_ = DensityDisplayShader();
     ShaderDensitySources_ = DensitySourcesShader();
     ShaderGroundDistortion_ = GroundDistortionShader();
     ShaderJacobi1d_ = JacobiShader(JacobiShaderVersionE::SCALAR);
     ShaderJacobi2d_ = JacobiShader(JacobiShaderVersionE::VECTOR);
     ShaderFluidFinalComposition_ = FluidFinalCompositionShader();
-    ShaderSource1d_ = Source1dShader{};
-    ShaderSource2d_ = Source2dShader{};
+    ShaderSource1d_ = SourceShader{SourceShaderVersionE::SCALAR};
+    ShaderSource2d_ = SourceShader{SourceShaderVersionE::VECTOR};
     ShaderVelocityDisplay_ = VelocityDisplayShader();
     ShaderVelocityDivergence_ = VelocityDivergenceShader();
     ShaderVelocityLowRes_ = Texture2D32FRender2D32FShader();
@@ -364,7 +364,7 @@ void FluidGrid::init()
                    .setAdvectionFactor(0.8f)
                    .setDeltaT(FLUID_TIMESTEP)
                    .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
-                   .bindTexture(*TexVelocitiesBack_);
+                   .bindTextures(*TexVelocitiesBack_, *TexVelocitiesBack_);
     ShaderGroundDistortion_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                            .setDistortion(100.0f)
                            .setDeltaT(FLUID_TIMESTEP)
@@ -548,7 +548,7 @@ void FluidGrid::advectVelocities()
     std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
 
     FBOVelocitiesFront_->bind();
-    ShaderAdvect2d_.bindTexture(*TexVelocitiesBack_ )
+    ShaderAdvect2d_.bindTextures(*TexVelocitiesBack_, *TexVelocitiesBack_)
                    .draw(MeshFluidGridBuffer_);
 }
 
