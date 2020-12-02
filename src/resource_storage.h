@@ -3,7 +3,7 @@
 
 #include <array>
 
-#include <Box2D/Box2D.h>
+#include <box2d.h>
 
 #include <Magnum/Math/Color.h>
 #include <Magnum/MeshTools/Compile.h>

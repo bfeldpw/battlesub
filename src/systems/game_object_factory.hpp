@@ -3,7 +3,7 @@
 
 #include <any>
 
-#include <Box2D/Box2D.h>
+#include <box2d.h>
 #include <entt/entity/registry.hpp>
 
 #include "drawable_generic.h"

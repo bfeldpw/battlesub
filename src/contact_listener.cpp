@@ -24,8 +24,8 @@ void ContactListener::PreSolve(b2Contact* Contact, const b2Manifold* OldManifold
     // Only emit debris if new collision occurred
     if (IsValidContact)
     {
-        auto EntityA = *(static_cast<entt::entity*>(Contact->GetFixtureA()->GetBody()->GetUserData()));
-        auto EntityB = *(static_cast<entt::entity*>(Contact->GetFixtureB()->GetBody()->GetUserData()));
+        auto EntityA = *(reinterpret_cast<entt::entity*>(Contact->GetFixtureA()->GetBody()->GetUserData().pointer));
+        auto EntityB = *(reinterpret_cast<entt::entity*>(Contact->GetFixtureB()->GetBody()->GetUserData().pointer));
         auto& StatusA = Reg_.get<StatusComponent>(EntityA);
         auto& StatusB = Reg_.get<StatusComponent>(EntityB);
         b2Body* BodyA = Reg_.get<PhysicsComponent>(EntityA).Body_;

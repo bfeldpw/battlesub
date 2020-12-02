@@ -1,6 +1,6 @@
 #include "emitter_system.hpp"
 
-#include <Box2D/Box2D.h>
+#include <box2d.h>
 #include <Magnum/Math/Color.h>
 #include <entt/entity/helper.hpp>
 #include "fluid_interaction_system.hpp"
@@ -27,7 +27,7 @@ void EmitterSystem::emit()
 
             b2BodyDef BodyDef;
             BodyDef.type = b2_dynamicBody;
-            BodyDef.active = true;
+            BodyDef.enabled = true;
             BodyDef.angularDamping = 1.0f;
             BodyDef.linearDamping = 0.0f;
             BodyDef.position.Set(_EmComp.OriginX_+i*0.01f, _EmComp.OriginY_);

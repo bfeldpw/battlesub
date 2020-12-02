@@ -1,7 +1,7 @@
 #ifndef CONTACT_LISTENER_H
 #define CONTACT_LISTENER_H
 
-#include <Box2D/Box2D.h>
+#include <box2d.h>
 #include <entt/entity/registry.hpp>
 
 #include "status_component.hpp"

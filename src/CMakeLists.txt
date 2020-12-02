@@ -74,7 +74,7 @@ target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/shaders
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/systems/")
 target_include_directories(battle_sub PRIVATE ${MAGNUM_INCLUDE_DIR})
 target_include_directories(battle_sub PRIVATE ${ImGui_INCLUDE_DIR})
-target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/box2d/Box2D/Box2D")
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/box2d/include/box2d")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/libnoise2d/src/")
 
 target_link_libraries(battle_sub PRIVATE

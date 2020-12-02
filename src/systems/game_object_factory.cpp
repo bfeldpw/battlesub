@@ -25,14 +25,14 @@ void GameObjectFactory::create(entt::entity e, std::any _Parent, const GameObjec
         EntityIDs.IDs_[EntityIDs.FreeIDs_[EntityIDs.CountFree_-1]] = entt::id_type(e);
 
         EntityIDs.IDMap_[id(e)] = EntityIDs.FreeIDs_[EntityIDs.CountFree_-1];
-        Physics.Body_->SetUserData(&EntityIDs.IDs_[EntityIDs.FreeIDs_[EntityIDs.CountFree_-1]]);
+        Physics.Body_->GetUserData().pointer = reinterpret_cast<std::uintptr_t>(&EntityIDs.IDs_[EntityIDs.FreeIDs_[EntityIDs.CountFree_-1]]);
         EntityIDs.CountFree_--;
     }
     else
     {
         EntityIDs.IDs_[EntityIDs.Count_] = entt::id_type(e);
         EntityIDs.IDMap_[id(e)] = EntityIDs.Count_;
-        Physics.Body_->SetUserData(&EntityIDs.IDs_[EntityIDs.Count_++]);
+        Physics.Body_->GetUserData().pointer = reinterpret_cast<std::uintptr_t>(&EntityIDs.IDs_[EntityIDs.Count_++]);
     }
 
     DBLK(printInternalEntityLists();)
@@ -136,7 +136,7 @@ void GameObjectFactory::updateStatus()
                 if (_StatusComp.IsSunk_)
                 {
                     _PhysComp.Body_->SetLinearVelocity({0.0f, 0.0f});
-                    _PhysComp.Body_->SetActive(false);
+                    _PhysComp.Body_->SetEnabled(false);
                 }
                 if (_StatusComp.IsSunk_ && _VisComp.Scale_ < 0.1f)
                 {
@@ -157,7 +157,7 @@ void GameObjectFactory::updateStatus()
                 delete _VisComp.Visuals_;
                 _VisComp.Visuals_ = nullptr;
             }
-            auto e = *static_cast<entt::entity*>(_PhysComp.Body_->GetUserData());
+            auto e = *reinterpret_cast<entt::entity*>(_PhysComp.Body_->GetUserData().pointer);
 
             EntityIDs.CountFree_++;
             EntityIDs.FreeIDs_[EntityIDs.CountFree_-1] = EntityIDs.IDMap_[id(e)];
@@ -176,7 +176,7 @@ void GameObjectFactory::updateVisuals()
         b2Body*   const Body    = _PhysComp.Body_;
         Object2D* const Visuals = _VisComp.Visuals_;
 
-        if (Body->IsActive() && Body->GetType() != b2_staticBody)
+        if (Body->IsEnabled() && Body->GetType() != b2_staticBody)
         {
             Visuals->setTranslation({Body->GetPosition().x, Body->GetPosition().y})
                     .setRotation(Complex::rotation(Rad(Body->GetAngle())));

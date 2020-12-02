@@ -9,7 +9,7 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
     {
         b2BodyDef BodyDef;
         BodyDef.type = b2_dynamicBody;
-        BodyDef.active = true;
+        BodyDef.enabled = true;
         BodyDef.position.Set(PosX, PosY);
         BodyDef.angle = Angle;
         BodyDef.angularDamping = 0.0f;
@@ -35,7 +35,7 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
 
         b2BodyDef BodyDefRudder;
         BodyDefRudder.type = b2_dynamicBody;
-        BodyDefRudder.active = true;
+        BodyDefRudder.enabled = true;
         BodyDefRudder.position.Set(PosX+8.0f*std::sin(Angle), PosY-8.0f*std::cos(Angle));
         BodyDefRudder.angle = Angle;
         // BodyDefRudder.angularDamping = 0.8f;
@@ -90,7 +90,7 @@ void Submarine::fire(entt::registry& _Reg)
 
         b2BodyDef BodyDef;
         BodyDef.type = b2_dynamicBody;
-        BodyDef.active = true;
+        BodyDef.enabled = true;
         BodyDef.position.Set(Body->GetPosition().x +
                              Body->GetWorldVector({GunPos, 8.75f}).x,
                              Body->GetPosition().y +

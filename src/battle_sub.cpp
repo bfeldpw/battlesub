@@ -2,7 +2,7 @@
 
 #include <thread>
 
-#include <Box2D/Box2D.h>
+#include <box2d.h>
 #include <Corrade/Utility/Arguments.h>
 #include <Corrade/Utility/ConfigurationValue.h>
 #include <Magnum/GL/Buffer.h>
@@ -788,7 +788,7 @@ void BattleSub::setupGameObjects()
     auto CanyonBoundary = Reg_.create();
     b2BodyDef BodyDef;
     BodyDef.type = b2_staticBody;
-    BodyDef.active = true;
+    BodyDef.enabled = true;
     BodyDef.position.Set(0.0f, 0.0f);
     Reg_.ctx<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE,
                                          DrawableGroupsTypeE::DEFAULT, {0.05f, 0.05f, 0.1f, 1.0f}, BodyDef);

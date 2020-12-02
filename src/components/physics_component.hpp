@@ -1,7 +1,7 @@
 #ifndef PHYSICS_COMPONENT
 #define PHYSICS_COMPONENT
 
-#include <Box2D/Box2D.h>
+#include <box2d.h>
 
 enum class ShapeEnumType : int
 {

@@ -18,8 +18,8 @@ git config --global advice.detachedHead false
 echo "> git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git"
 git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git
 
-echo "> git clone --branch v2.3.1 --depth 1 https://github.com/erincatto/box2d.git"
-git clone --branch v2.3.1 --depth 1 https://github.com/erincatto/box2d.git
+echo "> git clone --branch v2.4.1 --depth 1 https://github.com/erincatto/box2d.git"
+git clone --branch v2.4.1 --depth 1 https://github.com/erincatto/box2d.git
 
 echo "> git clone --branch v3.5.2 --depth 1 https://github.com/skypjack/entt.git"
 git clone --branch v3.5.2 --depth 1 https://github.com/skypjack/entt.git
@@ -30,8 +30,8 @@ git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git
 echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum.git"
 git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum.git
 
-echo "> git clone --branch v1.77 --depth 1 https://github.com/ocornut/imgui.git"
-git clone --branch v1.77 --depth 1 https://github.com/ocornut/imgui.git
+echo "> git clone --branch v1.79 --depth 1 https://github.com/ocornut/imgui.git"
+git clone --branch v1.79 --depth 1 https://github.com/ocornut/imgui.git
 
 echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum-integration.git"
 git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum-integration.git
@@ -54,18 +54,18 @@ cd ../..
 
 # Install box2d
 
-echo "> cd box2d/Box2D"
-cd box2d/Box2D
+echo "> cd box2d"
+cd box2d
 echo "> mkdir -p build"
 mkdir -p build
 echo "> cd build"
 cd build
-echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../../install -DBOX2D_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=RELEASE"
-cmake .. -DCMAKE_INSTALL_PREFIX=../../../../install -DBOX2D_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=RELEASE
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBOX2D_BUILD_TESTBED=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBOX2D_BUILD_TESTBED=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE
 echo "> make -j8 install"
 make -j8 install
-echo "> cd ../../.."
-cd ../../..
+echo "> cd ../.."
+cd ../..
 
 # Install entt
 
