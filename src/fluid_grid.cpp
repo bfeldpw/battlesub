@@ -138,9 +138,16 @@ void FluidGrid::display(const Matrix3 CameraProjection,
                                  .draw(MeshFluidGridBuffer_);
             break;
         }
-        case FluidBufferE::PRESSURE:
+        case FluidBufferE::PRESSURE_BACK:
         {
             ShaderDensityDisplay_.bindTexture(*TexPressureBack_)
+                                 .setTransformation(CameraProjection)
+                                 .draw(MeshFluidGridBuffer_);
+            break;
+        }
+        case FluidBufferE::PRESSURE_FRONT:
+        {
+            ShaderDensityDisplay_.bindTexture(*TexPressureFront_)
                                  .setTransformation(CameraProjection)
                                  .draw(MeshFluidGridBuffer_);
             break;
@@ -432,6 +439,7 @@ void FluidGrid::process(const double SimTime)
     this->renderDensitySources();
     this->diffuseDensities();
     this->advectDensities();
+
 
     // FBODensitiesFront_->setViewport(*ViewportCurrent);
     // FBODensitiesBack_->setViewport(*ViewportNext);
