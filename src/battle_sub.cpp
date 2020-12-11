@@ -5,6 +5,7 @@
 #include <box2d.h>
 #include <Corrade/Utility/Arguments.h>
 #include <Corrade/Utility/ConfigurationValue.h>
+#include <Magnum/DebugTools/FrameProfiler.h>
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Context.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
@@ -46,9 +47,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     
     // if (!setSwapInterval(1))
     setSwapInterval(0);
-    #if !defined(CORRADE_TARGET_EMSCRIPTEN) && !defined(CORRADE_TARGET_ANDROID)
-        setMinimalLoopPeriod(1.0f/Frequency_ * 1000.0f);
-    #endif
+    setMinimalLoopPeriod(1.0f/Frequency_ * 1000.0f);
 
     SimTime_.start();
 }
@@ -192,6 +191,13 @@ void BattleSub::drawEvent()
 {
     if (!IsExitTriggered_)
     {
+        static DebugTools::GLFrameProfiler Profiler
+        {
+            DebugTools::GLFrameProfiler::Value::FrameTime|
+            DebugTools::GLFrameProfiler::Value::GpuDuration, 50
+        };
+        Profiler.beginFrame();
+
         GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
         GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.0f, 1.0f));
         
@@ -364,9 +370,17 @@ void BattleSub::drawEvent()
         {
             updateCameraDynamics();
         }
-        updateUI();
+
+
+        static double GPUDur = 0.0;
+        if (Profiler.isMeasurementAvailable(DebugTools::GLFrameProfiler::Value::GpuDuration))
+            GPUDur = Profiler.gpuDurationMean();
+
+        updateUI(GPUDur);
 
         GL::Renderer::disable(GL::Renderer::Feature::Blending);
+
+        Profiler.endFrame();
 
         swapBuffers();
         redraw();
@@ -440,7 +454,7 @@ void BattleSub::updateGameObjects()
     }
 }
 
-void BattleSub::updateUI()
+void BattleSub::updateUI(const double _GPUTime)
 {
     GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
     GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
@@ -454,8 +468,9 @@ void BattleSub::updateUI()
 
                 ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
                 ImGui::Indent();
-                    ImGui::Text("%.3f ms; (%.1f FPS)",
+                    ImGui::Text("Frame Time:  %.3f ms; (%.1f FPS)",
                         1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
+                    ImGui::Text("GPU Time: %.2f ms", Double(_GPUTime*1.0e-6));
                 ImGui::Unindent();
 
                 ImGui::NewLine();

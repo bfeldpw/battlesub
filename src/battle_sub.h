@@ -41,7 +41,7 @@ class BattleSub : public Platform::Application
         void cleanupAndExit();
         void updateCameraDynamics();
         void updateGameObjects();
-        void updateUI();
+        void updateUI(const double _GPUTime);
         void updateWorld();
 
         void setupECS();

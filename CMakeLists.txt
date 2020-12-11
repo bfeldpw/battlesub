@@ -15,6 +15,7 @@ set(BOX2D_LIBRARY_LOCAL "${PROJECT_SOURCE_DIR}/install/lib/libbox2d.a")
 find_package(Threads)
 find_package(Corrade REQUIRED Main)
 find_package(Magnum REQUIRED
+    DebugTools
     GL
     MeshTools
     Primitives

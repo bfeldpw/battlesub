@@ -82,6 +82,7 @@ target_link_libraries(battle_sub PRIVATE
     OpenGL::GL
     Corrade::Main
     Magnum::Application
+    Magnum::DebugTools
     Magnum::GL
     Magnum::Magnum
     Magnum::MeshTools
