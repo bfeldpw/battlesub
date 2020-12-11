@@ -60,8 +60,8 @@ class BattleSub : public Platform::Application
         entt::registry Reg_;
 
         //--- World ---//
-        int   WindowResolutionX_ = WINDOW_RESOLUTION_MAX_X;
-        int   WindowResolutionY_ = WINDOW_RESOLUTION_MAX_Y;
+        int   WindowResolutionX_ = 1600;
+        int   WindowResolutionY_ =  900;
         float Frequency_ = 60.0f;
 
         //--- Framebuffer related ---//
