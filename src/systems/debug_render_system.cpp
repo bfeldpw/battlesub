@@ -1,5 +1,6 @@
 #include "debug_render_system.hpp"
 
+#include <Corrade/Containers/ArrayViewStl.h>
 #include <Magnum/Primitives/Circle.h>
 #include <Magnum/Primitives/Line.h>
 #include <Magnum/Trade/MeshData.h>

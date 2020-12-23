@@ -1,6 +1,6 @@
 #include "fluid_grid.h"
 
-// #include <Corrade/Containers/ArrayViewStl.h>
+#include <Corrade/Containers/ArrayViewStl.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/TextureFormat.h>
 #include <Magnum/Math/Color.h>
@@ -197,13 +197,11 @@ void FluidGrid::init()
     VelocityReadbackFractionDataType VelData1_;
     PBOVelocity0_ = GL::BufferImage2D{PixelFormat::RG32F,
                                       {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
-                                       FLUID_GRID_SIZE_Y >>
-                                           (VELOCITY_READBACK_SUBSAMPLE+VELOCITY_READBACK_FRACTION_SIZE)},
+                                       FLUID_GRID_SIZE_Y >> (VELOCITY_READBACK_SUBSAMPLE+VELOCITY_READBACK_FRACTION_SIZE)},
                                        std::move(VelData0_), GL::BufferUsage::DynamicRead};
     PBOVelocity1_ = GL::BufferImage2D{PixelFormat::RG32F,
                                       {FLUID_GRID_SIZE_X >> VELOCITY_READBACK_SUBSAMPLE,
-                                       FLUID_GRID_SIZE_Y >>
-                                           (VELOCITY_READBACK_SUBSAMPLE+VELOCITY_READBACK_FRACTION_SIZE)},
+                                       FLUID_GRID_SIZE_Y >> (VELOCITY_READBACK_SUBSAMPLE+VELOCITY_READBACK_FRACTION_SIZE)},
                                        std::move(VelData1_), GL::BufferUsage::DynamicRead};
     PBOVelocityBack_ = &PBOVelocity0_;
     PBOVelocityFront_ = &PBOVelocity1_;
