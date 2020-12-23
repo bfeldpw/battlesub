@@ -16,8 +16,8 @@ struct FluidSourceComponent
     float DensityWeight_ = 0.0f;
 
     FluidSourceShapeE VelocityShape_ = FluidSourceShapeE::POINT;
-    float VelocityX_ = 1.0f;
-    float VelocityY_ = 1.0f;
+    float VelocityX_[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float VelocityY_[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     float VelocitySourceSize_ = 1.0f;
     float VelocityBackProjection_ = 0.0f;
     float VelocityWeight_ = 0.0f;

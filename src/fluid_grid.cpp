@@ -378,10 +378,10 @@ void FluidGrid::init()
                            .setGridRes(FLUID_GRID_SIZE_X / WORLD_SIZE_DEFAULT_X)
                            .bindTextures(TexDensityBase_, *TexVelocitiesBack_);
     ShaderJacobi1d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
-                   .setAlpha(this->getDensityDiffusionAlpha())
+                   .setAlpha(this->getDiffusionAlpha())
                    .bindTextures(*TexDensitiesBack_, *TexDensitiesBack_);
     ShaderJacobi2d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
-                   .setAlpha(this->getDensityDiffusionAlpha())
+                   .setAlpha(this->getDiffusionAlpha())
                    .bindTextures(*TexDensitiesBack_, *TexDensitiesBack_);
     ShaderSource1d_.setTransformation(Matrix3::projection({WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y}))
                    .bindTextures(*TexDensitiesBack_, TexDensitySources_);
@@ -431,7 +431,7 @@ void FluidGrid::process(const double SimTime)
 
     this->calculateDivergence();
     this->calculatePressure();
-    this->calculatePressureGradient();
+    this->substractPressureGradient();
 
     // FBODensitiesFront_->setViewport(ViewportFull);
     // FBODensitiesBack_->setViewport(ViewportFull);
@@ -443,13 +443,6 @@ void FluidGrid::process(const double SimTime)
 
     // FBODensitiesFront_->setViewport(*ViewportCurrent);
     // FBODensitiesBack_->setViewport(*ViewportNext);
-
-
-    // for (int i=0; i<10; ++i)
-    // {
-
-        // std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
-        // std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
 
     static int Fraction = 0;
     this->readbackVelocities(Fraction++, VELOCITY_READBACK_FRACTION_SIZE);
@@ -465,11 +458,11 @@ void FluidGrid::process(const double SimTime)
     // Distort ground
     //------------------------------------------------------------------
     // FBOGroundDistorted_.setViewport(*ViewportCurrent)
-    //                    .bind();
-    // ShaderGroundDistortion_.bindTextures(TexDensityBase_, *TexVelocitiesFront_)
-    //                        .setTime(SimTime);
+    FBOGroundDistorted_.bind();
+    ShaderGroundDistortion_.bindTextures(TexDensityBase_, *TexVelocitiesFront_)
+                           .setTime(SimTime);
 
-    // ShaderGroundDistortion_.draw(MeshFluidGridBuffer_);
+    ShaderGroundDistortion_.draw(MeshFluidGridBuffer_);
 
     // FBODensitiesFront_->setViewport(*ViewportCurrent);
     // FBODensitiesBack_->setViewport(*ViewportNext);
@@ -479,14 +472,14 @@ void FluidGrid::process(const double SimTime)
     //-----------------------------------------------------------------------
     // Final composition of density base, advected densities, and velocities
     //-----------------------------------------------------------------------
-    // FBOFluidFinalComposition_.setViewport(*ViewportCurrent).bind();
+    FBOFluidFinalComposition_.setViewport(ViewportFull).bind();
 
-    // ShaderFluidFinalComposition_.bindTextures(TexDensityBase_,
-    //                                           *TexDensitiesFront_,
-    //                                           TexGroundDistorted_,
-    //                                           *TexVelocitiesFront_);
+    ShaderFluidFinalComposition_.bindTextures(TexDensityBase_,
+                                              *TexDensitiesFront_,
+                                              TexGroundDistorted_,
+                                              *TexVelocitiesFront_);
 
-    // ShaderFluidFinalComposition_.draw(MeshFluidGridBuffer_);
+    ShaderFluidFinalComposition_.draw(MeshFluidGridBuffer_);
 }
 
 void FluidGrid::readbackVelocities(const int _Fraction, const int _SubDivisionBase2)
@@ -497,6 +490,7 @@ void FluidGrid::readbackVelocities(const int _Fraction, const int _SubDivisionBa
     //
     // Data is transferred to PBO backbuffer, while PBO frontbuffer is
     // readback to client memory.
+    //
     // The data represents only a subsampled velocity front buffer in
     // order to reduce frame rate. To further improve performance, in
     // each frame only a fraction of the buffer is transferred to the
@@ -564,9 +558,9 @@ void FluidGrid::calculatePressure()
 {
     FBOPressureFront_->clearColor(0, Color4(0.0f));
     FBOPressureBack_->clearColor(0, Color4(0.0f));
-    ShaderJacobi1d_.setAlpha(-0.25f)
+    ShaderJacobi1d_.setAlpha(0.25f)//this->getPressureEquationAlpha())
                    .setRBeta(0.25f);
-    for (int i=0; i<10; ++i)
+    for (int i=0; i<Config_.IterationsPressureEquation_; ++i)
     {    
         std::swap(FBOPressureFront_, FBOPressureBack_);
         std::swap(TexPressureFront_, TexPressureBack_);
@@ -575,15 +569,9 @@ void FluidGrid::calculatePressure()
         ShaderJacobi1d_.bindTextures(*TexPressureBack_, TexVelocityDivergence_)
                        .draw(MeshFluidGridBuffer_);
     }
-    // One more swap if an even number of iterations is used
-    // if (20 % 2 == 0)
-    // {
-    //     std::swap(FBOPressureFront_, FBOPressureBack_);
-    //     std::swap(TexPressureFront_, TexPressureBack_);
-    // }
 }
 
-void FluidGrid::calculatePressureGradient()
+void FluidGrid::substractPressureGradient()
 {
     std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
     std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
@@ -596,15 +584,15 @@ void FluidGrid::calculatePressureGradient()
 void FluidGrid::calculateDivergence()
 {
     FBOVelocityDivergence_.bind();
-    ShaderVelocityDivergence_.bindTexture(*TexVelocitiesBack_);
+    ShaderVelocityDivergence_.bindTexture(*TexVelocitiesFront_);
     ShaderVelocityDivergence_.draw(MeshFluidGridBuffer_);
 }
 
 void FluidGrid::diffuseDensities()
 {
-    ShaderJacobi1d_.setAlpha(this->getDensityDiffusionAlpha())
-                   .setRBeta(1.0f/(4.0f+this->getDensityDiffusionAlpha()));
-    for (int i=0; i<IterationsDensityDiffusion_; ++i)
+    ShaderJacobi1d_.setAlpha(this->getDiffusionAlpha())
+                   .setRBeta(1.0f/(4.0f+this->getDiffusionAlpha()));
+    for (int i=0; i<Config_.IterationsDensityDiffusion_; ++i)
     {
         std::swap(FBODensitiesFront_, FBODensitiesBack_);
         std::swap(TexDensitiesFront_, TexDensitiesBack_);
@@ -613,19 +601,13 @@ void FluidGrid::diffuseDensities()
         ShaderJacobi1d_.bindTextures(*TexDensitiesBack_, *TexDensitiesBack_)
                        .draw(MeshFluidGridBuffer_);
     }
-    // One more swap if an even number of iterations is used
-    // if (IterationsDensityDiffusion_ % 2 == 0)
-    // {
-    //     std::swap(FBODensitiesFront_, FBODensitiesBack_);
-    //     std::swap(TexDensitiesFront_, TexDensitiesBack_);
-    // }
 }
 
 void FluidGrid::diffuseVelocities()
 {
-    ShaderJacobi2d_.setAlpha(this->getDensityDiffusionAlpha())
-                   .setRBeta(1.0f/(4.0f+this->getDensityDiffusionAlpha()));
-    for (int i=0; i<IterationsDensityDiffusion_; ++i)
+    ShaderJacobi2d_.setAlpha(this->getDiffusionAlpha())
+                   .setRBeta(1.0f/(4.0f+this->getDiffusionAlpha()));
+    for (int i=0; i<Config_.IterationsVelocityDiffusion_; ++i)
     {
         std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
         std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
@@ -634,12 +616,6 @@ void FluidGrid::diffuseVelocities()
         ShaderJacobi2d_.bindTextures(*TexVelocitiesBack_, *TexVelocitiesBack_)
                        .draw(MeshFluidGridBuffer_);
     }
-    // One more swap if an even number of iterations is used
-    // if (IterationsDensityDiffusion_ % 2 == 0)
-    // {
-    //     std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
-    //     std::swap(TexVelocitiesFront_, TexVelocitiesBack_);
-    // }
 }
 
 void FluidGrid::renderDensitySources()

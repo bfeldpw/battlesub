@@ -18,6 +18,7 @@ void main()
     float north = texelFetch(u_tex_velocity_divergence_buffer, i_north, 0).x;
     vec2 vel_buffer = texelFetch(u_tex_velocity_buffer, ivec2(gl_FragCoord.xy), 0).xy;
 
-    v_vel = vel_buffer - vec2((west - east), (north - south));
-    // v_vel = vel_buffer - vec2(0.0, (north.y - south.y));
+    // v_vel = vel_buffer;
+    v_vel = vel_buffer - vec2((east - west), (north - south));
+    // v_vel = vec2((west - east), (north - south));
 }

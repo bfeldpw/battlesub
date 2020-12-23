@@ -106,8 +106,8 @@ void Submarine::fire(entt::registry& _Reg)
         _Reg.ctx<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.06f);
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
-        FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
-        FldSrcComp.DensityWeight_ = 10.0f;
+        FldSrcComp.VelocityBackProjection_ = 1.0f/60.0f;
+        FldSrcComp.DensityWeight_ = 1.0f;
         FldSrcComp.VelocityWeight_ = 0.1f;
 
 

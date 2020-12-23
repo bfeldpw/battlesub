@@ -59,7 +59,7 @@ class AdvectShader : public GL::AbstractShaderProgram
             
             setUniform(AdvectionFactorUniform_, 100.0f);
             setUniform(DeltaTUniform_, 1.0f/60.0f);
-            setUniform(GridResolutionUniform_, 2.0f);
+            setUniform(GridResolutionUniform_, 0.25f);
         }
 
         AdvectShader& setAdvectionFactor(const Float f)

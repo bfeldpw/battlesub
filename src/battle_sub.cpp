@@ -431,7 +431,10 @@ void BattleSub::updateGameObjects()
 {
     FluidGrid_.addDensity(10.0, 0.0, 100.0)
               .addVelocity(10.0, 0.0, -20.0, 0.0,
-                           10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -20.0, 0.0);
+                           10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -500.0, 0.0);
+    FluidGrid_.addDensity(-10.0, -10.0, 10.0)
+              .addVelocity(-10.0, -10.0, 20.0, 0.0,
+                           -10.0+20.0*double(VelocitySourceBackprojection_), -10.0, 100.0, 0.0);
 
     Reg_.ctx<GameObjectFactory>().updateVisuals();
     Reg_.ctx<GameObjectFactory>().updateStatus();

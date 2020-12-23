@@ -47,8 +47,19 @@ class FluidGrid
 {
     public:
 
+        struct Config
+        {
+            int IterationsDensityDiffusion_ = 5;
+            int IterationsVelocityDiffusion_ = 5;
+            int IterationsPressureEquation_ = 20;
+        } Config_;
+
+        // Fluid Grid constants to be accessed from outside, too
+        static constexpr float FLUID_FREQUENCY = 60.0f;
+        static constexpr float FLUID_TIMESTEP = 1.0f/FLUID_FREQUENCY;
         static constexpr int VELOCITY_READBACK_SUBSAMPLE = 2;
         static constexpr int VELOCITY_READBACK_SUBSAMPLE_XY = 3;
+
         typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)> VelocityReadbackDataType;
 
         Vector2 getVelocity(const float _x, const float _y) const;
@@ -64,10 +75,11 @@ class FluidGrid
                                const float w = 1.0f);
         FluidGrid& setDensityDistortion(const float f) {ShaderGroundDistortion_.setDistortion(f); return *this;}
         FluidGrid& setDensityDissipation(const float f) {/*ShaderAdvect1d_.setDissipation(f); */return *this;}
+        FluidGrid& setConfig(const Config& _Config) {Config_ = _Config; return *this;}
         FluidGrid& setIterationsDensityDiffusion(const int n)
         {
-            IterationsDensityDiffusion_ = n;
-            ShaderJacobi1d_.setAlpha(getDensityDiffusionAlpha());
+            Config_.IterationsDensityDiffusion_ = n;
+            ShaderJacobi1d_.setAlpha(getDiffusionAlpha());
             return *this;
         }
         FluidGrid& setScalarFieldDisplayScale(const float f) {ShaderDensityDisplay_.setScale(f); return *this;}
@@ -84,8 +96,6 @@ class FluidGrid
         
     private:
 
-        static constexpr float FLUID_FREQUENCY = 60.0f;
-        static constexpr float FLUID_TIMESTEP = 1.0f/FLUID_FREQUENCY;
 
         static constexpr int VELOCITY_READBACK_FRACTION_SIZE = 3;
         typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >>
@@ -97,24 +107,32 @@ class FluidGrid
         const Magnum::Range2Di* ViewportCurrent = &ViewportTop;
         const Magnum::Range2Di* ViewportNext = &ViewportBottom;
 
-        float getDensityDiffusionAlpha()
+        float getPressureEquationAlpha()
+        {
+            // float Res = float(FLUID_GRID_SIZE_X) / WORLD_SIZE_DEFAULT_X;
+            float Res = WORLD_SIZE_DEFAULT_X / FLUID_GRID_SIZE_X;
+            // return -Res*Res;
+            return 2.0f;
+        }
+        float getDiffusionAlpha()
         {
             float Res = float(FLUID_GRID_SIZE_X) / WORLD_SIZE_DEFAULT_X;
-            return Res*Res / IterationsDensityDiffusion_ * FLUID_FREQUENCY;
+            // float Res = WORLD_SIZE_DEFAULT_X / FLUID_GRID_SIZE_X;
+            return Res*Res / Config_.IterationsDensityDiffusion_ * FLUID_FREQUENCY;
         }
         void readbackVelocities(const int _Fraction, const int _SubDivisionBase2);
 
         void advectDensities();
         void advectVelocities();
+        void diffuseDensities();
         void calculateDivergence();
         void calculatePressure();
-        void calculatePressureGradient();
-        void diffuseDensities();
+        void substractPressureGradient();
         void diffuseVelocities();
         void renderDensitySources();
         void renderVelocitySources();
 
-        int IterationsDensityDiffusion_ = 5;
+        // int IterationsDensityDiffusion_ = 5;
 
         VelocityReadbackDataType VelReadback_;
 

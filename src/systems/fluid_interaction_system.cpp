@@ -19,7 +19,7 @@ void FluidInteractionSystem::addSources()
         auto Vel = _PhysComp.Body_->GetLinearVelocity();
 
         FluidGrid_.addDensity(Pos.x, Pos.y,
-                            Pos.x-Vel.x*1.0f/30.0f, Pos.y-Vel.y*1.0f/30.0f,
+                            Pos.x-Vel.x*1.0f/60.0f, Pos.y-Vel.y*1.0f/60.0f,
                             Vel.Length()*_FluidComp.DensityWeight_)
                   .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
                             Pos.x-Vel.x*_FluidComp.VelocityBackProjection_,

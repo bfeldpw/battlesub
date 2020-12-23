@@ -22,7 +22,6 @@ void main()
     //     }
 
 
-    frag_value = v_buf.xy+(v_src.xy-v_prj.xy)*0.9999;
-    // frag_value = (texelFetch(u_tex_buffer, ivec2(gl_FragCoord.xy), 0).xy +
-    //               texelFetch(u_tex_sources, ivec2(gl_FragCoord.xy), 0).xy)*0.9999;
+    // frag_value = v_buf.xy+(v_src.xy-v_prj.xy)*0.9999;
+    frag_value = (v_buf.xy + v_src.xy)*0.9999;
 }

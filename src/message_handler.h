@@ -2,6 +2,7 @@
 #define MESSAGE_HANDLER_H
 
 #include <cassert>
+#include <iostream>
 #include <string>
 
 // Only compile debug blocks in debug mode
