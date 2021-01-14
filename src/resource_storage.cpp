@@ -314,8 +314,8 @@ void ResourceStorage::initLandscape()
     
     {
         constexpr float b = 10.0f;  // Boundary
-        constexpr float w = WORLD_SIZE_DEFAULT_X * 0.5f-b; // Half width
-        constexpr float h = WORLD_SIZE_DEFAULT_Y * 0.5f-b; // Half height
+        constexpr float w = WORLD_SIZE_DEFAULT_X * 0.5f - b; // Half width
+        constexpr float h = WORLD_SIZE_DEFAULT_Y * 0.5f - b; // Half height
         constexpr float a = 10.0f;  // Amplitude
         
         // Top
@@ -336,23 +336,23 @@ void ResourceStorage::initLandscape()
         }
         ShapeRight.push_back({w+b, -h-b});
         
-        // Right
+        // Left
         ShapeType ShapeLeft;
-        ShapeLeft.push_back({-w-b, h+b});
-        for (auto i=h+b; i>=-h-b; i-=1.0f)
+        ShapeLeft.push_back({-w-b, -h-b});
+        for (auto i=-h-b; i<=h+b; i+=1.0f)
         {
             ShapeLeft.push_back({-w + a * float(Boundary.GetValue(double(-w), double(i))), i});
         }
-        ShapeLeft.push_back({-w-b, -h-b});
+        ShapeLeft.push_back({-w-b, h+b});
         
         // Bottom
         ShapeType ShapeBottom;
-        ShapeBottom.push_back({-w-b, -h-b});
-        for (auto i=-w-b; i<=w+b; i+=1.0f)
+        ShapeBottom.push_back({w+b, -h-b});
+        for (auto i=w+b; i>=-w-b; i-=1.0f)
         {
             ShapeBottom.push_back({i, -h + a * float(Boundary.GetValue(double(i), double(-h)))});
         }
-        ShapeBottom.push_back({w+b, -h-b});
+        ShapeBottom.push_back({-w-b, -h-b});
         
         auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
         
@@ -413,10 +413,10 @@ void ResourceStorage::initLandscape()
             ShapeType TmpShape;
             for (auto i=1u; i<Shapes.ShapeDefs.back().size()-2; ++i)
             {
-                TmpShape.push_back({-w-b, float(h+b-(i-1))});
-                TmpShape.push_back({-w-b, float(h+b-i)});
+                TmpShape.push_back({-w-b, float((i-1)-h-b)});
+                TmpShape.push_back({-w-b, float(i-h-b)});
                 TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
-                TmpShape.push_back({-w-b, float(h+b-i)});
+                TmpShape.push_back({-w-b, float(i-h-b)});
                 TmpShape.push_back(Shapes.ShapeDefs.back()[i+1]);
                 TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
             }
@@ -435,10 +435,10 @@ void ResourceStorage::initLandscape()
             ShapeType TmpShape;
             for (auto i=1u; i<Shapes.ShapeDefs.back().size()-2; ++i)
             {
-                TmpShape.push_back({float((i-1)-w-b), -h-b});
-                TmpShape.push_back({float(i-w-b), -h-b});
+                TmpShape.push_back({float(w+b-(i-1)), -h-b});
+                TmpShape.push_back({float(w+b-i), -h-b});
                 TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
-                TmpShape.push_back({float(i-w-b), -h-b});
+                TmpShape.push_back({float(w+b-i), -h-b});
                 TmpShape.push_back(Shapes.ShapeDefs.back()[i+1]);
                 TmpShape.push_back(Shapes.ShapeDefs.back()[i]);
             }
