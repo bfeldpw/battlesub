@@ -44,7 +44,7 @@ void EmitterSystem::emit()
 
             auto& FldSrcComp = Reg_.emplace<FluidSourceComponent>(Debris);
             FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
-            FldSrcComp.DensityWeight_ = 1.0f;
+            FldSrcComp.DensityStatic_ = 30.0f;
             FldSrcComp.VelocityWeight_ = _EmComp.VelocityWeight_;
 
             //--- Adjust physics body for non-self collisions ---//

@@ -79,9 +79,9 @@ void DebugRenderSystem::renderVelocityVectors(const Matrix3& _ProjectionMatrix)
     constexpr auto CELL_X = WORLD_SIZE_DEFAULT_X/GRID_X;
     constexpr auto CELL_Y = WORLD_SIZE_DEFAULT_Y/GRID_Y;
 
-    for (auto y=0; y<GRID_Y; ++y)
+    for (auto y=0; y<GRID_Y; y+=2)
     {
-        for (auto x=0; x<GRID_X; ++x)
+        for (auto x=0; x<GRID_X; x+=2)
         {
             int IndFlat = GRID_X*y+x;
             float PosX0 = float(x)*CELL_X-0.5f*WORLD_SIZE_DEFAULT_X+CELL_X*0.5f;

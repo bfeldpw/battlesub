@@ -17,13 +17,15 @@ void FluidInteractionSystem::addSources()
     {
         auto Pos = _PhysComp.Body_->GetPosition();
         auto Vel = _PhysComp.Body_->GetLinearVelocity();
+        auto VelBP = _FluidComp.VelocityBackProjection_;
+        auto DenBP = _FluidComp.DensityBackProjection_;
 
         FluidGrid_.addDensity(Pos.x, Pos.y,
-                            Pos.x-Vel.x*1.0f/60.0f, Pos.y-Vel.y*1.0f/60.0f,
-                            Vel.Length()*_FluidComp.DensityWeight_)
+                            Pos.x-Vel.x*DenBP, Pos.y-Vel.y*DenBP,
+                            (_FluidComp.DensityStatic_ + _FluidComp.DensityDynamic_*Vel.Length()))
                   .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
-                            Pos.x-Vel.x*_FluidComp.VelocityBackProjection_,
-                            Pos.y-Vel.y*_FluidComp.VelocityBackProjection_,
+                            Pos.x-Vel.x*VelBP,
+                            Pos.y-Vel.y*VelBP,
                             Vel.x, Vel.y,
                             _FluidComp.VelocityWeight_);
     });

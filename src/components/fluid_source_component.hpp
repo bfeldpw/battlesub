@@ -11,15 +11,16 @@ enum class FluidSourceShapeE : int
 struct FluidSourceComponent
 {
     FluidSourceShapeE DensityShape_ = FluidSourceShapeE::POINT;
-    float Density_ = 1.0f;
+    float DensityBackProjection_ = 0.0f; // Linear Backprojection in seconds
+    float DensityDynamic_ = 0.0f;
     float DensitySourceSize_ = 1.0f;
-    float DensityWeight_ = 0.0f;
+    float DensityStatic_ = 1.0f;
 
     FluidSourceShapeE VelocityShape_ = FluidSourceShapeE::POINT;
     float VelocityX_[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     float VelocityY_[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     float VelocitySourceSize_ = 1.0f;
-    float VelocityBackProjection_ = 0.0f;
+    float VelocityBackProjection_ = 0.0f; // Linear Backprojection in seconds
     float VelocityWeight_ = 0.0f;
 };
 

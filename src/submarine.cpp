@@ -106,8 +106,10 @@ void Submarine::fire(entt::registry& _Reg)
         _Reg.ctx<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.06f);
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
+        FldSrcComp.DensityBackProjection_ = 1.0f/60.0f;
         FldSrcComp.VelocityBackProjection_ = 1.0f/60.0f;
-        FldSrcComp.DensityWeight_ = 1.0f;
+        FldSrcComp.DensityStatic_ = 10.0f;
+        FldSrcComp.DensityDynamic_ = 1.0f;
         FldSrcComp.VelocityWeight_ = 0.1f;
 
 
@@ -132,4 +134,5 @@ void Submarine::update(entt::registry& _Reg)
     assert(HullBody != nullptr);
 
     HullBody->ApplyForceToCenter(HullBody->GetWorldVector({0.0f, Throttle_}), true);
+    // std::cout << HullBody->GetLinearVelocity().Length()*3.6f << std::endl;
 }

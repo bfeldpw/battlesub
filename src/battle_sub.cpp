@@ -432,7 +432,7 @@ void BattleSub::updateGameObjects()
     FluidGrid_.addDensity(10.0, 0.0, 100.0)
               .addVelocity(10.0, 0.0, -20.0, 0.0,
                            10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -500.0, 0.0);
-    FluidGrid_.addDensity(-10.0, -10.0, 10.0)
+    FluidGrid_.addDensity(-10.0, -10.0, 100.0)
               .addVelocity(-10.0, -10.0, 20.0, 0.0,
                            -10.0+20.0*double(VelocitySourceBackprojection_), -10.0, 100.0, 0.0);
 
@@ -528,7 +528,7 @@ void BattleSub::updateUI(const double _GPUTime)
                                 "  Value 0.0: Density just diffuses, but builds up over time.\n"
                                 "  Value 1.0: Density quickly converges to zero.");
                 FluidGrid_.setDensityDissipation(DensityDissipation);
-                ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 1000.0f);
+                ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 100.0f);
                     showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
                                 "Base density (background) will be distorted by x * advection, e.g.:\n"
                                 "  Value 200: A velocity of 1m/s will distort by 200m");
