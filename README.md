@@ -1,5 +1,6 @@
 # BattleSub
 Will eventually become a two player 2D submarine game with some fluid dynamics.
+BattleSub is using Magnum Graphics, Box2D, EnTT, and ImGUI:
 
 [![Build Status](https://travis-ci.com/bfeldpw/battlesub.svg?branch=master)](https://travis-ci.com/bfeldpw/battlesub)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5aa2f9b18121497cbe9ec07c610a08bd)](https://www.codacy.com/gh/bfeldpw/battlesub/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bfeldpw/battlesub&amp;utm_campaign=Badge_Grade)
@@ -17,5 +18,4 @@ If successful, run BattleSub using `./run` or `/<path>/<to>/scripts/run` if in a
 
 ## Screenshots
 
-Developing BattleSub, using Magnum Graphics, Box2D, EnTT, and ImGUI:
-![alt text](https://github.com/bfeldpw/battlesub/blob/master/Screenshot_20200628_211604.png?raw=true)
+![alt text](https://github.com/bfeldpw/battlesub/blob/master/screenshots/Screenshot_20210219_172850.png?raw=true)
