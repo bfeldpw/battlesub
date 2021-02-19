@@ -19,6 +19,7 @@ If successful, run BattleSub using `./run` or `/<path>/<to>/scripts/run` if in a
 ## Credits
 
 Since other libraries are what drives a great part of this project, I think they should go first. I appreciate all the hard work done by publicy available libraries, such as [Magnum Graphics](https://github.com/mosra/magnum), [Box2D] (https://github.com/erincatto/box2d), [EnTT](https://github.com/skypjack/entt), [Dear ImGUI](https://github.com/ocornut/imgui), and [LibNoise](libnoise.sourceforge.net/) that my [LibNoise2D](https://github.com/planeworld/libnoise2d) verion/extension is based on, as well as other contributions I maybe forgot. 
+
 Special thanks go to [Vladimír Vondruš](https://github.com/mosra) and supporters, not only for the aforementioned Magnum Graphics middleware, but also the fast response time on gitter.im on my questions. Not only have the dev(s) been answering my API-related questions, but have also been giving valuable hints on concepts for implementation of different aspects. 
 
 ## Screenshots
