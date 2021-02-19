@@ -18,4 +18,4 @@ If successful, run BattleSub using `./run` or `/<path>/<to>/scripts/run` if in a
 
 ## Screenshots
 
-![alt text](https://github.com/bfeldpw/battlesub/blob/master/screenshots/Screenshot_20210219_172850.png?raw=true)
+![alt text](https://github.com/bfeldpw/battlesub/screenshots/blob/master/Screenshot_20210219_172850.png?raw=true)
