@@ -18,4 +18,18 @@ If successful, run BattleSub using `./run` or `/<path>/<to>/scripts/run` if in a
 
 ## Screenshots
 
+Final buffer composition with debug GUI:
 ![alt text](screenshots/Screenshot_20210219_172850.png?raw=true)
+Velocity field:
+![alt text](screenshots/Screenshot_20210219_172911.png?raw=true)
+Pressure field:
+![alt text](screenshots/Screenshot_20210219_173001.png?raw=true)
+Heightmap (Background):
+![alt text](screenshots/Screenshot_20210219_173152.png?raw=true)
+Heightmap distorted by velocity field:
+![alt text](screenshots/Screenshot_20210219_173212.png?raw=true)
+Velocity vectors (sub-sampled):
+![alt text](screenshots/Screenshot_20210219_173237.png?raw=true)
+Velocity probes:
+![alt text](screenshots/Screenshot_20210219_173255.png?raw=true)
+
