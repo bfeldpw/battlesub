@@ -1,0 +1,157 @@
+#!/bin/bash
+
+echo "> cd $(dirname "$0")/.."
+cd $(dirname "$0")/..
+
+echo "> mkdir -p install"
+mkdir -p install
+
+echo "> mkdir -p 3rdparty"
+mkdir -p 3rdparty
+
+echo "> cd 3rdparty"
+cd 3rdparty
+
+echo "> git config --global advice.detachedHead false"
+git config --global advice.detachedHead false
+
+echo "> git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git"
+git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git
+
+echo "> git clone --branch v2.4.1 --depth 1 https://github.com/erincatto/box2d.git"
+git clone --branch v2.4.1 --depth 1 https://github.com/erincatto/box2d.git
+
+echo "> git clone --branch v3.5.2 --depth 1 https://github.com/skypjack/entt.git"
+git clone --branch v3.5.2 --depth 1 https://github.com/skypjack/entt.git
+
+echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git"
+git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git
+
+echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum.git"
+git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum.git
+
+echo "> git clone --branch v1.79 --depth 1 https://github.com/ocornut/imgui.git"
+git clone --branch v1.79 --depth 1 https://github.com/ocornut/imgui.git
+
+echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum-integration.git"
+git clone --branch v2020.06 --depth 1 https://github.com/mosra/magnum-integration.git
+
+
+# Install libnoise2d
+
+echo "> cd libnoise2d"
+cd libnoise2d
+echo "> mkdir -p build"
+mkdir -p build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DUSE_XXHASH=ON -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DUSE_XXHASH=ON -DCMAKE_BUILD_TYPE=RELEASE
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
+
+# Install box2d
+
+echo "> cd box2d"
+cd box2d
+echo "> mkdir -p build"
+mkdir -p build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBOX2D_BUILD_TESTBED=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBOX2D_BUILD_TESTBED=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
+
+# Install entt
+
+echo "> cd entt"
+cd entt
+# build directory already exists
+#echo "> mkdir -p build"
+#mkdir -p build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBUILD_GMOCK=OFF -DBUILD_TESTING=OFF -DINSTALL_GTEST=OFF -DCMAKE_BUILD_TYPE=RELEASE"
+cmake .. -DCMAKE_INSTALL_PREFIX=../../../install -DBUILD_GMOCK=OFF -DBUILD_TESTING=OFF -DINSTALL_GTEST=OFF -DCMAKE_BUILD_TYPE=RELEASE
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
+
+# Install corrade
+
+echo "> cd corrade"
+cd corrade
+echo "> mkdir -p build"
+mkdir -p build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_DEPRECATED=OFF"
+cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_DEPRECATED=OFF
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
+
+# Install magnum
+
+echo "> cd magnum"
+cd magnum
+echo "> mkdir -p build"
+mkdir -p build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_DEPRECATED=OFF -DWITH_DEBUGTOOLS=ON -DWITH_SDL2APPLICATION=ON"
+cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_DEPRECATED=OFF -DWITH_DEBUGTOOLS=ON -DWITH_SDL2APPLICATION=ON
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
+
+# Install imgui
+
+echo "> cd imgui"
+cd imgui
+echo "> cp *.h ../../install/include/"
+cp *.h ../../install/include/
+echo "> cp *.cpp ../../install/include/"
+cp *.cpp ../../install/include/
+echo "> cd .."
+cd ..
+
+# Install magnum-integration
+
+echo "> cd magnum-integration"
+cd magnum-integration
+echo "> mkdir -p build"
+mkdir -p build
+echo "> cd build"
+cd build
+echo "> cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_IMGUI=ON -Dimgui_DIR=../../install"
+cmake .. -DCMAKE_PREFIX_PATH=../../../install -DCMAKE_INSTALL_PREFIX=../../../install -DCMAKE_BUILD_TYPE=RELEASE -DWITH_IMGUI=ON -Dimgui_DIR=../../install
+echo "> make -j8 install"
+make -j8 install
+echo "> cd ../.."
+cd ../..
+
+# Add modules
+echo "> mkdir -p modules"
+mkdir -p modules
+echo "> cp magnum-integration/modules/* modules/"
+cp magnum-integration/modules/* modules/
+echo "> cd .."
+cd ..
+
+# Install sol release
+cd install/include/
+wget https://github.com/ThePhD/sol2/releases/download/v3.2.2/sol.hpp
+mkdir sol
+cd sol
+wget https://github.com/ThePhD/sol2/releases/download/v3.2.2/config.hpp
+wget https://github.com/ThePhD/sol2/releases/download/v3.2.2/forward.hpp
+cd ../../..
