@@ -10,6 +10,7 @@ BattleSub is using Magnum Graphics, Box2D, EnTT, and ImGUI:
 Well, I wanted to use Lua for scripting and configuration purposes, which I did in other projects before. But then TravisCI errored, because of missing Lua. So I added Lua, changed its version for CI, changed Ubuntu version in CI, added missing headers and everything was fine, eventually, apart from - git.
 
 So now, since the history is gone, lets just add a little changelog here, beginning today (2022-05-13):
+
 2022-05-13: Add lua to enable configuration via scripts
 
 ## Status
