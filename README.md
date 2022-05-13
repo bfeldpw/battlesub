@@ -13,8 +13,8 @@ So now, since the history is gone, lets just add a little changelog here, beginn
 
 2022-05-13: Add lua to enable configuration via scripts
 
-## Status
-At the moment, there is just code cleanup. A proper readme will be written soon.
+## Installation and Dependencies
+
 To build and install after cloning run
 ```bash
 cd scripts
@@ -23,6 +23,14 @@ cd scripts
 from BattleSub directory.
 
 If successful, run BattleSub using `./run` or `/<path>/<to>/scripts/run` if in another directory.
+
+### Dependencies
+
+You can always have a look at .travis.yml for a configuration that should work. In general, dependencies are:
+* SDL2
+* Lua
+
+Other dependencies will be installed and compiled when running "build_dependencies" (see above).
 
 ## Credits
 
