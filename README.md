@@ -6,6 +6,13 @@ BattleSub is using Magnum Graphics, Box2D, EnTT, and ImGUI:
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5aa2f9b18121497cbe9ec07c610a08bd)](https://www.codacy.com/gh/bfeldpw/battlesub/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bfeldpw/battlesub&amp;utm_campaign=Badge_Grade)
 [![Last commit](https://img.shields.io/github/last-commit/bfeldpw/battlesub)
 
+## What happened
+Well, I wanted to use Lua for scripting and configuration purposes, which I did in other projects before. But then TravisCI errored, because of missing Lua. So I added Lua, changed the its version for CI, changed Ubuntu version in CI, added missing headers and everything was fine, apart from git.
+
+So now, since the history is gone, lets just add a little changelog here, beginning today (2022-05-13):
+2022-05-13: Add lua to enable configuration via scripts
+
+## Status
 At the moment, there is just code cleanup. A proper readme will be written soon.
 To build and install after cloning run
 ```bash
