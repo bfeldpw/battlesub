@@ -34,6 +34,10 @@ You can always have a look at .travis.yml for a configuration that should work. 
 
 Other dependencies will be installed and compiled when running "build_dependencies" (see above).
 
+### Platforms
+
+While I tried to stay portable with all code and libraries, BattleSub currently only supports Linux, since I don't exactly know, how to develop for Windows. Every support is welcome, ofcourse.
+
 ## Credits
 
 Since other libraries are what drives a great part of this project, I think they should go first. I appreciate all the hard work done by publicy available libraries, such as [Magnum Graphics](https://github.com/mosra/magnum),  [Box2D](https://github.com/erincatto/box2d), [EnTT](https://github.com/skypjack/entt), and [Dear ImGUI](https://github.com/ocornut/imgui), as well as other contributions I maybe forgot. 
