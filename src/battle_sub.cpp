@@ -607,6 +607,8 @@ void BattleSub::updateUI(const double _GPUTime)
                     showTooltip("Toggle split screen mode");
                 ImGui::Checkbox("Debug          <ctrl-d>", &IsDebugDisplayed_);
                     showTooltip("Toggle debug mode");
+                if (ImGui::Button("Reload lua config")) this->setupLua();
+                    showTooltip("Reload the default lua configuration file");
 
                 static std::string Label;
                 if (IsPaused_) Label = "Resume                 <p>";
