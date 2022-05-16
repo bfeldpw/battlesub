@@ -524,10 +524,12 @@ void BattleSub::updateUI(const double _GPUTime)
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
                 ImGui::NewLine();
-                static int IterationsDensityDiffusion = 5;
-                ImGui::SliderInt("Density Diffsion Iterations", &IterationsDensityDiffusion, 1, 20);
+                ImGui::SliderInt("Density Diffsion Iterations", &Reg_.ctx<FluidGrid>().Config_.IterationsDensityDiffusion_, 1, 20);
                     showTooltip("Number of iterations for numerical diffusion calculation.");
-                Reg_.ctx<FluidGrid>().setIterationsDensityDiffusion(IterationsDensityDiffusion);
+                ImGui::SliderInt("Velocity Diffsion Iterations", &Reg_.ctx<FluidGrid>().Config_.IterationsVelocityDiffusion_, 1, 20);
+                    showTooltip("Number of iterations for numerical diffusion calculation.");
+                ImGui::SliderInt("Pressure Equation Iterations", &Reg_.ctx<FluidGrid>().Config_.IterationsPressureEquation_, 1, 80);
+                    showTooltip("Number of iterations for solving the pressure equation.");
                 ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 100.0f);
                     showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
                                 "Base density (background) will be distorted by x * advection, e.g.:\n"
@@ -688,7 +690,7 @@ void BattleSub::setupECS()
 
 void BattleSub::setupLua()
 {
-    Reg_.ctx<LuaManager>().loadFile("config_fluid_dynamics.lua");
+    Reg_.ctx<LuaManager>().loadFile("config.lua");
     Reg_.ctx<FluidGrid>().loadConfig();
 }
 

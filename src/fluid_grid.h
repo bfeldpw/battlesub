@@ -51,9 +51,10 @@ class FluidGrid
 
         struct Config
         {
-            int IterationsDensityDiffusion_ = 5;
+            int IterationsDensityDiffusion_ = 2;
             int IterationsVelocityDiffusion_ = 5;
             int IterationsPressureEquation_ = 20;
+            float UpdateFrequency = 30.0f; // [Hz]
         } Config_;
 
         // Fluid Grid constants to be accessed from outside, too

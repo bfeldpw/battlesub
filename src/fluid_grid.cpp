@@ -14,10 +14,11 @@ using namespace Magnum;
 void FluidGrid::loadConfig()
 {
     auto& ConfLua = Reg_.ctx<LuaManager>();
-    auto Cfg = ConfLua.Lua_["config"];
-    Config_.IterationsDensityDiffusion_ = Cfg["iterations_density_diffusion"];
-    Config_.IterationsVelocityDiffusion_ = Cfg["iterations_velocity_diffusion"];
-    Config_.IterationsPressureEquation_ = Cfg["iterations_pressure_equation"];
+    auto c = ConfLua.Lua_["fluid_dynamics"];
+    Config_.IterationsDensityDiffusion_ = c["iterations_density_diffusion"];
+    Config_.IterationsVelocityDiffusion_ = c["iterations_velocity_diffusion"];
+    Config_.IterationsPressureEquation_ = c["iterations_pressure_equation"];
+    Config_.UpdateFrequency = c["update_frequency"];
 }
 
 Vector2 FluidGrid::getVelocity(const float _x, const float _y) const

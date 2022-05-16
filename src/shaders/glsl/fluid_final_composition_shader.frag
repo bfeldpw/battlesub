@@ -11,5 +11,5 @@ void main()
     float g_d = texelFetch(u_tex_ground_distorted, ivec2(gl_FragCoord.xy), 0).x;
     float v = length(texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy),0));
     float d = texelFetch(u_tex_density_buffer, ivec2(gl_FragCoord.xy), 0).x;
-    frag_col =  0.25*g_b + 0.25*g_d  + 0.1 * clamp(0.1*v, 0.0, 1.0) + 0.3*clamp(0.05*d, 0.0, 2.0);
+    frag_col =  0.5*g_b + 0.5*g_d  + 0.025 * clamp(0.1*v, 0.0, 2.0) + 0.1*clamp(0.05*d, 0.0, 4.0);
 }
