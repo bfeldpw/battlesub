@@ -2,6 +2,7 @@ fluid_dynamics = {
   iterations_density_diffusion = 2,
   iterations_velocity_diffusion = 5,
   iterations_pressure_equation = 20,
+  velocity_advection_factor = 0.9,
   update_frequency = 30.0
 }
 

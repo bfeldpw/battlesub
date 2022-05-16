@@ -226,7 +226,6 @@ void BattleSub::drawEvent()
         
         Fluid.setDensityDistortion(DensityDistortion_)
              .setScalarFieldDisplayScale(ScalarFieldDisplayScale_)
-             .setVelocityAdvectionFactor(VelocityAdvectionFactor_)
              .setVelocityDisplayScale(1.0f/VelocityDisplayScale_)
              .setVelocityDisplayShowOnlyMagnitude(VelocityDisplayShowOnlyMagnitude_);
         
@@ -524,17 +523,17 @@ void BattleSub::updateUI(const double _GPUTime)
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
                 ImGui::NewLine();
-                ImGui::SliderInt("Density Diffsion Iterations", &Reg_.ctx<FluidGrid>().Config_.IterationsDensityDiffusion_, 1, 20);
+                ImGui::SliderInt("Density Diffsion Iterations", &Reg_.ctx<FluidGrid>().Conf.IterationsDensityDiffusion, 1, 20);
                     showTooltip("Number of iterations for numerical diffusion calculation.");
-                ImGui::SliderInt("Velocity Diffsion Iterations", &Reg_.ctx<FluidGrid>().Config_.IterationsVelocityDiffusion_, 1, 20);
+                ImGui::SliderInt("Velocity Diffsion Iterations", &Reg_.ctx<FluidGrid>().Conf.IterationsVelocityDiffusion, 1, 20);
                     showTooltip("Number of iterations for numerical diffusion calculation.");
-                ImGui::SliderInt("Pressure Equation Iterations", &Reg_.ctx<FluidGrid>().Config_.IterationsPressureEquation_, 1, 80);
+                ImGui::SliderInt("Pressure Equation Iterations", &Reg_.ctx<FluidGrid>().Conf.IterationsPressureEquation, 1, 80);
                     showTooltip("Number of iterations for solving the pressure equation.");
                 ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 100.0f);
                     showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
                                 "Base density (background) will be distorted by x * advection, e.g.:\n"
                                 "  Value 200: A velocity of 1m/s will distort by 200m");
-                ImGui::SliderFloat("Velocity Advection Factor", &VelocityAdvectionFactor_, 0.0f, 2.0f);
+                ImGui::SliderFloat("Velocity Advection Factor", &Reg_.ctx<FluidGrid>().Conf.VelocityAdvectionFactor, 0.0f, 2.0f);
                     showTooltip("Factor for velocity advection.\nA lower value than 1.0 will move the velocity field slower than self-advection.\n"
                                 "A higher value than 1.0 will move the velocity field faster than self-advection.");
 

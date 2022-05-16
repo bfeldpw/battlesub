@@ -107,7 +107,6 @@ class BattleSub : public Platform::Application
         FluidBufferE FluidBuffer_{FluidBufferE::FINAL_COMPOSITION};
         float DensityDistortion_ = 50.0f;
         float ScalarFieldDisplayScale_ = 1.0f;
-        float VelocityAdvectionFactor_ = 0.9f;
         float VelocityDisplayScale_ = 20.0f;
         bool  VelocityDisplayShowOnlyMagnitude_ = false;
         float VelocitySourceBackprojection_ = 0.08f; 
@@ -115,7 +114,7 @@ class BattleSub : public Platform::Application
         Submarine* PlayerSub_  = nullptr;
         Submarine* PlayerSub2_ = nullptr;
 
-        float VisRes_ = 10.0f; // Visual Resolution in pixels per meter
+        float VisRes_ = 5.0f; // Visual Resolution in pixels per meter
         CameraDynamics Cam1MoveAheadX_;
         CameraDynamics Cam1MoveAheadY_;
         CameraDynamics Cam1Zoom_;

@@ -15,10 +15,11 @@ void FluidGrid::loadConfig()
 {
     auto& ConfLua = Reg_.ctx<LuaManager>();
     auto c = ConfLua.Lua_["fluid_dynamics"];
-    Config_.IterationsDensityDiffusion_ = c["iterations_density_diffusion"];
-    Config_.IterationsVelocityDiffusion_ = c["iterations_velocity_diffusion"];
-    Config_.IterationsPressureEquation_ = c["iterations_pressure_equation"];
-    Config_.UpdateFrequency = c["update_frequency"];
+    Conf.IterationsDensityDiffusion = c["iterations_density_diffusion"];
+    Conf.IterationsVelocityDiffusion = c["iterations_velocity_diffusion"];
+    Conf.IterationsPressureEquation = c["iterations_pressure_equation"];
+    Conf.VelocityAdvectionFactor = c["velocity_advection_factor"];
+    Conf.UpdateFrequency = c["update_frequency"];
 }
 
 Vector2 FluidGrid::getVelocity(const float _x, const float _y) const
@@ -431,8 +432,12 @@ void FluidGrid::process(const double SimTime)
     // FBOVelocitiesFront_->setViewport(ViewportFull);
     // FBOVelocitiesBack_->setViewport(ViewportFull);
     static std::uint32_t c = 0;
-
     c++;
+
+    if (Conf.onChange(Config::Param::ITERATIONS_DENSITY_DIFFUSION))
+        ShaderJacobi1d_.setAlpha(this->getDiffusionAlpha());
+    if (Conf.onChange(Config::Param::VELOCITY_ADVECTION_FACTOR))
+        ShaderAdvect2d_.setAdvectionFactor(Conf.VelocityAdvectionFactor);
 
     if (c%2 == 0)
     {
@@ -580,7 +585,7 @@ void FluidGrid::calculatePressure()
     FBOPressureBack_->clearColor(0, Color4(0.0f));
     ShaderJacobi1d_.setAlpha(0.25f)//this->getPressureEquationAlpha())
                    .setRBeta(0.25f);
-    for (int i=0; i<Config_.IterationsPressureEquation_; ++i)
+    for (int i=0; i<Conf.IterationsPressureEquation; ++i)
     {    
         std::swap(FBOPressureFront_, FBOPressureBack_);
         std::swap(TexPressureFront_, TexPressureBack_);
@@ -612,7 +617,7 @@ void FluidGrid::diffuseDensities()
 {
     ShaderJacobi1d_.setAlpha(this->getDiffusionAlpha())
                    .setRBeta(1.0f/(4.0f+this->getDiffusionAlpha()));
-    for (int i=0; i<Config_.IterationsDensityDiffusion_; ++i)
+    for (int i=0; i<Conf.IterationsDensityDiffusion; ++i)
     {
         std::swap(FBODensitiesFront_, FBODensitiesBack_);
         std::swap(TexDensitiesFront_, TexDensitiesBack_);
@@ -627,7 +632,7 @@ void FluidGrid::diffuseVelocities()
 {
     ShaderJacobi2d_.setAlpha(this->getDiffusionAlpha())
                    .setRBeta(1.0f/(4.0f+this->getDiffusionAlpha()));
-    for (int i=0; i<Config_.IterationsVelocityDiffusion_; ++i)
+    for (int i=0; i<Conf.IterationsVelocityDiffusion; ++i)
     {
         std::swap(FBOVelocitiesFront_, FBOVelocitiesBack_);
         std::swap(TexVelocitiesFront_, TexVelocitiesBack_);

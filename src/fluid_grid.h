@@ -49,13 +49,53 @@ class FluidGrid
 {
     public:
 
-        struct Config
+        class Config
         {
-            int IterationsDensityDiffusion_ = 2;
-            int IterationsVelocityDiffusion_ = 5;
-            int IterationsPressureEquation_ = 20;
-            float UpdateFrequency = 30.0f; // [Hz]
-        } Config_;
+            public:
+
+                enum class Param : int
+                {
+                    ITERATIONS_DENSITY_DIFFUSION,
+                    VELOCITY_ADVECTION_FACTOR
+                };
+
+                int IterationsDensityDiffusion = 2;
+                int IterationsVelocityDiffusion = 5;
+                int IterationsPressureEquation = 20;
+                float VelocityAdvectionFactor = 0.9f;
+                float UpdateFrequency = 30.0f; // [Hz]
+
+                bool onChange(Param p)
+                {
+                    bool r = false;
+                    switch (p)
+                    {
+                        case Param::VELOCITY_ADVECTION_FACTOR:
+                            if (VelocityAdvectionFactor != VelocityAdvectionFactor_)
+                            {
+                                VelocityAdvectionFactor_ = VelocityAdvectionFactor;
+                                r = true;
+                            }
+                            break;
+                        case Param::ITERATIONS_DENSITY_DIFFUSION:
+                            if (IterationsDensityDiffusion != IterationsDensityDiffusion_)
+                            {
+                                IterationsDensityDiffusion_ = IterationsDensityDiffusion;
+                                r = true;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    return r;
+                }
+
+            private:
+
+                int IterationsDensityDiffusion_ = 2;
+                float VelocityAdvectionFactor_ = 0.9f;
+
+        } Conf;
 
         // Fluid Grid constants to be accessed from outside, too
         static constexpr float FLUID_FREQUENCY = 30.0f;
@@ -81,15 +121,14 @@ class FluidGrid
                                const float x1, const float y1, const float Vx1, const float Vy1,
                                const float w = 1.0f);
         FluidGrid& setDensityDistortion(const float f) {ShaderGroundDistortion_.setDistortion(f); return *this;}
-        FluidGrid& setConfig(const Config& _Config) {Config_ = _Config; return *this;}
+        FluidGrid& setConfig(const Config& _Config) {Conf = _Config; return *this;}
         FluidGrid& setIterationsDensityDiffusion(const int n)
         {
-            Config_.IterationsDensityDiffusion_ = n;
-            ShaderJacobi1d_.setAlpha(getDiffusionAlpha());
+            // Conf.IterationsDensityDiffusion_ = n;
+            // ShaderJacobi1d_.setAlpha(getDiffusionAlpha());
             return *this;
         }
         FluidGrid& setScalarFieldDisplayScale(const float f) {ShaderDensityDisplay_.setScale(f); return *this;}
-        FluidGrid& setVelocityAdvectionFactor(const float f) {ShaderAdvect2d_.setAdvectionFactor(f); return *this;}
         FluidGrid& setVelocityDisplayScale(const float f) {ShaderVelocityDisplay_.setScale(f); return *this;}
         FluidGrid& setVelocityDisplayShowOnlyMagnitude(const bool b) {ShaderVelocityDisplay_.setShowOnlyMagnitude(b); return *this;}
         FluidGrid& setDensityBase(std::vector<float>* const DensityBase);
@@ -125,7 +164,7 @@ class FluidGrid
         {
             float Res = float(FLUID_GRID_SIZE_X) / WORLD_SIZE_DEFAULT_X;
             // float Res = WORLD_SIZE_DEFAULT_X / FLUID_GRID_SIZE_X;
-            return Res*Res / Config_.IterationsDensityDiffusion_ * FLUID_FREQUENCY;
+            return Res*Res / Conf.IterationsDensityDiffusion * FLUID_FREQUENCY;
         }
         void readbackVelocities(const int _Fraction, const int _SubDivisionBase2);
 
