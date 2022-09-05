@@ -83,13 +83,13 @@ void ContactListener::emitLandscapeDebris(b2Contact* const _Contact, b2Body* con
     EmComp.Angle_ = Angle;
     EmComp.AngleStdDev_ = 1.0f;
     EmComp.Frequency_ = 1.0f;
-    EmComp.Number_ = 10;
+    EmComp.Number_ = 20;
     EmComp.OriginX_ = POC.x+WorldManifold.normal.x*0.2f;
     EmComp.OriginY_ = POC.y+WorldManifold.normal.y*0.2f;
-    EmComp.Scale_= 4.0;
-    EmComp.ScaleStdDev_ = 2.0;
-    EmComp.Velocity_ = 50.0f;
-    EmComp.VelocityStdDev_ = 25.0f;
+    EmComp.Scale_= 5.0;
+    EmComp.ScaleStdDev_ = 2.5;
+    EmComp.Velocity_ = 30.0f;
+    EmComp.VelocityStdDev_ = 20.0f;
     EmComp.VelocityWeight_ = 0.0f;
 }
 

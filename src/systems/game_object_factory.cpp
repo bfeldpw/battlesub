@@ -4,6 +4,7 @@
 #include "parent_component.hpp"
 
 void GameObjectFactory::create(entt::entity e, std::any _Parent, const GameObjectTypeE _GameObjectType,
+                               const int _AgeMax,
                                 const DrawableGroupsTypeE _DrawableGroupsType, Color4 _Col,
                                 const b2BodyDef& _BodyDef)
 {
@@ -40,6 +41,7 @@ void GameObjectFactory::create(entt::entity e, std::any _Parent, const GameObjec
     this->createShapes(Physics.Body_, Physics.Shapes_);
 
     Status.Age_.restart();
+    Status.AgeMax_ = _AgeMax;
     Status.Type_ = _GameObjectType;
 
     Visuals.Color_       = _Col;
@@ -112,7 +114,7 @@ void GameObjectFactory::updateStatus()
 
         {
             if (!_StatusComp.IsSinking_ &&
-                (_StatusComp.Age_.time() > 5.0f ||
+                (_StatusComp.Age_.time() > _StatusComp.AgeMax_ ||
                 _PhysComp.Body_->GetLinearVelocity().Length() < 0.01f))
             {
                 _StatusComp.IsSinking_ = true;

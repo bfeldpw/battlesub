@@ -7,6 +7,7 @@
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
 #include "game_object_factory.hpp"
+#include "lua_manager.hpp"
 
 void EmitterSystem::emit()
 {
@@ -14,12 +15,15 @@ void EmitterSystem::emit()
     {
         std::normal_distribution<float> DistAngle(_EmComp.Angle_, _EmComp.AngleStdDev_);
         std::normal_distribution<float> DistScale(_EmComp.Scale_, _EmComp.ScaleStdDev_);
+        std::normal_distribution<float> DistColor(1.0, 0.2);
 
         for (auto i=0; i<_EmComp.Number_; ++i)
         {
             auto Debris = Reg_.create();
 
-            Magnum::Math::Color3 Col = {0.05f, 0.05f, 0.1f};
+            // Magnum::Math::Color3 Col = {0.05f, 0.05f, 0.1f};
+            auto ColorGrade = DistColor(_EmComp.Generator_);
+            Magnum::Math::Color3 Col = {0.5f*ColorGrade, 0.5f*ColorGrade, 1.0f*ColorGrade};
             if (_EmComp.Type_ == GameObjectTypeE::DEBRIS_SUBMARINE)
             {
                 Col = {0.1f, 0.1f, 0.2f};
@@ -37,7 +41,8 @@ void EmitterSystem::emit()
                                         (_EmComp.Velocity_+_EmComp.VelocityStdDev_));
             BodyDef.angularVelocity = 0.5f*DistAngle(_EmComp.Generator_);
             Reg_.ctx<GameObjectFactory>().create(Debris, this, _EmComp.Type_,
-                                                DrawableGroupsTypeE::WEAPON, Col, BodyDef);
+                                                 Reg_.ctx<LuaManager>().Lua_["debris"]["age_max"],
+                                                 DrawableGroupsTypeE::WEAPON, Col, BodyDef);
 
             auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Debris);
             Reg_.ctx<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.001f, 0.0f, 0.0f);

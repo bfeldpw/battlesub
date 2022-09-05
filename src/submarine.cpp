@@ -16,7 +16,7 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         BodyDef.linearDamping = 0.0f;
 
         Hull = _Reg.create();
-        _Reg.ctx<GameObjectFactory>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, DrawableGroupsTypeE::DEFAULT,
+        _Reg.ctx<GameObjectFactory>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, 5, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDef);
         DBLK(
             _Reg.ctx<MessageHandler>().reportDebug("created submarine hull");
@@ -44,7 +44,7 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         BodyDefRudder.linearDamping = 0.0f;
 
         Rudder = _Reg.create();
-        _Reg.ctx<GameObjectFactory>().create(Rudder, this, GameObjectTypeE::SUBMARINE_RUDDER, DrawableGroupsTypeE::DEFAULT,
+        _Reg.ctx<GameObjectFactory>().create(Rudder, this, GameObjectTypeE::SUBMARINE_RUDDER, 5, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDefRudder);
         DBLK(
             _Reg.ctx<MessageHandler>().reportDebug("created submarine rudder");
@@ -99,7 +99,7 @@ void Submarine::fire(entt::registry& _Reg)
         BodyDef.angularDamping = 5.0f;
         BodyDef.linearDamping = 0.0f;
         BodyDef.bullet = true;
-        _Reg.ctx<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, DrawableGroupsTypeE::WEAPON,
+        _Reg.ctx<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, 5, DrawableGroupsTypeE::WEAPON,
                                              {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
         auto& FldProbesComp = _Reg.emplace<FluidProbeComponent>(Bullet);

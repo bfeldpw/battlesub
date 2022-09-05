@@ -141,18 +141,17 @@ void ResourceStorage::initHeightMap()
         HeightmapBillow.SetPersistence(0.5371);
         HeightmapBillow.SetNoiseQuality(noise::QUALITY_BEST);
         HeightmapBillow.SetNoiseType(noise::TYPE_VALUE);
-    
-    
+
         int OctaveCount = ceil(log2(1.0/Frequency)/log2(Lacunarity));
         if (OctaveCount < 1) OctaveCount = 1;
         
         HeightmapBillow.SetOctaveCount(OctaveCount);
-        HeightmapBillow.SetSeed(23);
+        HeightmapBillow.SetSeed(13);
     }
     Average.SetSourceModule(0, HeightmapRidge);
     Average.SetSourceModule(1, HeightmapBillow);
     FinalTerrain.SetSourceModule(0, Average);
-    FinalTerrain.SetFrequency(0.01);
+    FinalTerrain.SetFrequency(0.005);
     FinalTerrain.SetPower(500.0);
     
     Exponent.SetExponent(2.0);
@@ -184,8 +183,9 @@ void ResourceStorage::initHeightMap()
                 {
                     for (auto x=0u; x<FLUID_GRID_SIZE_X; ++x)
                     {
-                        HeightMap_[(y << FLUID_GRID_SIZE_X_BITS) + x] = float(Plateus.GetValue(double(x), double(y))*0.5+0.5);
-
+                        auto v = float(Plateus.GetValue(double(x), double(y))*0.5+0.6);
+                        // if (v>=0.6) v*=2.0;
+                        HeightMap_[(y << FLUID_GRID_SIZE_X_BITS) + x] = v;
                     }
                 }
             }
@@ -224,67 +224,67 @@ void ResourceStorage::initHeightMap()
         }
     }
     //--- Erosion and dilation ---//
-//     for (auto i=0u; i<2u; ++i)
-//     {
-//         for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
-//         {
-//             for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
-//             {
-//                 float Value = 1.0f;
-//                 float ValueMin = 1.0f;
-//                 for (auto m=-1; m<2; ++m)
-//                 {
-//                     for (auto n=-1; n<2; ++n)
-//                     {
-//                         Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
-//                         if (Value < ValueMin) ValueMin = Value;
-//                     }
-//                 }
-//                 (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMin;
-//             }
-//         }
-//         std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
-//     }
-//     for (auto i=0u; i<2u; ++i)
-//     {
-//         for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
-//         {
-//             for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
-//             {
-//                 float Value = 0.0f;
-//                 float ValueMax = 0.0f;
-//                 for (auto m=-1; m<2; ++m)
-//                 {
-//                     for (auto n=-1; n<2; ++n)
-//                     {
-//                         Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
-//                         if (Value > ValueMax) ValueMax = Value;
-//                     }
-//                 }
-//                 (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMax;
-//             }
-//         }
-//         std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
-//     }
-    //--- Kind of Marching Squares ---//
-//     std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
-//     for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
-//     {
-//         for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
-//         {
-//             int NoOnes = 0;
-//             for (auto m=-1; m<2; ++m)
-//             {
-//                 for (auto n=-1; n<2; ++n)
-//                 {
-//                     float Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
-//                     if (1.0f == Value) ++NoOnes;
-//                 }
-//             }
-//             if (NoOnes == 0 ||  NoOnes > 1) (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 0.0;
-//             else (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 1.0;
-//         }
-//     }
+    // for (auto i=0u; i<5u; ++i)
+    // {
+    //     for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+    //     {
+    //         for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+    //         {
+    //             float Value = 1.0f;
+    //             float ValueMin = 1.0f;
+    //             for (auto m=-1; m<2; ++m)
+    //             {
+    //                 for (auto n=-1; n<2; ++n)
+    //                 {
+    //                     Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+    //                     if (Value < ValueMin) ValueMin = Value;
+    //                 }
+    //             }
+    //             (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMin;
+    //         }
+    //     }
+    //     std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+    // }
+    // for (auto i=0u; i<5u; ++i)
+    // {
+    //     for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+    //     {
+    //         for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+    //         {
+    //             float Value = 0.0f;
+    //             float ValueMax = 0.0f;
+    //             for (auto m=-1; m<2; ++m)
+    //             {
+    //                 for (auto n=-1; n<2; ++n)
+    //                 {
+    //                     Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+    //                     if (Value > ValueMax) ValueMax = Value;
+    //                 }
+    //             }
+    //             (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = ValueMax;
+    //         }
+    //     }
+    //     std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+    // }
+    // //--- Kind of Marching Squares ---//
+    // std::swap(HeightMapPlateausFront_, HeightMapPlateausBack_);
+    // for (auto y=1u; y<FLUID_GRID_SIZE_Y-1; ++y)
+    // {
+    //     for (auto x=1u; x<FLUID_GRID_SIZE_X-1; ++x)
+    //     {
+    //         int NoOnes = 0;
+    //         for (auto m=-1; m<2; ++m)
+    //         {
+    //             for (auto n=-1; n<2; ++n)
+    //             {
+    //                 float Value = (*HeightMapPlateausBack_)[(y+m)*FLUID_GRID_SIZE_X+x+n];
+    //                 if (0.4f < Value) ++NoOnes;
+    //             }
+    //         }
+    //         if (NoOnes == 0 ||  NoOnes > 1) (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 0.0;
+    //         else (*HeightMapPlateausFront_)[y*FLUID_GRID_SIZE_X+x] = 1.0;
+    //     }
+    // }
     
     for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
     {
@@ -478,6 +478,35 @@ void ResourceStorage::initLandscape()
         Shapes.FixtureDefs.push_back(std::move(Fixture));
         Shapes.Type = ShapeEnumType::CHAIN;
         
+        GL::Mesh Mesh;
+        GL::Buffer Buffer;
+        Buffer.setData(this->convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);
+        Mesh.setCount(Shapes.ShapeDefs.back().size())
+            .setPrimitive(GL::MeshPrimitive::TriangleFan)
+            .addVertexBuffer(std::move(Buffer), 0, Shaders::VertexColor2D::Position{});
+        Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
+    }
+    {
+        Boundary.SetFrequency(0.008);
+        ShapeType Shape;
+        for (auto i=0.0f; i<2.0f*b2_pi; i+=2.0f*b2_pi/100.0f)
+        {
+            auto Value = 50.0f * float(Boundary.GetValue(100.0 * std::cos(double(i)), 100.0 * std::sin(double(i))));
+
+            Shape.push_back({(5.0f-Value)*std::cos(i)-20.0f, (5.0f-Value)*std::sin(i)-50.0f});
+        }
+        auto& Shapes = Shapes_[int(GameObjectTypeE::LANDSCAPE)];
+
+        b2FixtureDef Fixture;
+        Fixture.density =  1.0f;
+        Fixture.friction = 0.8f;
+        Fixture.restitution = 0.0f;
+        Fixture.isSensor = false;
+
+        Shapes.ShapeDefs.push_back(std::move(Shape));
+        Shapes.FixtureDefs.push_back(std::move(Fixture));
+        Shapes.Type = ShapeEnumType::CHAIN;
+
         GL::Mesh Mesh;
         GL::Buffer Buffer;
         Buffer.setData(this->convertGeometryPhysicsToGraphics(Shapes.ShapeDefs.back()), GL::BufferUsage::StaticDraw);

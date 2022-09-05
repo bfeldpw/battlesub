@@ -15,17 +15,12 @@ void main()
     vec2  vel   = texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy), 0).xy;
     float vel_v = length(vel);
     vec2  dir = normalize(vel);
-    vec2  amp0 = dir * (2.0+vel_v);
-    vec2  amp = amp0;
-    // vec2 amp_max1 = vec2(1.0e-1);
-    // vec2 amp_max2 = vec2(-1.0e-1);
-    // amp.xy = min(amp_max1.xy, amp0.xy);
-    // amp.xy = max(amp_max2.xy, amp0.xy);
-    // vec2 arg = dir*(gl_FragCoord.xy-vec2(1024.0, -512.0)) - u_time*10;
-    vec2 arg0 = 0.0 * vec2(u_time);
-    vec2 arg  = 0.01*dir*gl_FragCoord.xy;
-    vec2 pos  = gl_FragCoord.xy - u_grid_res * u_dt * u_distortion *
-                (amp * sin(arg) - (vel+0.1)*sin(arg0));
+    // vec2  grad = vel + texelFetch(u_tex_velocities, ivec2(gl_FragCoord.xy-2*dir), 0).xy;
+    // vec2 amp = 2.0*dir*(1.0+sign(vel_v - 1.5)) + vel;
+    vec2 amp = 3.0*dir+vel;//dir * (1.0+vel_v);
+    vec2 arg = 0.01*dir*gl_FragCoord.xy;
+    vec2 pos = gl_FragCoord.xy - u_grid_res * u_dt * u_distortion *
+               (amp * sin(arg));
 
     // Neighbour indices
     vec4 n;

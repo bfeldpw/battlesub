@@ -38,6 +38,21 @@ class LuaManager
             }
         }
 
+        int getInt(sol::protected_function_result _r)
+        {
+            if (_r.valid())
+            {
+                int r = _r;
+                return r;
+            }
+            else
+            {
+                sol::error e = _r;
+                Reg_.ctx<ErrorHandler>().reportError("Lua error aquiering value: " + std::string(e.what()));
+                return 0;
+            }
+        }
+
         sol::state Lua_;
 
     private:

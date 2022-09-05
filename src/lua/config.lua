@@ -9,3 +9,7 @@ fluid_dynamics = {
 display = {
   fluid_visual = 1.0
 }
+
+debris = {
+  age_max = 20
+}

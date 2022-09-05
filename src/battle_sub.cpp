@@ -34,7 +34,7 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
 {
     this->setupWindow();
     this->setupECS();
-    this->setupLua();
+    this->setupLua("config.lua");
     this->setupFrameBuffersMainScreen();
     this->setupMainDisplayMesh();
 
@@ -203,8 +203,8 @@ void BattleSub::drawEvent()
 
         auto& Fluid = Reg_.ctx<FluidGrid>();
 
-        GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
-        GL::defaultFramebuffer.clearColor(Color4(0.0f, 0.0f, 0.0f, 1.0f));
+        // GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
+        GL::defaultFramebuffer.clearColor(Color4(0.5f, 0.5f, 1.0f, 1.0f));
         
         if (KeyPressedMap["a"] == true) PlayerSub_->rudderLeft();
         else if (KeyPressedMap["d"] == true) PlayerSub_->rudderRight();
@@ -296,7 +296,7 @@ void BattleSub::drawEvent()
             WindowResMaxX /= 2;
         }
 
-        FBOMainDisplay_.clearColor(0, Color4(0.2f, 0.2f, 0.3f, 1.0f))
+        FBOMainDisplay_.clearColor(0, Color4(0.5f, 0.5f, 1.0f, 1.0f))
                        .setViewport({{0, 0}, {std::min(WindowResX, WindowResMaxX),
                                               std::min(WindowResolutionY_, WINDOW_RESOLUTION_MAX_Y)}})
                        .bind();
@@ -479,6 +479,7 @@ void BattleSub::updateUI(const double _GPUTime)
                     ImGui::Text("Frame Time:  %.3f ms; (%.1f FPS)",
                         1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
                     ImGui::Text("GPU Time: %.2f ms", Double(_GPUTime*1.0e-6));
+                    ImGui::Text("Objects (Phy): %2d", NrOfObjectsCPU_);
                 ImGui::Unindent();
 
                 ImGui::NewLine();
@@ -607,7 +608,7 @@ void BattleSub::updateUI(const double _GPUTime)
                     showTooltip("Toggle split screen mode");
                 ImGui::Checkbox("Debug          <ctrl-d>", &IsDebugDisplayed_);
                     showTooltip("Toggle debug mode");
-                if (ImGui::Button("Reload lua config")) this->setupLua();
+                if (ImGui::Button("Reload lua config")) this->setupLua("config.lua");
                     showTooltip("Reload the default lua configuration file");
 
                 static std::string Label;
@@ -672,6 +673,7 @@ void BattleSub::updateUI(const double _GPUTime)
 void BattleSub::updateWorld()
 {
     // Update physics
+    NrOfObjectsCPU_ = GlobalResources::Get.getWorld()->GetBodyCount();
     GlobalResources::Get.getWorld()->Step(1.0f/Frequency_, 40, 15);
 }
 
@@ -689,9 +691,9 @@ void BattleSub::setupECS()
     Reg_.set<ErrorHandler>();
 }
 
-void BattleSub::setupLua()
+void BattleSub::setupLua(const std::string& _f)
 {
-    Reg_.ctx<LuaManager>().loadFile("config.lua");
+    Reg_.ctx<LuaManager>().loadFile(_f);
     Reg_.ctx<FluidGrid>().loadConfig();
 }
 
@@ -819,8 +821,9 @@ void BattleSub::setupGameObjects()
     BodyDef.type = b2_staticBody;
     BodyDef.enabled = true;
     BodyDef.position.Set(0.0f, 0.0f);
-    Reg_.ctx<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE,
-                                         DrawableGroupsTypeE::DEFAULT, {0.05f, 0.05f, 0.1f, 1.0f}, BodyDef);
+    Reg_.ctx<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE, 5,
+                                         DrawableGroupsTypeE::DEFAULT, {0.5f, 0.5f, 1.0f, 1.0f}, BodyDef);
+                                         // DrawableGroupsTypeE::DEFAULT, {0.05f, 0.05f, 0.1f, 1.0f}, BodyDef);
 }
 
 void BattleSub::showTooltip(const std::string& Tooltip)

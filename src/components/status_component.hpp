@@ -18,9 +18,10 @@ struct StatusComponent
 {
     GameObjectTypeE Type_ = GameObjectTypeE::DEFAULT;
     Timer Age_;
-    bool  IsSinking_ = false;
-    bool  IsSunk_ = false;
-    bool  IsToBeDeleted_ = false;
+    int   AgeMax_{365*24*60*60}; // in seconds, 1 year realtime
+    bool  IsSinking_{false};
+    bool  IsSunk_{false};
+    bool  IsToBeDeleted_{false};
 };
 
 #endif // STATUS_COMPONENT

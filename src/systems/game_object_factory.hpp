@@ -21,6 +21,7 @@ class GameObjectFactory
         GameObjectFactory() = delete;
 
         void create(entt::entity e, std::any _Parent, const GameObjectTypeE _GameObjectType,
+                    const int _AgeMax,
                     const DrawableGroupsTypeE _DrawableGroupsType, Color4 _Col,
                     const b2BodyDef& _BodyDef);
 

@@ -46,7 +46,7 @@ class BattleSub : public Platform::Application
         void updateWorld();
 
         void setupECS();
-        void setupLua();
+        void setupLua(const std::string& _f);
         void setupWindow();
         void setupFrameBuffersMainScreen();
         void setupMainDisplayMesh();
@@ -65,6 +65,7 @@ class BattleSub : public Platform::Application
         int   WindowResolutionX_ = 1600;
         int   WindowResolutionY_ =  900;
         float Frequency_ = 60.0f;
+        int   NrOfObjectsCPU_ = 0;
 
         //--- Framebuffer related ---//
         GL::Framebuffer FBOMainDisplay_{NoCreate};
