@@ -120,7 +120,7 @@ void Submarine::fire(entt::registry& _Reg)
         BulletBody->GetFixtureList()->SetFilterData(Filter);
         BulletBody->ApplyLinearImpulse(BulletBody->GetWorldVector({0.0f,5.0e2f}),
                                        BulletBody->GetWorldPoint({0.0f, 0.0f}), true);
-        Body->ApplyLinearImpulse(Body->GetWorldVector({0.0f,-1.0f}),
+        Body->ApplyLinearImpulse(Body->GetWorldVector({0.0f,-1.0e4f}),
                                  Body->GetWorldPoint({GunPos, 8.0f}), true);
 
         GunSide ^= true; // Just toggle
