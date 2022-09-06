@@ -13,6 +13,7 @@ Ofcourse, there is a backup, but given BattleSubs current state and popularity, 
 
 So now, since the history is gone, lets just add a little changelog here, beginning today (2022-05-13):
 
+**2022-09-06: Reconfigure physical particles and their lifetime. New screenshots and explanations**
 2022-05-13: Add lua to enable configuration via scripts
 
 ## Installation and Dependencies
