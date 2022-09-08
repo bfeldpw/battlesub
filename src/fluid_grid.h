@@ -65,30 +65,7 @@ class FluidGrid
                 float VelocityAdvectionFactor = 0.9f;
                 float UpdateFrequency = 30.0f; // [Hz]
 
-                bool onChange(Param p)
-                {
-                    bool r = false;
-                    switch (p)
-                    {
-                        case Param::VELOCITY_ADVECTION_FACTOR:
-                            if (VelocityAdvectionFactor != VelocityAdvectionFactor_)
-                            {
-                                VelocityAdvectionFactor_ = VelocityAdvectionFactor;
-                                r = true;
-                            }
-                            break;
-                        case Param::ITERATIONS_DENSITY_DIFFUSION:
-                            if (IterationsDensityDiffusion != IterationsDensityDiffusion_)
-                            {
-                                IterationsDensityDiffusion_ = IterationsDensityDiffusion;
-                                r = true;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    return r;
-                }
+                bool onChange(Param _p);
 
             private:
 

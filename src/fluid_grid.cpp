@@ -11,6 +11,32 @@
 
 using namespace Magnum;
 
+bool FluidGrid::Config::onChange(Param _p)
+{
+    bool r = false;
+    switch (_p)
+    {
+        case Param::VELOCITY_ADVECTION_FACTOR:
+            if (VelocityAdvectionFactor != VelocityAdvectionFactor_)
+            {
+                VelocityAdvectionFactor_ = VelocityAdvectionFactor;
+                r = true;
+            }
+            break;
+        case Param::ITERATIONS_DENSITY_DIFFUSION:
+            if (IterationsDensityDiffusion != IterationsDensityDiffusion_)
+            {
+                IterationsDensityDiffusion_ = IterationsDensityDiffusion;
+                r = true;
+            }
+            break;
+        default:
+            break;
+    }
+    return r;
+}
+
+
 void FluidGrid::loadConfig()
 {
     auto& ConfLua = Reg_.ctx<LuaManager>();
