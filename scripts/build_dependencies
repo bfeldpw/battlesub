@@ -149,9 +149,9 @@ cd ..
 
 # Install sol release
 cd install/include/
-wget https://github.com/ThePhD/sol2/releases/download/v3.2.2/sol.hpp
+wget https://github.com/ThePhD/sol2/releases/download/v3.3.0/sol.hpp
 mkdir sol
 cd sol
-wget https://github.com/ThePhD/sol2/releases/download/v3.2.2/config.hpp
-wget https://github.com/ThePhD/sol2/releases/download/v3.2.2/forward.hpp
+wget https://github.com/ThePhD/sol2/releases/download/v3.3.0/config.hpp
+wget https://github.com/ThePhD/sol2/releases/download/v3.3.0/forward.hpp
 cd ../../..
