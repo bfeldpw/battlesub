@@ -15,8 +15,14 @@ So now, since the history is gone, lets just add a little changelog here, beginn
 
 ### Change Log
 
-**2022-09-06: Reconfigure physical particles and their lifetime. New screenshots and explanations**\
-2022-05-13: Add lua to enable configuration via scripts
+**2022-09-12: Colorful densities**\
+The density implementation was changed from 1 to 3 channels (RGB32 float textures) to enable color selection for densities. The configuration was partly (proof of concept) exported to Lua following a more flexible binding structure.
+
+**2022-09-06: Long live the particles, show the beauty**\
+Physical particles and their lifetime have been reconfigured. New screenshots and explanations were added.
+
+**2022-05-13: Lua love:**\
+Lua has been added to enable configuration via scripts
 
 ## Installation and Dependencies
 
