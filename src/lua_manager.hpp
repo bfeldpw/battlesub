@@ -19,41 +19,41 @@ class LuaManager
 
         explicit LuaManager(entt::registry& _Reg) : Reg_(_Reg)
         {
-            Lua_.open_libraries(sol::lib::base);
+            State_.open_libraries(sol::lib::base);
         }
+        LuaManager() = delete;
 
         bool loadFile(const std::string& _f)
         {
-            sol::protected_function_result r = Lua_.safe_script_file(LUA_PATH+_f);
+            sol::protected_function_result r = State_.safe_script_file(LUA_PATH+_f);
             if (r.valid())
             {
-                Reg_.ctx<MessageHandler>().report("Loading "+_f+" successful");
+                Reg_.ctx().at<MessageHandler>().report("Loading "+_f+" successful");
                 return true;
             }
             else
             {
                 sol::error e = r;
-                Reg_.ctx<ErrorHandler>().reportError("Loading "+_f+" failed: "+e.what());
+                Reg_.ctx().at<ErrorHandler>().reportError("Loading "+_f+" failed: "+e.what());
                 return false;
             }
         }
 
-        int getInt(sol::protected_function_result _r)
+        template<class T>
+        T get(const sol::optional<T>& _r, T _Default = 0)
         {
-            if (_r.valid())
+            if (_r)
             {
-                int r = _r;
-                return r;
+                return _r.value();
             }
             else
             {
-                sol::error e = _r;
-                Reg_.ctx<ErrorHandler>().reportError("Lua error aquiering value: " + std::string(e.what()));
-                return 0;
+                Reg_.ctx().at<ErrorHandler>().reportError("Lua error aquiring value.");
+                return _Default;
             }
         }
 
-        sol::state Lua_;
+        sol::state State_;
 
     private:
 

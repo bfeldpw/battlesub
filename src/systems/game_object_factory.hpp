@@ -4,6 +4,7 @@
 #include <any>
 
 #include <box2d.h>
+#include <entt/entity/entity.hpp>
 #include <entt/entity/registry.hpp>
 
 #include "drawable_generic.h"
@@ -47,7 +48,7 @@ class GameObjectFactory
             int CountFree_ = 0;
         } EntityIDs;
 
-        entt::id_type id(entt::entity _e) {return entt::id_type(Reg_.entity(_e));}
+        entt::id_type id(entt::entity _e) {return entt::to_entity(_e);}
         DBLK(
             void printInternalEntityLists() const;
         )

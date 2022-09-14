@@ -1,6 +1,6 @@
-in float v_amount;
+in vec3 v_amount;
 
-out float fragmentColor;
+out vec3 fragmentColor;
 
 void main()
 {

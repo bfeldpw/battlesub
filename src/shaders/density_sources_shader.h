@@ -20,7 +20,7 @@ class DensitySourcesShader : public GL::AbstractShaderProgram
     public:
         
         typedef GL::Attribute<0, Vector2> Position;
-        typedef GL::Attribute<1, float> Amount;
+        typedef GL::Attribute<1, Vector3> AmountRGB;
 
         explicit DensitySourcesShader(NoCreateT): GL::AbstractShaderProgram{NoCreate} {}
         

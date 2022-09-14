@@ -17,7 +17,7 @@ DebugRenderSystem::DebugRenderSystem(entt::registry& _Reg) :
 
 void DebugRenderSystem::renderVelocityProbes(const Matrix3& _ProjectionMatrix)
 {
-    auto& Fluid = Reg_.ctx<FluidGrid>();
+    const auto& Fluid = Reg_.ctx().at<FluidGrid>();
     Reg_.view<FluidProbeComponent, PhysicsComponent>().each(
         [&](const auto& _ProbeComp, const auto& _PhysComp)
     {
@@ -80,7 +80,7 @@ void DebugRenderSystem::renderVelocityVectors(const Matrix3& _ProjectionMatrix)
     constexpr auto CELL_X = WORLD_SIZE_DEFAULT_X/GRID_X;
     constexpr auto CELL_Y = WORLD_SIZE_DEFAULT_Y/GRID_Y;
 
-    auto& Fluid = Reg_.ctx<FluidGrid>();
+    const auto& Fluid = Reg_.ctx().at<FluidGrid>();
 
     for (auto y=0; y<GRID_Y; y+=2)
     {

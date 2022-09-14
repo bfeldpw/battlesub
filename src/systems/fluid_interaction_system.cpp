@@ -14,17 +14,20 @@ void FluidInteractionSystem::addFluidProbe(FluidProbeComponent& _Probe, const fl
 
 void FluidInteractionSystem::addSources()
 {
-    auto& Fluid = Reg_.ctx<FluidGrid>();
+    auto& Fluid = Reg_.ctx().at<FluidGrid>();
     Reg_.view<PhysicsComponent, FluidSourceComponent>().each([&](const auto& _PhysComp, const auto& _FluidComp)
     {
         auto Pos = _PhysComp.Body_->GetPosition();
         auto Vel = _PhysComp.Body_->GetLinearVelocity();
         auto VelBP = _FluidComp.VelocityBackProjection_;
         auto DenBP = _FluidComp.DensityBackProjection_;
+        auto R = (_FluidComp.DensityStaticR_ + _FluidComp.DensityDynamicR_*Vel.Length());
+        auto G = (_FluidComp.DensityStaticG_ + _FluidComp.DensityDynamicG_*Vel.Length());
+        auto B = (_FluidComp.DensityStaticB_ + _FluidComp.DensityDynamicB_*Vel.Length());
 
-        Fluid.addDensity(Pos.x, Pos.y,
-                       Pos.x-Vel.x*DenBP, Pos.y-Vel.y*DenBP,
-                       (_FluidComp.DensityStatic_ + _FluidComp.DensityDynamic_*Vel.Length()))
+        Fluid.addDensityLn(Pos.x, Pos.y,
+                           Pos.x-Vel.x*DenBP, Pos.y-Vel.y*DenBP,
+                           R, G, B)
              .addVelocity(Pos.x, Pos.y, Vel.x, Vel.y,
                        Pos.x-Vel.x*VelBP,
                        Pos.y-Vel.y*VelBP,
@@ -35,7 +38,7 @@ void FluidInteractionSystem::addSources()
 
 void FluidInteractionSystem::applyForces()
 {
-    auto& Fluid = Reg_.ctx<FluidGrid>();
+    auto& Fluid = Reg_.ctx().at<FluidGrid>();
     Reg_.view<FluidProbeComponent, PhysicsComponent>().each(
         [&](const auto& _ProbeComp, const auto& _PhysComp)
     {

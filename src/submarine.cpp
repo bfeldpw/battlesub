@@ -16,22 +16,22 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         BodyDef.linearDamping = 0.0f;
 
         Hull = _Reg.create();
-        _Reg.ctx<GameObjectFactory>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, 5, DrawableGroupsTypeE::DEFAULT,
+        _Reg.ctx().at<GameObjectFactory>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, 5, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDef);
         DBLK(
-            _Reg.ctx<MessageHandler>().reportDebug("created submarine hull");
-            _Reg.ctx<MessageHandler>().reportDebug("  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Hull).Body_->GetMass()));
+            _Reg.ctx().at<MessageHandler>().reportDebug("created submarine hull");
+            _Reg.ctx().at<MessageHandler>().reportDebug("  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Hull).Body_->GetMass()));
         )
 
         auto& FldProbesComp = _Reg.emplace<FluidProbesComponent<8>>(Hull);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 8, 300.0f, 0, -1.7f, -7.2f, -1.0f, -1.0f);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 1,  1.7f, -7.2f,  1.0f, -1.0f);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 2,  2.1f,  0.5f,  1.0f,  0.0f);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 3,  1.7f,  8.2f,  1.0f,  1.0f);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 4,  0.7f,  9.2f,  0.0f,  1.0f);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 5, -0.7f,  9.2f,  0.0f,  1.0f);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 6, -1.7f,  8.2f, -1.0f,  1.0f);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 7, -2.1f,  0.5f, -1.0f,  0.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 8, 300.0f, 0, -1.7f, -7.2f, -1.0f, -1.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 1,  1.7f, -7.2f,  1.0f, -1.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 2,  2.1f,  0.5f,  1.0f,  0.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 3,  1.7f,  8.2f,  1.0f,  1.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 4,  0.7f,  9.2f,  0.0f,  1.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 5, -0.7f,  9.2f,  0.0f,  1.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 6, -1.7f,  8.2f, -1.0f,  1.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesComp, 7, -2.1f,  0.5f, -1.0f,  0.0f);
 
         b2BodyDef BodyDefRudder;
         BodyDefRudder.type = b2_dynamicBody;
@@ -44,15 +44,15 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         BodyDefRudder.linearDamping = 0.0f;
 
         Rudder = _Reg.create();
-        _Reg.ctx<GameObjectFactory>().create(Rudder, this, GameObjectTypeE::SUBMARINE_RUDDER, 5, DrawableGroupsTypeE::DEFAULT,
+        _Reg.ctx().at<GameObjectFactory>().create(Rudder, this, GameObjectTypeE::SUBMARINE_RUDDER, 5, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDefRudder);
         DBLK(
-            _Reg.ctx<MessageHandler>().reportDebug("created submarine rudder");
-            _Reg.ctx<MessageHandler>().reportDebug("  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Rudder).Body_->GetMass()));
+            _Reg.ctx().at<MessageHandler>().reportDebug("created submarine rudder");
+            _Reg.ctx().at<MessageHandler>().reportDebug("  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Rudder).Body_->GetMass()));
         )
         auto& FldProbesCompRudder = _Reg.emplace<FluidProbesComponent<8>>(Rudder);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesCompRudder, 2, 50.0f, 0, -0.1f, -1.0f, -1.0f, 0.0f);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe<8>(FldProbesCompRudder, 1,  0.1f, -1.0f,  1.0f, 0.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesCompRudder, 2, 50.0f, 0, -0.1f, -1.0f, -1.0f, 0.0f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesCompRudder, 1,  0.1f, -1.0f,  1.0f, 0.0f);
 
         // auto Joint = _Reg.create();
         {
@@ -99,19 +99,22 @@ void Submarine::fire(entt::registry& _Reg)
         BodyDef.angularDamping = 5.0f;
         BodyDef.linearDamping = 0.0f;
         BodyDef.bullet = true;
-        _Reg.ctx<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, 5, DrawableGroupsTypeE::WEAPON,
+        _Reg.ctx().at<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, 5, DrawableGroupsTypeE::WEAPON,
                                              {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
         auto& FldProbesComp = _Reg.emplace<FluidProbeComponent>(Bullet);
-        _Reg.ctx<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.06f);
+        _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.06f);
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
         FldSrcComp.DensityBackProjection_ = 1.0f/30.0f;
         FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
-        FldSrcComp.DensityStatic_ = 10.0f;
-        FldSrcComp.DensityDynamic_ = 1.0f;
+        FldSrcComp.DensityStaticR_ = 100.0f;
+        FldSrcComp.DensityStaticG_ = 20.0f;
+        FldSrcComp.DensityStaticB_ = 20.0f;
+        FldSrcComp.DensityDynamicR_ = 1.0f;
+        FldSrcComp.DensityDynamicG_ = 1.0f;
+        FldSrcComp.DensityDynamicB_ = 0.5f;
         FldSrcComp.VelocityWeight_ = 1.0f;
-
 
         b2Filter Filter;
         Filter.categoryBits = 0x0004;

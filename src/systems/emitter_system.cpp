@@ -3,11 +3,13 @@
 #include <box2d.h>
 #include <Magnum/Math/Color.h>
 #include <entt/entity/helper.hpp>
+#include <sol.hpp>
+#include "bindings/fluid_source_component_lua.hpp"
 #include "fluid_interaction_system.hpp"
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
+
 #include "game_object_factory.hpp"
-#include "lua_manager.hpp"
 
 void EmitterSystem::emit()
 {
@@ -40,26 +42,23 @@ void EmitterSystem::emit()
                                         std::sin(DistAngle(_EmComp.Generator_))*
                                         (_EmComp.Velocity_+_EmComp.VelocityStdDev_));
             BodyDef.angularVelocity = 0.5f*DistAngle(_EmComp.Generator_);
-            Reg_.ctx<GameObjectFactory>().create(Debris, this, _EmComp.Type_,
-                                                 Reg_.ctx<LuaManager>().Lua_["debris"]["age_max"],
-                                                 DrawableGroupsTypeE::WEAPON, Col, BodyDef);
+            Reg_.ctx().at<GameObjectFactory>().create(Debris, this, _EmComp.Type_, StatusCompLua_.Conf_.AgeMax_,
+                                                      DrawableGroupsTypeE::WEAPON, Col, BodyDef);
 
             auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Debris);
-            Reg_.ctx<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.001f, 0.0f, 0.0f);
+            Reg_.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.001f, 0.0f, 0.0f);
 
             auto& FldSrcComp = Reg_.emplace<FluidSourceComponent>(Debris);
-            FldSrcComp.DensityBackProjection_ = 1.0f/30.0f;
-            FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
-            FldSrcComp.DensityDynamic_ = 1.0f;
-            FldSrcComp.DensityStatic_ = 5.0f;
+            FldSrcCompLua_.copyTo(FldSrcComp);
             FldSrcComp.VelocityWeight_ = _EmComp.VelocityWeight_;
 
             //--- Adjust physics body for non-self collisions ---//
             auto& PhysComp = Reg_.get<PhysicsComponent>(Debris);
 
             b2Filter Filter;
-            Filter.categoryBits = 0x0002;
-            Filter.maskBits = 0xFFF9;
+            // Filter.categoryBits = 0x0002;
+            // Filter.maskBits = 0xFFF9;
+            Filter.categoryBits = 0x0004;
             PhysComp.Body_->GetFixtureList()->SetFilterData(Filter);
 
             //--- Adjust visuals for varying size ---//
@@ -81,4 +80,10 @@ void EmitterSystem::emit()
             Reg_.destroy(e);
         }
     });
+}
+
+void EmitterSystem::loadConfig()
+{
+    FldSrcCompLua_.read("debris");
+    StatusCompLua_.read("debris");
 }

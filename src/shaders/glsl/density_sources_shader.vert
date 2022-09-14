@@ -1,7 +1,7 @@
 layout(location = 0) in vec2 pos;
-layout(location = 1) in float amount;
+layout(location = 1) in vec3 amount;
 
-out float v_amount;
+out vec3 v_amount;
 
 uniform mat3 u_matrix;
 

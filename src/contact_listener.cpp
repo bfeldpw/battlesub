@@ -4,6 +4,7 @@
 
 #include "emitter_component.hpp"
 #include "global_resources.h"
+#include "status_component.hpp"
 
 void ContactListener::PreSolve(b2Contact* Contact, const b2Manifold* OldManifold)
 {
@@ -111,8 +112,8 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
     switch (_TypeOther)
     {
         case GameObjectTypeE::LANDSCAPE:
-            Velocity = _Body1->GetLinearVelocityFromWorldPoint(POC);
-            Impulse  = _Body1->GetMass() * Velocity;
+            // Velocity = _Body1->GetLinearVelocityFromWorldPoint(POC);
+            // Impulse  = _Body1->GetMass() * Velocity;
 
             break;
         case GameObjectTypeE::PROJECTILE:
@@ -122,9 +123,9 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
             break;
         case GameObjectTypeE::SUBMARINE_HULL:
         case GameObjectTypeE::SUBMARINE_RUDDER:
-            Velocity = (_Body2->GetLinearVelocityFromWorldPoint(POC)-
-                        _Body1->GetLinearVelocityFromWorldPoint(POC));
-            Impulse  =  _Body2->GetMass() * Velocity;
+            // Velocity = (_Body2->GetLinearVelocityFromWorldPoint(POC)-
+            //             _Body1->GetLinearVelocityFromWorldPoint(POC));
+            // Impulse  =  _Body2->GetMass() * Velocity;
             break;
         default: break;
     }
@@ -134,20 +135,23 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
     float Angle = 2.0f * std::atan2(WorldManifold.normal.y, WorldManifold.normal.x) -
                         (std::atan2(Velocity.y, Velocity.x)+b2_pi);
 
-    auto Emitter = Reg_.create();
-    auto& EmComp = Reg_.emplace<EmitterComponent>(Emitter);
-    EmComp.Type_ = GameObjectTypeE::DEBRIS_SUBMARINE;
-    EmComp.Angle_ = Angle;
-    EmComp.AngleStdDev_ = 1.0f;
-    EmComp.Frequency_ = 1.0f;
-    EmComp.Number_ = 10;
-    EmComp.OriginX_ = POC.x+WorldManifold.normal.x*0.2f;
-    EmComp.OriginY_ = POC.y+WorldManifold.normal.y*0.2f;
-    EmComp.Scale_= Scale;
-    EmComp.ScaleStdDev_ = Scale;
-    EmComp.Velocity_ = Velocity.Length()*0.1f+5.0f;
-    EmComp.VelocityStdDev_ = Velocity.Length()*0.1f;
-    EmComp.VelocityWeight_ = 0.1f;
+    if (_TypeOther == GameObjectTypeE::PROJECTILE)
+    {
+        auto Emitter = Reg_.create();
+        auto& EmComp = Reg_.emplace<EmitterComponent>(Emitter);
+        EmComp.Type_ = GameObjectTypeE::DEBRIS_SUBMARINE;
+        EmComp.Angle_ = Angle;
+        EmComp.AngleStdDev_ = 1.0f;
+        EmComp.Frequency_ = 1.0f;
+        EmComp.Number_ = 10;
+        EmComp.OriginX_ = POC.x+WorldManifold.normal.x*0.2f;
+        EmComp.OriginY_ = POC.y+WorldManifold.normal.y*0.2f;
+        EmComp.Scale_= Scale;
+        EmComp.ScaleStdDev_ = Scale;
+        EmComp.Velocity_ = Velocity.Length()*0.1f+5.0f;
+        EmComp.VelocityStdDev_ = Velocity.Length()*0.1f;
+        EmComp.VelocityWeight_ = 0.1f;
+    }
 }
 
 void ContactListener::testGameObjectTypes(b2Contact* const _Contact, StatusComponent& _Status1, StatusComponent& _Status2,

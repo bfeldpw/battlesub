@@ -8,7 +8,7 @@ uniform float u_diffusion_rate;
 
 in vec2 v_tex;
 
-out float frag_value;
+out vec3 frag_value;
 
 void main()
 {
@@ -22,10 +22,10 @@ void main()
     ivec2 i_e = ivec2(gl_FragCoord.xy)+o.zy;
 
     // frag_value = (u_alpha * texelFetch(u_tex_b, ivec2(gl_FragCoord.xy), 0).x +
-    frag_value = (u_alpha * texelFetch(u_tex_b, ivec2(gl_FragCoord.xy), 0).x +
-                  u_diffusion_rate * texelFetch(u_tex_x, i_e, 0).x +
-                  u_diffusion_rate * texelFetch(u_tex_x, i_w, 0).x +
-                  u_diffusion_rate * texelFetch(u_tex_x, i_s, 0).x +
-                  u_diffusion_rate * texelFetch(u_tex_x, i_n, 0).x
+    frag_value = (u_alpha * texelFetch(u_tex_b, ivec2(gl_FragCoord.xy), 0).rgb +
+                  u_diffusion_rate * texelFetch(u_tex_x, i_e, 0).rgb +
+                  u_diffusion_rate * texelFetch(u_tex_x, i_w, 0).rgb +
+                  u_diffusion_rate * texelFetch(u_tex_x, i_s, 0).rgb +
+                  u_diffusion_rate * texelFetch(u_tex_x, i_n, 0).rgb
                  ) * u_r_beta;
 }

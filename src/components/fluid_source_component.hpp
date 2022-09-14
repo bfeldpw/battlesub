@@ -12,9 +12,13 @@ struct FluidSourceComponent
 {
     FluidSourceShapeE DensityShape_ = FluidSourceShapeE::POINT;
     float DensityBackProjection_ = 0.0f; // Linear Backprojection in seconds
-    float DensityDynamic_ = 0.0f;
     float DensitySourceSize_ = 1.0f;
-    float DensityStatic_ = 1.0f;
+    float DensityDynamicR_ = 0.0f;
+    float DensityDynamicG_ = 0.0f;
+    float DensityDynamicB_ = 0.0f;
+    float DensityStaticR_ = 1.0f;
+    float DensityStaticG_ = 1.0f;
+    float DensityStaticB_ = 1.0f;
 
     FluidSourceShapeE VelocityShape_ = FluidSourceShapeE::POINT;
     float VelocityX_[4] = {1.0f, 1.0f, 1.0f, 1.0f};

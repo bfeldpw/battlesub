@@ -16,6 +16,7 @@
 #include <Magnum/Platform/Sdl2Application.h>
 
 #include "battle_sub.h"
+#include "bindings/fluid_source_component_lua.hpp"
 #include "common.h"
 #include "debug_render_system.hpp"
 #include "emitter_system.hpp"
@@ -42,11 +43,11 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     
     this->setupCameras();
     
-    Reg_.ctx<FluidGrid>().setDensityBase(GlobalResources::Get.getHeightMap())
+    Reg_.ctx().at<FluidGrid>().setDensityBase(GlobalResources::Get.getHeightMap())
               .init();
     this->setupGameObjects();
     
-    GlobalResources::Get.getWorld()->SetContactListener(&Reg_.ctx<ContactListener>());
+    GlobalResources::Get.getWorld()->SetContactListener(&Reg_.ctx().at<ContactListener>());
     
     // if (!setSwapInterval(1))
     setSwapInterval(0);
@@ -201,7 +202,7 @@ void BattleSub::drawEvent()
         };
         Profiler.beginFrame();
 
-        auto& Fluid = Reg_.ctx<FluidGrid>();
+        auto& Fluid = Reg_.ctx().at<FluidGrid>();
 
         // GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
         GL::defaultFramebuffer.clearColor(Color4(0.5f, 0.5f, 1.0f, 1.0f));
@@ -317,12 +318,12 @@ void BattleSub::drawEvent()
 
             if (DebugRender_.IsVelocityProbesEnabled)
             {
-                Reg_.ctx<DebugRenderSystem>().renderVelocityProbes(CameraCurrentPlayer_->projectionMatrix()*
+                Reg_.ctx().at<DebugRenderSystem>().renderVelocityProbes(CameraCurrentPlayer_->projectionMatrix()*
                                                                    CameraCurrentPlayer_->cameraMatrix());
             }
             if (DebugRender_.IsVelocityVectorsEnabled)
             {
-                Reg_.ctx<DebugRenderSystem>().renderVelocityVectors(CameraCurrentPlayer_->projectionMatrix()*
+                Reg_.ctx().at<DebugRenderSystem>().renderVelocityVectors(CameraCurrentPlayer_->projectionMatrix()*
                                                                     CameraCurrentPlayer_->cameraMatrix());
             }
         }
@@ -347,12 +348,12 @@ void BattleSub::drawEvent()
 
                 if (DebugRender_.IsVelocityProbesEnabled)
                 {
-                    Reg_.ctx<DebugRenderSystem>().renderVelocityProbes(CameraOtherPlayer_->projectionMatrix()*
+                    Reg_.ctx().at<DebugRenderSystem>().renderVelocityProbes(CameraOtherPlayer_->projectionMatrix()*
                                                                        CameraOtherPlayer_->cameraMatrix());
                 }
                 if (DebugRender_.IsVelocityVectorsEnabled)
                 {
-                    Reg_.ctx<DebugRenderSystem>().renderVelocityVectors(CameraOtherPlayer_->projectionMatrix()*
+                    Reg_.ctx().at<DebugRenderSystem>().renderVelocityVectors(CameraOtherPlayer_->projectionMatrix()*
                                                                         CameraOtherPlayer_->cameraMatrix());
                 }
             }
@@ -433,20 +434,19 @@ void BattleSub::updateCameraDynamics()
 
 void BattleSub::updateGameObjects()
 {
-    auto& Fluid = Reg_.ctx<FluidGrid>();
-    Fluid.addDensity(10.0, 0.0, 100.0)
+    auto& Fluid = Reg_.ctx().at<FluidGrid>();
+    Fluid.addDensityLn(10.0, 0.0,10.0-20.0*double(VelocitySourceBackprojection_), 0.0, 10.f, 10.f, 100.f)
          .addVelocity(10.0, 0.0, -20.0, 0.0,
                            10.0-20.0*double(VelocitySourceBackprojection_), 0.0, -500.0, 0.0);
-    Fluid.addDensity(-10.0, -10.0, 100.0)
+    Fluid.addDensityPt(-10.0, -10.0, 10.f, 10.f, 100.f)
          .addVelocity(-10.0, -10.0, 20.0, 0.0,
                            -10.0+20.0*double(VelocitySourceBackprojection_), -10.0, 100.0, 0.0);
 
-    Reg_.ctx<GameObjectFactory>().updateVisuals();
-    Reg_.ctx<GameObjectFactory>().updateStatus();
-    Reg_.ctx<EmitterSystem>().emit();
-    Reg_.ctx<FluidInteractionSystem>().addSources();
-    Reg_.ctx<FluidInteractionSystem>().applyForces();
-
+    Reg_.ctx().at<GameObjectFactory>().updateVisuals();
+    Reg_.ctx().at<GameObjectFactory>().updateStatus();
+    Reg_.ctx().at<EmitterSystem>().emit();
+    Reg_.ctx().at<FluidInteractionSystem>().addSources();
+    Reg_.ctx().at<FluidInteractionSystem>().applyForces();
 
     for (auto Sub : GlobalFactories::Submarines.getEntities())
     {
@@ -457,7 +457,10 @@ void BattleSub::updateGameObjects()
         auto Propellor = HullBody->GetWorldPoint({0.0f, -7.0f});
         auto Direction = RudderBody->GetWorldVector({0.0f, -1.0f});
 
-        Fluid.addDensity(Propellor.x, Propellor.y, 0.01f*std::abs(Sub.second->getThrottle()))
+        auto r = 0.01f*std::abs(Sub.second->getThrottle());
+        auto g = 0.03f*std::abs(Sub.second->getThrottle());
+        auto b = 0.02f*std::abs(Sub.second->getThrottle());
+        Fluid.addDensityPt(Propellor.x, Propellor.y, r, g, b)
              .addVelocity(Propellor.x, Propellor.y, 0.01f*Direction.x*Sub.second->getThrottle(), 0.01f*Direction.y*Sub.second->getThrottle());
     }
 }
@@ -524,17 +527,17 @@ void BattleSub::updateUI(const double _GPUTime)
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Parameters");
                 ImGui::NewLine();
-                ImGui::SliderInt("Density Diffsion Iterations", &Reg_.ctx<FluidGrid>().Conf.IterationsDensityDiffusion, 1, 20);
+                ImGui::SliderInt("Density Diffsion Iterations", &Reg_.ctx().at<FluidGrid>().Conf.IterationsDensityDiffusion, 1, 20);
                     showTooltip("Number of iterations for numerical diffusion calculation.");
-                ImGui::SliderInt("Velocity Diffsion Iterations", &Reg_.ctx<FluidGrid>().Conf.IterationsVelocityDiffusion, 1, 20);
+                ImGui::SliderInt("Velocity Diffsion Iterations", &Reg_.ctx().at<FluidGrid>().Conf.IterationsVelocityDiffusion, 1, 20);
                     showTooltip("Number of iterations for numerical diffusion calculation.");
-                ImGui::SliderInt("Pressure Equation Iterations", &Reg_.ctx<FluidGrid>().Conf.IterationsPressureEquation, 1, 80);
+                ImGui::SliderInt("Pressure Equation Iterations", &Reg_.ctx().at<FluidGrid>().Conf.IterationsPressureEquation, 1, 80);
                     showTooltip("Number of iterations for solving the pressure equation.");
                 ImGui::SliderFloat("Density Distortion", &DensityDistortion_, 1.0f, 100.0f);
                     showTooltip("Amount of distortion due to velocity.\nA constant velocity will lead to a constant distortion.\n"
                                 "Base density (background) will be distorted by x * advection, e.g.:\n"
                                 "  Value 200: A velocity of 1m/s will distort by 200m");
-                ImGui::SliderFloat("Velocity Advection Factor", &Reg_.ctx<FluidGrid>().Conf.VelocityAdvectionFactor, 0.0f, 2.0f);
+                ImGui::SliderFloat("Velocity Advection Factor", &Reg_.ctx().at<FluidGrid>().Conf.VelocityAdvectionFactor, 0.0f, 2.0f);
                     showTooltip("Factor for velocity advection.\nA lower value than 1.0 will move the velocity field slower than self-advection.\n"
                                 "A higher value than 1.0 will move the velocity field faster than self-advection.");
 
@@ -679,22 +682,23 @@ void BattleSub::updateWorld()
 
 void BattleSub::setupECS()
 {
-    Reg_.set<LuaManager>(Reg_);
-    Reg_.set<ContactListener>(Reg_);
-    Reg_.set<DebugRenderSystem>(Reg_);
-    Reg_.set<EmitterSystem>(Reg_);
-    Reg_.set<FluidGrid>(Reg_);
-    Reg_.set<FluidInteractionSystem>(Reg_);
-    Reg_.set<GameObjectFactory>(Reg_);
-    Reg_.set<MessageHandler>();
-    Reg_.ctx<MessageHandler>().setLevel(MessageHandler::DEBUG_L1);
-    Reg_.set<ErrorHandler>();
+    Reg_.ctx().emplace<LuaManager>(Reg_);
+    Reg_.ctx().emplace<ContactListener>(Reg_);
+    Reg_.ctx().emplace<DebugRenderSystem>(Reg_);
+    Reg_.ctx().emplace<EmitterSystem>(Reg_);
+    Reg_.ctx().emplace<FluidGrid>(Reg_);
+    Reg_.ctx().emplace<FluidInteractionSystem>(Reg_);
+    Reg_.ctx().emplace<GameObjectFactory>(Reg_);
+    Reg_.ctx().emplace<MessageHandler>();
+    Reg_.ctx().at<MessageHandler>().setLevel(MessageHandler::DEBUG_L1);
+    Reg_.ctx().emplace<ErrorHandler>();
 }
 
 void BattleSub::setupLua(const std::string& _f)
 {
-    Reg_.ctx<LuaManager>().loadFile(_f);
-    Reg_.ctx<FluidGrid>().loadConfig();
+    Reg_.ctx().at<LuaManager>().loadFile(_f);
+    Reg_.ctx().at<FluidGrid>().loadConfig();
+    Reg_.ctx().at<EmitterSystem>().loadConfig();
 }
 
 void BattleSub::setupWindow()
@@ -821,7 +825,7 @@ void BattleSub::setupGameObjects()
     BodyDef.type = b2_staticBody;
     BodyDef.enabled = true;
     BodyDef.position.Set(0.0f, 0.0f);
-    Reg_.ctx<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE, 5,
+    Reg_.ctx().at<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE, 5,
                                          DrawableGroupsTypeE::DEFAULT, {0.5f, 0.5f, 1.0f, 1.0f}, BodyDef);
                                          // DrawableGroupsTypeE::DEFAULT, {0.05f, 0.05f, 0.1f, 1.0f}, BodyDef);
 }

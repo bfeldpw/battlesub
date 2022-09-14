@@ -89,9 +89,10 @@ class FluidGrid
         Vector2 getVelocity(const float _x, const float _y) const;
         const VelocityReadbackDataType& getVelocityReadback() const {return VelReadback_;};
 
-        FluidGrid& addDensity(const float x, const float y, const float d);
-        FluidGrid& addDensity(const float x0, const float y0,
-                              const float x1, const float y1, const float d);
+        FluidGrid& addDensityPt(const float _x, const float _y, const float _r, const float _g, const float _b);
+        FluidGrid& addDensityLn(const float _x0, const float _y0,
+                                const float _x1, const float _y1,
+                                const float _r, const float _g, const float _b);
         FluidGrid& addVelocity(const float x, const float y, const float Vx, const float Vy,
                                const float w = 1.0f);
         FluidGrid& addVelocity(const float x0, const float y0, const float Vx0, const float Vy0,

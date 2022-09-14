@@ -21,8 +21,8 @@ git clone --branch v1.2.1 --depth 1 https://github.com/planeworld/libnoise2d.git
 echo "> git clone --branch v2.4.1 --depth 1 https://github.com/erincatto/box2d.git"
 git clone --branch v2.4.1 --depth 1 https://github.com/erincatto/box2d.git
 
-echo "> git clone --branch v3.5.2 --depth 1 https://github.com/skypjack/entt.git"
-git clone --branch v3.5.2 --depth 1 https://github.com/skypjack/entt.git
+echo "> git clone --branch v3.10.3 --depth 1 https://github.com/skypjack/entt.git"
+git clone --branch v3.10.3 --depth 1 https://github.com/skypjack/entt.git
 
 echo "> git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git"
 git clone --branch v2020.06 --depth 1 https://github.com/mosra/corrade.git

@@ -190,7 +190,7 @@ void GameObjectFactory::updateVisuals()
 DBLK(
     void GameObjectFactory::printInternalEntityLists() const
     {
-        auto& Msg = Reg_.ctx<MessageHandler>();
+        auto& Msg = Reg_.ctx().at<MessageHandler>();
         Msg.reportDebugRaw("ID:      ", MessageHandler::DEBUG_L2);
         for (auto i=0; i<EntityIDs.Count_; ++i)
         {

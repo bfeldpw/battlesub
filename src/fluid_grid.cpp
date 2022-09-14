@@ -39,8 +39,8 @@ bool FluidGrid::Config::onChange(Param _p)
 
 void FluidGrid::loadConfig()
 {
-    auto& ConfLua = Reg_.ctx<LuaManager>();
-    auto c = ConfLua.Lua_["fluid_dynamics"];
+    auto& ConfLua = Reg_.ctx().at<LuaManager>();
+    auto c = ConfLua.State_["fluid_dynamics"];
     Conf.IterationsDensityDiffusion = c["iterations_density_diffusion"];
     Conf.IterationsVelocityDiffusion = c["iterations_velocity_diffusion"];
     Conf.IterationsPressureEquation = c["iterations_pressure_equation"];
@@ -63,23 +63,31 @@ Vector2 FluidGrid::getVelocity(const float _x, const float _y) const
     return {Vx, Vy};
 }
 
-FluidGrid& FluidGrid::addDensity(const float x, const float y, const float d)
+FluidGrid& FluidGrid::addDensityPt(const float _x, const float _y,
+                                   const float _r, const float _g, const float _b)
 {
-    DensitySourcesPoints_.push_back(x);
-    DensitySourcesPoints_.push_back(y);
-    DensitySourcesPoints_.push_back(d);
+    DensitySourcesPoints_.push_back(_x);
+    DensitySourcesPoints_.push_back(_y);
+    DensitySourcesPoints_.push_back(_r);
+    DensitySourcesPoints_.push_back(_g);
+    DensitySourcesPoints_.push_back(_b);
     return *this;
 }
 
-FluidGrid& FluidGrid::addDensity(const float x0, const float y0,
-                                 const float x1, const float y1, const float d)
+FluidGrid& FluidGrid::addDensityLn(const float _x0, const float _y0,
+                                   const float _x1, const float _y1,
+                                   const float _r, const float _g, const float _b)
 {
-    DensitySourcesLines_.push_back(x0);
-    DensitySourcesLines_.push_back(y0);
-    DensitySourcesLines_.push_back(d);
-    DensitySourcesLines_.push_back(x1);
-    DensitySourcesLines_.push_back(y1);
-    DensitySourcesLines_.push_back(d);
+    DensitySourcesLines_.push_back(_x0);
+    DensitySourcesLines_.push_back(_y0);
+    DensitySourcesLines_.push_back(_r);
+    DensitySourcesLines_.push_back(_g);
+    DensitySourcesLines_.push_back(_b);
+    DensitySourcesLines_.push_back(_x1);
+    DensitySourcesLines_.push_back(_y1);
+    DensitySourcesLines_.push_back(_r);
+    DensitySourcesLines_.push_back(_g);
+    DensitySourcesLines_.push_back(_b);
     return *this;
 }
 
@@ -284,12 +292,12 @@ void FluidGrid::init()
     TexDensityBase_.setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                    .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                    .setSubImage(0, {}, Image);
-    TexDensitySources_.setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
+    TexDensitySources_.setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y})
                       .setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER);
     TexDensities0_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
-                  .setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
+                  .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexDensities1_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
-                  .setStorage(1, GL::TextureFormat::R32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
+                  .setStorage(1, GL::TextureFormat::RGB32F, {FLUID_GRID_SIZE_X, FLUID_GRID_SIZE_Y});
     TexFluidFinalComposition_.setMagnificationFilter(FLUID_GRID_DIFFUSION_FILTER)
                              .setMinificationFilter(FLUID_GRID_DIFFUSION_FILTER, FLUID_GRID_DIFFUSION_FILTER_MIP_MAP)
                              .setWrapping(GL::SamplerWrapping::ClampToEdge)
@@ -678,21 +686,21 @@ void FluidGrid::renderDensitySources()
     DensitySourcesBufferPoints.setData(DensitySourcesPoints_, GL::BufferUsage::StreamDraw);
 
     GL::Mesh MeshDensitySourcesPoints;
-    MeshDensitySourcesPoints.setCount(DensitySourcesPoints_.size()/3)
+    MeshDensitySourcesPoints.setCount(DensitySourcesPoints_.size()/5)
                             .setPrimitive(GL::MeshPrimitive::Points)
                             .addVertexBuffer(std::move(DensitySourcesBufferPoints), 0,
                                              DensitySourcesShader::Position{},
-                                             DensitySourcesShader::Amount{});
+                                             DensitySourcesShader::AmountRGB{});
 
     GL::Buffer DensitySourcesBufferLines;
     DensitySourcesBufferLines.setData(DensitySourcesLines_, GL::BufferUsage::StreamDraw);
 
     GL::Mesh MeshDensitySourcesLines;
-    MeshDensitySourcesLines.setCount(DensitySourcesLines_.size()/3)
+    MeshDensitySourcesLines.setCount(DensitySourcesLines_.size()/5)
                            .setPrimitive(GL::MeshPrimitive::Lines)
                            .addVertexBuffer(std::move(DensitySourcesBufferLines), 0,
                                             DensitySourcesShader::Position{},
-                                            DensitySourcesShader::Amount{});
+                                            DensitySourcesShader::AmountRGB{});
 
     DensitySourcesPoints_.clear();
     DensitySourcesLines_.clear();

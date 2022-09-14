@@ -1,4 +1,6 @@
 set(HEADERS
+        bindings/fluid_source_component_lua.hpp
+        bindings/status_component_lua.hpp
         components/emitter_component.hpp
         components/fluid_probes_component.hpp
         components/fluid_source_component.hpp
@@ -71,6 +73,7 @@ set(SOURCES
 add_executable(battle_sub ${LIB_NOISE_HEADERS} ${HEADERS} ${SOURCES})
 
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/")
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/bindings/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/components/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/shaders/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/systems/")
