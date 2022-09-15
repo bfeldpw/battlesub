@@ -23,6 +23,7 @@ class EmitterSystem
     private:
 
         entt::registry& Reg_;
+
         FluidSourceComponentLua FldSrcCompLua_;
         StatusComponentLua StatusCompLua_;
 

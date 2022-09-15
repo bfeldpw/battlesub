@@ -24,9 +24,9 @@
 #include "fluid_interaction_system.hpp"
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
-#include "global_factories.h"
 #include "global_resources.h"
 #include "lua_manager.hpp"
+#include "submarine.h"
 #include "world_def.h"
 
 namespace BattleSub{
@@ -54,6 +54,20 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     setMinimalLoopPeriod(1.0f/Frequency_ * 1000.0f);
 
     SimTime_.start();
+}
+
+BattleSub::~BattleSub()
+{
+    if (PlayerSub_ != nullptr)
+    {
+        delete PlayerSub_;
+        PlayerSub_ = nullptr;
+    }
+    if (PlayerSub2_ != nullptr)
+    {
+        delete PlayerSub2_;
+        PlayerSub2_ = nullptr;
+    }
 }
 
 void BattleSub::keyPressEvent(KeyEvent& Event)
@@ -448,20 +462,33 @@ void BattleSub::updateGameObjects()
     Reg_.ctx().at<FluidInteractionSystem>().addSources();
     Reg_.ctx().at<FluidInteractionSystem>().applyForces();
 
-    for (auto Sub : GlobalFactories::Submarines.getEntities())
     {
-        Sub.second->update(Reg_);
-        b2Body* const HullBody   = Reg_.get<PhysicsComponent>(Sub.second->Hull).Body_;
-        b2Body* const RudderBody = Reg_.get<PhysicsComponent>(Sub.second->Rudder).Body_;
+        PlayerSub_->update(Reg_);
+        b2Body* const HullBody   = Reg_.get<PhysicsComponent>(PlayerSub_->Hull).Body_;
+        b2Body* const RudderBody = Reg_.get<PhysicsComponent>(PlayerSub_->Rudder).Body_;
 
         auto Propellor = HullBody->GetWorldPoint({0.0f, -7.0f});
         auto Direction = RudderBody->GetWorldVector({0.0f, -1.0f});
 
-        auto r = 0.01f*std::abs(Sub.second->getThrottle());
-        auto g = 0.03f*std::abs(Sub.second->getThrottle());
-        auto b = 0.02f*std::abs(Sub.second->getThrottle());
+        auto r = 0.01f*std::abs(PlayerSub_->getThrottle());
+        auto g = 0.03f*std::abs(PlayerSub_->getThrottle());
+        auto b = 0.02f*std::abs(PlayerSub_->getThrottle());
         Fluid.addDensityPt(Propellor.x, Propellor.y, r, g, b)
-             .addVelocity(Propellor.x, Propellor.y, 0.01f*Direction.x*Sub.second->getThrottle(), 0.01f*Direction.y*Sub.second->getThrottle());
+             .addVelocity(Propellor.x, Propellor.y, 0.01f*Direction.x*PlayerSub_->getThrottle(), 0.01f*Direction.y*PlayerSub_->getThrottle());
+    }
+    {
+        PlayerSub2_->update(Reg_);
+        b2Body* const HullBody   = Reg_.get<PhysicsComponent>(PlayerSub2_->Hull).Body_;
+        b2Body* const RudderBody = Reg_.get<PhysicsComponent>(PlayerSub2_->Rudder).Body_;
+
+        auto Propellor = HullBody->GetWorldPoint({0.0f, -7.0f});
+        auto Direction = RudderBody->GetWorldVector({0.0f, -1.0f});
+
+        auto r = 0.01f*std::abs(PlayerSub2_->getThrottle());
+        auto g = 0.03f*std::abs(PlayerSub2_->getThrottle());
+        auto b = 0.02f*std::abs(PlayerSub2_->getThrottle());
+        Fluid.addDensityPt(Propellor.x, Propellor.y, r, g, b)
+             .addVelocity(Propellor.x, Propellor.y, 0.01f*Direction.x*PlayerSub2_->getThrottle(), 0.01f*Direction.y*PlayerSub2_->getThrottle());
     }
 }
 
@@ -812,13 +839,14 @@ void BattleSub::setupCameras()
 
 void BattleSub::setupGameObjects()
 {
-    PlayerSub_ = GlobalFactories::Submarines.create();
-    PlayerSub_->create(Reg_, 0.0f, -20.0f, 0.0f);
+    PlayerSub_ = new Submarine(Reg_);
+    PlayerSub2_ = new Submarine(Reg_);
 
-    PlayerSub2_ = GlobalFactories::Submarines.create();
+    PlayerSub_->create(Reg_, 0.0f, -20.0f, 0.0f);
     PlayerSub2_->create(Reg_, 10.0f, 40.0f, 3.14159f);
-    static Submarine* Sub3 = GlobalFactories::Submarines.create();
-    Sub3->create(Reg_, -20.0f, 20.0f, 4.5f);
+
+    PlayerSub_->loadConfig();
+    PlayerSub2_->loadConfig();
 
     auto CanyonBoundary = Reg_.create();
     b2BodyDef BodyDef;
@@ -827,7 +855,6 @@ void BattleSub::setupGameObjects()
     BodyDef.position.Set(0.0f, 0.0f);
     Reg_.ctx().at<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE, 5,
                                          DrawableGroupsTypeE::DEFAULT, {0.5f, 0.5f, 1.0f, 1.0f}, BodyDef);
-                                         // DrawableGroupsTypeE::DEFAULT, {0.05f, 0.05f, 0.1f, 1.0f}, BodyDef);
 }
 
 void BattleSub::showTooltip(const std::string& Tooltip)

@@ -28,6 +28,8 @@ class BattleSub : public Platform::Application
     public:
     
         explicit BattleSub(const Arguments& arguments);
+        BattleSub() = delete;
+        ~BattleSub();
 
     private:
         

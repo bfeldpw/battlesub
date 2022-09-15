@@ -2,13 +2,15 @@
 #define SUBMARINE_H
 
 #include <box2d.h>
+#include <entt/entity/fwd.hpp>
 #include <entt/entity/registry.hpp>
 
-#include "entity.h"
+#include "fluid_source_component_lua.hpp"
 #include "game_object_factory.hpp"
+#include "status_component_lua.hpp"
 #include "timer.h"
 
-class Submarine : public Entity
+class Submarine
 {
     public:
         
@@ -17,10 +19,13 @@ class Submarine : public Entity
         entt::entity Hull;
         entt::entity Rudder;
 
-        Submarine()
+        explicit Submarine(entt::registry& _Reg) : Reg_(_Reg),
+                                                   FldSrcCompLua_(_Reg),
+                                                   StatusCompLua_(_Reg)
         {
             GunRateTimer.start();
         }
+        Submarine() = delete;
 
         Submarine& setPose(float PosX, float PosY, float Angle=0.0f)
         {
@@ -48,6 +53,7 @@ class Submarine : public Entity
 
         void create(entt::registry& _Reg, const float PosX, const float PosY, const float Angle);
         void fire(entt::registry& _Reg);
+        void loadConfig();
         
         void fullStop()
         {
@@ -81,6 +87,8 @@ class Submarine : public Entity
         
     private:
 
+        entt::registry& Reg_;
+
         constexpr static bool GUN_LEFT=false;
         constexpr static bool GUN_RIGHT=true;
         bool GunSide = GUN_LEFT;
@@ -94,7 +102,9 @@ class Submarine : public Entity
         float Throttle_ = 0.0f;
         
         float HullIntegrity_ = 100.0f;
-        
+
+        FluidSourceComponentLua FldSrcCompLua_;
+        StatusComponentLua StatusCompLua_;
 };
 
 #endif // SUBMARINE_H

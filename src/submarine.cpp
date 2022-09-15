@@ -99,21 +99,15 @@ void Submarine::fire(entt::registry& _Reg)
         BodyDef.angularDamping = 5.0f;
         BodyDef.linearDamping = 0.0f;
         BodyDef.bullet = true;
-        _Reg.ctx().at<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE, 5, DrawableGroupsTypeE::WEAPON,
-                                             {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
+        _Reg.ctx().at<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE,
+                                                  StatusCompLua_.Conf_.AgeMax_, DrawableGroupsTypeE::WEAPON,
+                                                  {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
         auto& FldProbesComp = _Reg.emplace<FluidProbeComponent>(Bullet);
         _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.06f);
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
-        FldSrcComp.DensityBackProjection_ = 1.0f/30.0f;
-        FldSrcComp.VelocityBackProjection_ = 1.0f/30.0f;
-        FldSrcComp.DensityStaticR_ = 100.0f;
-        FldSrcComp.DensityStaticG_ = 20.0f;
-        FldSrcComp.DensityStaticB_ = 20.0f;
-        FldSrcComp.DensityDynamicR_ = 1.0f;
-        FldSrcComp.DensityDynamicG_ = 1.0f;
-        FldSrcComp.DensityDynamicB_ = 0.5f;
+        FldSrcCompLua_.copyTo(FldSrcComp);
         FldSrcComp.VelocityWeight_ = 1.0f;
 
         b2Filter Filter;
@@ -129,6 +123,12 @@ void Submarine::fire(entt::registry& _Reg)
         GunSide ^= true; // Just toggle
         GunRateTimer.restart();
     }
+}
+
+void Submarine::loadConfig()
+{
+    FldSrcCompLua_.read("projectile");
+    StatusCompLua_.read("projectile");
 }
 
 void Submarine::update(entt::registry& _Reg)

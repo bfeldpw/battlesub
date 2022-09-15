@@ -29,21 +29,16 @@ set(HEADERS
         common.h
         contact_listener.h
         drawable_generic.h
-        entity.h
-        entity_factory.h
         error_handler.h
         fluid_grid.h
-        global_factories.h
         global_resources.h
         lua_manager.hpp
         lua_path.hpp
-        memory_pool.h
         message_handler.h
         resource_storage.h
         shader_path.h
         submarine.h
         submarine_definition.h
-        submarine_factory.h
         timer.h
         world_def.h
 )
@@ -62,9 +57,7 @@ set(SOURCES
         battle_sub.cpp
         camera_dynamics.cpp
         contact_listener.cpp
-        entity.cpp
         fluid_grid.cpp
-        global_factories.cpp
         global_resources.cpp
         resource_storage.cpp
         submarine.cpp
