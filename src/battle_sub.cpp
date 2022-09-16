@@ -24,6 +24,7 @@
 #include "fluid_interaction_system.hpp"
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
+#include "fluid_source_component_config_gui_adapter.hpp"
 #include "global_resources.h"
 #include "lua_manager.hpp"
 #include "submarine.h"
@@ -494,6 +495,10 @@ void BattleSub::updateGameObjects()
 
 void BattleSub::updateUI(const double _GPUTime)
 {
+    static FluidSourceComponentConfigGuiAdapter ConfigFluidSourceComponentDebris("Debris");
+    static FluidSourceComponentConfigGuiAdapter ConfigFluidSourceComponentProjectile("Projectile");
+    ConfigFluidSourceComponentDebris.Conf = Reg_.ctx().at<EmitterSystem>().getConfigDebrisFluidSource();
+
     GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
     GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
     GL::Renderer::disable(GL::Renderer::Feature::DepthTest);
@@ -504,7 +509,7 @@ void BattleSub::updateUI(const double _GPUTime)
         {
             ImGui::Begin("Debug");
 
-                ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
+            ImGui::TextColored(ImVec4(1,1,0,1), "Performance");
                 ImGui::Indent();
                     ImGui::Text("Frame Time:  %.3f ms; (%.1f FPS)",
                         1000.0/Double(ImGui::GetIO().Framerate), Double(ImGui::GetIO().Framerate));
@@ -542,6 +547,9 @@ void BattleSub::updateUI(const double _GPUTime)
                         showTooltip("Show magnitude or show colour-coded direction, too.");
                 ImGui::Unindent();
                 FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
+
+                if (ConfigFluidSourceComponentDebris.place())
+                    ConfigFluidSourceComponentDebris.copyTo(Reg_.ctx().at<EmitterSystem>().getConfigDebrisFluidSource());
 
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");
@@ -725,7 +733,7 @@ void BattleSub::setupLua(const std::string& _f)
 {
     Reg_.ctx().at<LuaManager>().loadFile(_f);
     Reg_.ctx().at<FluidGrid>().loadConfig();
-    Reg_.ctx().at<EmitterSystem>().loadConfig();
+    Reg_.ctx().at<EmitterSystem>().loadConfigDebris();
 }
 
 void BattleSub::setupWindow()

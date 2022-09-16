@@ -42,7 +42,7 @@ void EmitterSystem::emit()
                                         std::sin(DistAngle(_EmComp.Generator_))*
                                         (_EmComp.Velocity_+_EmComp.VelocityStdDev_));
             BodyDef.angularVelocity = 0.5f*DistAngle(_EmComp.Generator_);
-            Reg_.ctx().at<GameObjectFactory>().create(Debris, this, _EmComp.Type_, StatusCompLua_.Conf_.AgeMax_,
+            Reg_.ctx().at<GameObjectFactory>().create(Debris, this, _EmComp.Type_, StatusCompLua_.Conf.AgeMax_,
                                                       DrawableGroupsTypeE::WEAPON, Col, BodyDef);
 
             auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Debris);
@@ -82,7 +82,7 @@ void EmitterSystem::emit()
     });
 }
 
-void EmitterSystem::loadConfig()
+void EmitterSystem::loadConfigDebris()
 {
     FldSrcCompLua_.read("debris");
     StatusCompLua_.read("debris");

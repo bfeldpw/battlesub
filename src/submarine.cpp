@@ -100,7 +100,7 @@ void Submarine::fire(entt::registry& _Reg)
         BodyDef.linearDamping = 0.0f;
         BodyDef.bullet = true;
         _Reg.ctx().at<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE,
-                                                  StatusCompLua_.Conf_.AgeMax_, DrawableGroupsTypeE::WEAPON,
+                                                  StatusCompLua_.Conf.AgeMax_, DrawableGroupsTypeE::WEAPON,
                                                   {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
         auto& FldProbesComp = _Reg.emplace<FluidProbeComponent>(Bullet);

@@ -16,13 +16,14 @@ class StatusComponentLua
         void read(const std::string& _s)
         {
             auto& Lua = Reg_.ctx().at<LuaManager>();
-            Conf_.AgeMax_ = Lua.get<float>(Lua.State_[_s]["status_component"]["age_max"]);
+            Conf.AgeMax_ = Lua.get<float>(Lua.State_[_s]["status_component"]["age_max"]);
         }
         void copyTo(StatusComponent& _c)
         {
-            _c = Conf_;
+            _c = Conf;
         }
-        StatusComponent Conf_;
+
+        StatusComponent Conf;
 
     private:
 

@@ -99,7 +99,7 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
                                           b2Body* const _Body2,
                                           const GameObjectTypeE _TypeOther)
 {
-    constexpr float SCALE_SIZE_MAX = 1.0f;
+    constexpr float SCALE_SIZE_MAX = 2.0f;
 
     b2Body* Body = _Body1;
     b2WorldManifold WorldManifold;
@@ -112,8 +112,8 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
     switch (_TypeOther)
     {
         case GameObjectTypeE::LANDSCAPE:
-            // Velocity = _Body1->GetLinearVelocityFromWorldPoint(POC);
-            // Impulse  = _Body1->GetMass() * Velocity;
+            Velocity = _Body1->GetLinearVelocityFromWorldPoint(POC);
+            Impulse  = _Body1->GetMass() * Velocity;
 
             break;
         case GameObjectTypeE::PROJECTILE:
@@ -123,9 +123,9 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
             break;
         case GameObjectTypeE::SUBMARINE_HULL:
         case GameObjectTypeE::SUBMARINE_RUDDER:
-            // Velocity = (_Body2->GetLinearVelocityFromWorldPoint(POC)-
-            //             _Body1->GetLinearVelocityFromWorldPoint(POC));
-            // Impulse  =  _Body2->GetMass() * Velocity;
+            Velocity = (_Body2->GetLinearVelocityFromWorldPoint(POC)-
+                        _Body1->GetLinearVelocityFromWorldPoint(POC));
+            Impulse  =  _Body2->GetMass() * Velocity;
             break;
         default: break;
     }
@@ -135,7 +135,8 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
     float Angle = 2.0f * std::atan2(WorldManifold.normal.y, WorldManifold.normal.x) -
                         (std::atan2(Velocity.y, Velocity.x)+b2_pi);
 
-    if (_TypeOther == GameObjectTypeE::PROJECTILE)
+    if (_TypeOther == GameObjectTypeE::PROJECTILE ||
+        _TypeOther == GameObjectTypeE::SUBMARINE_HULL)
     {
         auto Emitter = Reg_.create();
         auto& EmComp = Reg_.emplace<EmitterComponent>(Emitter);
@@ -171,8 +172,8 @@ void ContactListener::testGameObjectTypes(b2Contact* const _Contact, StatusCompo
                  _Status2.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
 
         {
-            this->emitLandscapeDebris(_Contact, _Body1, _Body2);
-            this->emitSubmarineDebris(_Contact, _Body2, _Body1, GameObjectTypeE::LANDSCAPE);
+            // this->emitLandscapeDebris(_Contact, _Body1, _Body2);
+            // this->emitSubmarineDebris(_Contact, _Body2, _Body1, GameObjectTypeE::LANDSCAPE);
         }
     }
     else if (_Status1.Type_ == GameObjectTypeE::PROJECTILE)
@@ -193,9 +194,8 @@ void ContactListener::testGameObjectTypes(b2Contact* const _Contact, StatusCompo
         if (_Status2.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
             _Status2.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
         {
-            this->emitSubmarineDebris(_Contact, _Body1, _Body2, GameObjectTypeE::SUBMARINE_HULL);
-            this->emitSubmarineDebris(_Contact, _Body2, _Body1, GameObjectTypeE::SUBMARINE_HULL);
-
+            // this->emitSubmarineDebris(_Contact, _Body1, _Body2, GameObjectTypeE::SUBMARINE_HULL);
+            // this->emitSubmarineDebris(_Contact, _Body2, _Body1, GameObjectTypeE::SUBMARINE_HULL);
         }
     }
 }

@@ -8,6 +8,7 @@ set(HEADERS
         components/physics_component.hpp
         components/status_component.hpp
         components/visuals_component.hpp
+        gui_adapter/fluid_source_component_config_gui_adapter.hpp
         shaders/advect_shader.h
         shaders/density_display_shader.h
         shaders/density_sources_shader.h
@@ -68,6 +69,7 @@ add_executable(battle_sub ${LIB_NOISE_HEADERS} ${HEADERS} ${SOURCES})
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/bindings/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/components/")
+target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/gui_adapter/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/shaders/")
 target_include_directories(battle_sub PRIVATE "${PROJECT_SOURCE_DIR}/src/systems/")
 target_include_directories(battle_sub PRIVATE ${LUA_INCLUDE_DIR})

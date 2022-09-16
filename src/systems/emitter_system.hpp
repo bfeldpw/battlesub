@@ -4,6 +4,7 @@
 #include <entt/entity/registry.hpp>
 
 #include "emitter_component.hpp"
+#include "fluid_source_component.hpp"
 #include "fluid_source_component_lua.hpp"
 #include "status_component_lua.hpp"
 
@@ -17,8 +18,11 @@ class EmitterSystem
                                                        StatusCompLua_(_Reg){}
         EmitterSystem() = delete;
 
+        FluidSourceComponent& getConfigDebrisFluidSource() {return FldSrcCompLua_.Conf;}
+
         void emit();
-        void loadConfig();
+        void loadConfigDebris();
+        void setConfigDebrisFluidSource(FluidSourceComponent& _c) {FldSrcCompLua_.Conf = _c;}
 
     private:
 

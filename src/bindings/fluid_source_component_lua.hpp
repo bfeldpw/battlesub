@@ -16,23 +16,23 @@ class FluidSourceComponentLua
         void read(const std::string& _s)
         {
             auto& Lua = Reg_.ctx().at<LuaManager>();
-            Conf_.DensityBackProjection_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_back_projection"]);
-            Conf_.DensityDynamicR_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_dynamic_r"]);
-            Conf_.DensityDynamicG_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_dynamic_g"]);
-            Conf_.DensityDynamicB_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_dynamic_b"]);
-            Conf_.DensityStaticR_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_static_r"]);
-            Conf_.DensityStaticG_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_static_g"]);
-            Conf_.DensityStaticB_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_static_b"]);
-            Conf_.VelocityBackProjection_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["velocity_back_projection"]);
+            Conf.DensityBackProjection_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_back_projection"]);
+            Conf.DensityDynamicR_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_dynamic_r"]);
+            Conf.DensityDynamicG_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_dynamic_g"]);
+            Conf.DensityDynamicB_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_dynamic_b"]);
+            Conf.DensityStaticR_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_static_r"]);
+            Conf.DensityStaticG_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_static_g"]);
+            Conf.DensityStaticB_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["density_static_b"]);
+            Conf.VelocityBackProjection_ = Lua.get<float>(Lua.State_[_s]["fluid_source_component"]["velocity_back_projection"]);
         }
         void copyTo(FluidSourceComponent& _c)
         {
-            _c = Conf_;
+            _c = Conf;
         }
 
-    private:
+        FluidSourceComponent Conf;
 
-        FluidSourceComponent Conf_;
+    private:
 
         entt::registry& Reg_;
 };
