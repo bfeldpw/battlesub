@@ -27,6 +27,7 @@
 #include "fluid_source_component_config_gui_adapter.hpp"
 #include "global_resources.h"
 #include "lua_manager.hpp"
+#include "status_component_config_gui_adapter.hpp"
 #include "submarine.h"
 #include "world_def.h"
 
@@ -495,9 +496,11 @@ void BattleSub::updateGameObjects()
 
 void BattleSub::updateUI(const double _GPUTime)
 {
-    static FluidSourceComponentConfigGuiAdapter ConfigFluidSourceComponentDebris("Debris");
-    static FluidSourceComponentConfigGuiAdapter ConfigFluidSourceComponentProjectile("Projectile");
-    ConfigFluidSourceComponentDebris.Conf = Reg_.ctx().at<EmitterSystem>().getConfigDebrisFluidSource();
+    static FluidSourceComponentConfigGuiAdapter ConfigDebrisFluidSource("Debris");
+    static FluidSourceComponentConfigGuiAdapter ConfigProjectileFluidSource("Projectile");
+    static StatusComponentConfigGuiAdapter ConfigDebrisStatus("Debris");
+    ConfigDebrisFluidSource.set(Reg_.ctx().at<EmitterSystem>().getConfigDebrisFluidSource());
+    ConfigDebrisStatus.set(Reg_.ctx().at<EmitterSystem>().getConfigDebrisStatus());
 
     GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
     GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
@@ -548,8 +551,10 @@ void BattleSub::updateUI(const double _GPUTime)
                 ImGui::Unindent();
                 FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
 
-                if (ConfigFluidSourceComponentDebris.place())
-                    ConfigFluidSourceComponentDebris.copyTo(Reg_.ctx().at<EmitterSystem>().getConfigDebrisFluidSource());
+                if (ConfigDebrisStatus.place())
+                    Reg_.ctx().at<EmitterSystem>().setConfigDebrisStatus(ConfigDebrisStatus.get());
+                if (ConfigDebrisFluidSource.place())
+                    Reg_.ctx().at<EmitterSystem>().setConfigDebrisFluidSource(ConfigDebrisFluidSource.get());
 
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");

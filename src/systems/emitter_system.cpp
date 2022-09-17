@@ -42,14 +42,14 @@ void EmitterSystem::emit()
                                         std::sin(DistAngle(_EmComp.Generator_))*
                                         (_EmComp.Velocity_+_EmComp.VelocityStdDev_));
             BodyDef.angularVelocity = 0.5f*DistAngle(_EmComp.Generator_);
-            Reg_.ctx().at<GameObjectFactory>().create(Debris, this, _EmComp.Type_, StatusCompLua_.Conf.AgeMax_,
+            Reg_.ctx().at<GameObjectFactory>().create(Debris, this, _EmComp.Type_, StatusCompLua_.get().AgeMax_,
                                                       DrawableGroupsTypeE::WEAPON, Col, BodyDef);
 
             auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Debris);
             Reg_.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.001f, 0.0f, 0.0f);
 
             auto& FldSrcComp = Reg_.emplace<FluidSourceComponent>(Debris);
-            FldSrcCompLua_.copyTo(FldSrcComp);
+            FldSrcComp = FldSrcCompLua_.get();
             FldSrcComp.VelocityWeight_ = _EmComp.VelocityWeight_;
 
             //--- Adjust physics body for non-self collisions ---//

@@ -9,6 +9,7 @@ set(HEADERS
         components/status_component.hpp
         components/visuals_component.hpp
         gui_adapter/fluid_source_component_config_gui_adapter.hpp
+        gui_adapter/status_component_config_gui_adapter.hpp
         shaders/advect_shader.h
         shaders/density_display_shader.h
         shaders/density_sources_shader.h

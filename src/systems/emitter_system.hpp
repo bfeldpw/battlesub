@@ -6,6 +6,7 @@
 #include "emitter_component.hpp"
 #include "fluid_source_component.hpp"
 #include "fluid_source_component_lua.hpp"
+#include "status_component.hpp"
 #include "status_component_lua.hpp"
 
 class EmitterSystem
@@ -18,11 +19,13 @@ class EmitterSystem
                                                        StatusCompLua_(_Reg){}
         EmitterSystem() = delete;
 
-        FluidSourceComponent& getConfigDebrisFluidSource() {return FldSrcCompLua_.Conf;}
+        const FluidSourceComponent& getConfigDebrisFluidSource() const {return FldSrcCompLua_.get();}
+        const StatusComponent& getConfigDebrisStatus() const {return StatusCompLua_.get();}
 
         void emit();
         void loadConfigDebris();
-        void setConfigDebrisFluidSource(FluidSourceComponent& _c) {FldSrcCompLua_.Conf = _c;}
+        void setConfigDebrisFluidSource(const FluidSourceComponent& _c) {FldSrcCompLua_.set(_c);}
+        void setConfigDebrisStatus(const StatusComponent& _c) {StatusCompLua_.set(_c);}
 
     private:
 

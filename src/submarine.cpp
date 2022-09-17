@@ -100,14 +100,14 @@ void Submarine::fire(entt::registry& _Reg)
         BodyDef.linearDamping = 0.0f;
         BodyDef.bullet = true;
         _Reg.ctx().at<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE,
-                                                  StatusCompLua_.Conf.AgeMax_, DrawableGroupsTypeE::WEAPON,
+                                                  StatusCompLua_.get().AgeMax_, DrawableGroupsTypeE::WEAPON,
                                                   {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
         auto& FldProbesComp = _Reg.emplace<FluidProbeComponent>(Bullet);
         _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.06f);
 
         auto& FldSrcComp = _Reg.emplace<FluidSourceComponent>(Bullet);
-        FldSrcCompLua_.copyTo(FldSrcComp);
+        FldSrcComp = FldSrcCompLua_.get();
         FldSrcComp.VelocityWeight_ = 1.0f;
 
         b2Filter Filter;
