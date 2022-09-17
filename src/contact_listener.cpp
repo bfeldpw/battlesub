@@ -1,10 +1,13 @@
 #include "contact_listener.h"
 
 #include <algorithm>
+#include <entt/entity/fwd.hpp>
 
 #include "emitter_component.hpp"
 #include "global_resources.h"
+#include "parent_component.hpp"
 #include "status_component.hpp"
+#include "submarine.h"
 
 void ContactListener::PreSolve(b2Contact* Contact, const b2Manifold* OldManifold)
 {
@@ -32,8 +35,8 @@ void ContactListener::PreSolve(b2Contact* Contact, const b2Manifold* OldManifold
         b2Body* BodyA = Reg_.get<PhysicsComponent>(EntityA).Body_;
         b2Body* BodyB = Reg_.get<PhysicsComponent>(EntityB).Body_;
 
-        this->testGameObjectTypes(Contact, StatusA, StatusB, BodyA, BodyB);
-        this->testGameObjectTypes(Contact, StatusB, StatusA, BodyB, BodyA);
+        this->testGameObjectTypes(Contact, EntityA, EntityB, BodyA, BodyB);
+        this->testGameObjectTypes(Contact, EntityB, EntityA, BodyB, BodyA);
 
         // else if (ObjA->getType() == GameObjectTypeE::SUBMARINE_HULL ||
         //          ObjA->getType() == GameObjectTypeE::SUBMARINE_RUDDER)
@@ -155,44 +158,50 @@ void ContactListener::emitSubmarineDebris(b2Contact* const _Contact,
     }
 }
 
-void ContactListener::testGameObjectTypes(b2Contact* const _Contact, StatusComponent& _Status1, StatusComponent& _Status2,
+void ContactListener::testGameObjectTypes(b2Contact* const _Contact, entt::entity _Entity1, entt::entity _Entity2,
                                           b2Body* const _Body1, b2Body* const _Body2)
 {
-    if (_Status1.Type_== GameObjectTypeE::LANDSCAPE)
+    auto& Status1 = Reg_.get<StatusComponent>(_Entity1);
+    auto& Status2 = Reg_.get<StatusComponent>(_Entity2);
+
+    if (Status1.Type_== GameObjectTypeE::LANDSCAPE)
     {
-        if (_Status2.Type_== GameObjectTypeE::PROJECTILE)
+        if (Status2.Type_== GameObjectTypeE::PROJECTILE)
         {
             this->emitLandscapeDebris(_Contact, _Body1, _Body2);
             _Contact->SetEnabled(false);
             _Body2->SetLinearVelocity({0.0f, 0.0f});
-            _Status2.IsSinking_ = true;
-            _Status2.IsSunk_ = true;
+            Status2.IsSinking_ = true;
+            Status2.IsSunk_ = true;
         }
-        else if (_Status2.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
-                 _Status2.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
+        else if (Status2.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
+                 Status2.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
 
         {
             // this->emitLandscapeDebris(_Contact, _Body1, _Body2);
             // this->emitSubmarineDebris(_Contact, _Body2, _Body1, GameObjectTypeE::LANDSCAPE);
         }
     }
-    else if (_Status1.Type_ == GameObjectTypeE::PROJECTILE)
+    else if (Status1.Type_ == GameObjectTypeE::PROJECTILE)
     {
-        if (_Status2.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
-            _Status2.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
+        if (Status2.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
+            Status2.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
         {
             this->emitSubmarineDebris(_Contact, _Body2, _Body1, GameObjectTypeE::SUBMARINE_HULL);
             _Contact->SetEnabled(false);
             _Body1->SetLinearVelocity({0.0f, 0.0f});
-            _Status1.IsSinking_ = true;
-            _Status1.IsSunk_ = true;
+
+            std::any_cast<Submarine*>(Reg_.get<ParentComponent>(_Entity2).Parent_)->impact(2.0f);
+
+            Status1.IsSinking_ = true;
+            Status1.IsSunk_ = true;
         }
     }
-    else if (_Status1.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
-             _Status1.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
+    else if (Status1.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
+             Status1.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
     {
-        if (_Status2.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
-            _Status2.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
+        if (Status2.Type_ == GameObjectTypeE::SUBMARINE_HULL ||
+            Status2.Type_ == GameObjectTypeE::SUBMARINE_RUDDER)
         {
             // this->emitSubmarineDebris(_Contact, _Body1, _Body2, GameObjectTypeE::SUBMARINE_HULL);
             // this->emitSubmarineDebris(_Contact, _Body2, _Body1, GameObjectTypeE::SUBMARINE_HULL);

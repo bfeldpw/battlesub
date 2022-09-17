@@ -12,7 +12,7 @@ class FluidSourceComponentConfigGuiAdapter
 {
     public:
 
-        explicit FluidSourceComponentConfigGuiAdapter(const std::string& _s) {s_ = _s;}
+        explicit FluidSourceComponentConfigGuiAdapter(const std::string& _s) : s_(_s) {}
         FluidSourceComponentConfigGuiAdapter() = delete;
 
         bool place()

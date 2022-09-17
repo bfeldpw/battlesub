@@ -25,8 +25,8 @@ class ContactListener : public b2ContactListener
                                  b2Body* const _Body2,
                                  const GameObjectTypeE _TypeOther);
         void testGameObjectTypes(b2Contact* const _Contact,
-                                 StatusComponent& _Status1,
-                                 StatusComponent& _Status2,
+                                 entt::entity _Entity1,
+                                 entt::entity _Entity2,
                                  b2Body* const _Body1,
                                  b2Body* const _Body2);
 
