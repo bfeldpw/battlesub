@@ -113,9 +113,8 @@ void GameObjectFactory::updateStatus()
             _StatusComp.Type_ == GameObjectTypeE::DEBRIS_SUBMARINE)
 
         {
-            if (!_StatusComp.IsSinking_ &&
-                (_StatusComp.Age_.time() > _StatusComp.AgeMax_ ||
-                _PhysComp.Body_->GetLinearVelocity().Length() < 0.01f))
+            if (!_StatusComp.IsSinking_ && _StatusComp.AgeMax_ != -1 &&
+                 _StatusComp.Age_.time() > _StatusComp.AgeMax_)
             {
                 _StatusComp.IsSinking_ = true;
                 _StatusComp.Age_.restart();
@@ -131,13 +130,12 @@ void GameObjectFactory::updateStatus()
                 _VisComp.Color_.a() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0005f);
                 _VisComp.Drawable_->setColor(_VisComp.Color_);
 
-                if (_StatusComp.Age_.time() > 5.0f)
+                if (_StatusComp.Age_.time() > _StatusComp.SinkDuration_)
                 {
                     _StatusComp.IsSunk_ = true;
                 }
                 if (_StatusComp.IsSunk_)
                 {
-                    _PhysComp.Body_->SetLinearVelocity({0.0f, 0.0f});
                     _PhysComp.Body_->SetEnabled(false);
                 }
                 if (_StatusComp.IsSunk_ && _VisComp.Scale_ < 0.1f)

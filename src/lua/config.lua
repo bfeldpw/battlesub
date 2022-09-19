@@ -15,7 +15,8 @@ display = {
 debris = {
 
   status_component = {
-    age_max = 20
+    age_max = 20,
+    sink_duration = 10
   },
 
   fluid_source_component = {
@@ -34,7 +35,8 @@ debris = {
 projectile = {
 
   status_component = {
-    age_max = 5
+    age_max = 5,
+    sink_duration = 5
   },
 
   fluid_source_component = {

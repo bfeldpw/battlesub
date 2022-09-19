@@ -17,11 +17,15 @@ class StatusComponentConfigGuiAdapter
 
         bool place()
         {
+            bool r{false};
+
             ImGui::Text((s_+" Config").c_str());
             if (ImGui::SliderInt("Max Age (s)", &Conf_.AgeMax_, -1, 100))
-                return true;
-            else
-                return false;
+                r = true;
+            if (ImGui::SliderInt("Sink Duration (s)", &Conf_.SinkDuration_, 0, 100))
+                r = true;
+
+           return r;
         }
 
         const StatusComponent& get() const

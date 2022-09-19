@@ -16,7 +16,8 @@ class StatusComponentLua
         void read(const std::string& _s)
         {
             auto& Lua = Reg_.ctx().at<LuaManager>();
-            Conf_.AgeMax_ = Lua.get<float>(Lua.State_[_s]["status_component"]["age_max"]);
+            Conf_.AgeMax_ = Lua.get<int>(Lua.State_[_s]["status_component"]["age_max"]);
+            Conf_.SinkDuration_ = Lua.get<int>(Lua.State_[_s]["status_component"]["sink_duration"]);
         }
 
         const StatusComponent& get() const

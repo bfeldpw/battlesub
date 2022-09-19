@@ -10,6 +10,7 @@
 #include "fluid_source_component.hpp"
 
 #include "game_object_factory.hpp"
+#include "status_component.hpp"
 
 void EmitterSystem::emit()
 {
@@ -54,6 +55,9 @@ void EmitterSystem::emit()
 
             //--- Adjust physics body for non-self collisions ---//
             auto& PhysComp = Reg_.get<PhysicsComponent>(Debris);
+
+            auto& StatusComp = Reg_.get<StatusComponent>(Debris);
+            StatusComp.SinkDuration_ = StatusCompLua_.get().SinkDuration_;
 
             b2Filter Filter;
             // Filter.categoryBits = 0x0002;

@@ -1,3 +1,4 @@
+#include <imgui.h>
 #include <iostream>
 
 #include <thread>
@@ -551,10 +552,13 @@ void BattleSub::updateUI(const double _GPUTime)
                 ImGui::Unindent();
                 FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
 
-                if (ConfigDebrisStatus.place())
-                    Reg_.ctx().at<EmitterSystem>().setConfigDebrisStatus(ConfigDebrisStatus.get());
-                if (ConfigDebrisFluidSource.place())
-                    Reg_.ctx().at<EmitterSystem>().setConfigDebrisFluidSource(ConfigDebrisFluidSource.get());
+                ImGui::NewLine();
+                ImGui::Indent();
+                    if (ConfigDebrisStatus.place())
+                        Reg_.ctx().at<EmitterSystem>().setConfigDebrisStatus(ConfigDebrisStatus.get());
+                    if (ConfigDebrisFluidSource.place())
+                        Reg_.ctx().at<EmitterSystem>().setConfigDebrisFluidSource(ConfigDebrisFluidSource.get());
+                ImGui::Unindent();
 
                 ImGui::NewLine();
                 ImGui::TextColored(ImVec4(1,1,0,1), "Fluid Display");

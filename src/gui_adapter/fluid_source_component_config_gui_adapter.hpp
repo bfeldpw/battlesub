@@ -18,7 +18,7 @@ class FluidSourceComponentConfigGuiAdapter
         bool place()
         {
             ImGui::Text((s_+" Densities").c_str());
-            bool r = false;
+            bool r{false};
             float ColDyn[3];
             ColDyn[0] = Conf_.DensityDynamicR_;
             ColDyn[1] = Conf_.DensityDynamicG_;
