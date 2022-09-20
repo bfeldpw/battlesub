@@ -22,6 +22,7 @@ set(HEADERS
         shaders/velocity_divergence_shader.h
         shaders/velocity_gradient_substraction_shader.h
         shaders/velocity_sources_shader.h
+        systems/boid_system.hpp
         systems/debug_render_system.hpp
         systems/emitter_system.hpp
         systems/fluid_interaction_system.hpp

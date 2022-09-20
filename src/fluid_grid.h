@@ -83,6 +83,7 @@ class FluidGrid
         typedef std::array<float, (FLUID_GRID_ARRAY_SIZE >> VELOCITY_READBACK_SUBSAMPLE_XY)> VelocityReadbackDataType;
 
         explicit FluidGrid(entt::registry& _Reg) : Reg_(_Reg) {}
+        FluidGrid() = delete;
 
         void loadConfig();
 

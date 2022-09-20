@@ -18,6 +18,7 @@
 
 #include "battle_sub.h"
 #include "bindings/fluid_source_component_lua.hpp"
+#include "boid_system.hpp"
 #include "common.h"
 #include "debug_render_system.hpp"
 #include "emitter_system.hpp"
@@ -49,6 +50,8 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
     Reg_.ctx().at<FluidGrid>().setDensityBase(GlobalResources::Get.getHeightMap())
               .init();
     this->setupGameObjects();
+
+    Reg_.ctx().at<BoidSystem>().init();
     
     GlobalResources::Get.getWorld()->SetContactListener(&Reg_.ctx().at<ContactListener>());
     
@@ -493,6 +496,7 @@ void BattleSub::updateGameObjects()
         Fluid.addDensityPt(Propellor.x, Propellor.y, r, g, b)
              .addVelocity(Propellor.x, Propellor.y, 0.01f*Direction.x*PlayerSub2_->getThrottle(), 0.01f*Direction.y*PlayerSub2_->getThrottle());
     }
+    Reg_.ctx().at<BoidSystem>().update();
 }
 
 void BattleSub::updateUI(const double _GPUTime)
@@ -736,6 +740,7 @@ void BattleSub::setupECS()
     Reg_.ctx().emplace<MessageHandler>();
     Reg_.ctx().at<MessageHandler>().setLevel(MessageHandler::DEBUG_L1);
     Reg_.ctx().emplace<ErrorHandler>();
+    Reg_.ctx().emplace<BoidSystem>(Reg_);
 }
 
 void BattleSub::setupLua(const std::string& _f)
