@@ -3,9 +3,8 @@
 
 #include <string>
 
-#include "error_handler.h"
 #include "lua_path.hpp"
-#include "message_handler.h"
+#include "message_handler.hpp"
 
 #define SOL_ALL_SAFETIES_ON 1
 #include <limits> // Needed for sol, seemed to be forgotten
@@ -28,13 +27,13 @@ class LuaManager
             sol::protected_function_result r = State_.safe_script_file(LUA_PATH+_f);
             if (r.valid())
             {
-                Reg_.ctx().at<MessageHandler>().report("Loading "+_f+" successful");
+                Reg_.ctx().at<MessageHandler>().report("lua", "Loading "+_f+" successful", MessageHandler::INFO);
                 return true;
             }
             else
             {
                 sol::error e = r;
-                Reg_.ctx().at<ErrorHandler>().reportError("Loading "+_f+" failed: "+e.what());
+                Reg_.ctx().at<MessageHandler>().report("lua","Loading "+_f+" failed: "+e.what());
                 return false;
             }
         }
@@ -48,7 +47,7 @@ class LuaManager
             }
             else
             {
-                Reg_.ctx().at<ErrorHandler>().reportError("Lua error aquiring value.");
+                Reg_.ctx().at<MessageHandler>().report("lua", "Lua error aquiring value.");
                 return _Default;
             }
         }

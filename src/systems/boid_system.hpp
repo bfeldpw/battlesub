@@ -5,7 +5,7 @@
 
 #include <entt/entity/registry.hpp>
 
-#include "message_handler.h"
+#include "message_handler.hpp"
 
 struct BoidComponent
 {
@@ -33,7 +33,7 @@ class BoidSystem
                 auto Boid = Reg_.create();
                 Reg_.emplace<BoidComponent>(Boid);
             }
-            Reg_.ctx().at<MessageHandler>().report("Created "+std::to_string(Conf_.n)+" boids");
+            Reg_.ctx().at<MessageHandler>().report("bds", "Created "+std::to_string(Conf_.n)+" boids", MessageHandler::DEBUG_L1);
         }
 
         void update()

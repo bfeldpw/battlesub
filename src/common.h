@@ -10,15 +10,9 @@
 #include <Magnum/Shaders/Flat.h>
 #include <Magnum/Shaders/VertexColor.h>
 
-#include "error_handler.h"
-#include "message_handler.h"
-
 using namespace Magnum;
 
 typedef SceneGraph::Object<SceneGraph::TranslationRotationScalingTransformation2D> Object2D;
 typedef SceneGraph::Scene<SceneGraph::TranslationRotationScalingTransformation2D> Scene2D;
-
-static ErrorHandler   GlobalErrorHandler;
-static MessageHandler GlobalMessageHandler;
 
 #endif // COMMON_H

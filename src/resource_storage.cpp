@@ -13,6 +13,7 @@
 #include <Magnum/Trade/MeshData.h>
 
 #include "common.h"
+#include "message_handler.hpp"
 #include "noise.h"
 #include "timer.h"
 #include "world_def.h"
@@ -164,13 +165,13 @@ void ResourceStorage::initHeightMap()
     HeightMap_.resize(FLUID_GRID_ARRAY_SIZE);
     
     auto NoOfThreads = std::thread::hardware_concurrency();
-    
-    GlobalMessageHandler.report("Building height map.");
-    DBLK(
-        GlobalMessageHandler.reportDebug("Number of threads: " + std::to_string(NoOfThreads));
-        Timer HeightMapTimer;
-        HeightMapTimer.start();
-    )
+
+    // GlobalMessageHandler.report("Building height map.");
+    // DBLK(
+    //     GlobalMessageHandler.reportDebug("Number of threads: " + std::to_string(NoOfThreads));
+    //     Timer HeightMapTimer;
+    //     HeightMapTimer.start();
+    // )
     
     std::vector<std::thread> Workers;
     for (auto i=0u; i<NoOfThreads; ++i)
@@ -193,10 +194,10 @@ void ResourceStorage::initHeightMap()
     }
     for (auto i=0u; i<NoOfThreads; ++i) Workers[i].join();
     
-    DBLK(
-        HeightMapTimer.stop();
-        GlobalMessageHandler.reportDebug("Done in " + std::to_string(HeightMapTimer.elapsed()) + "s.");
-    )
+    // DBLK(
+        // HeightMapTimer.stop();
+        // GlobalMessageHandler.reportDebug("Done in " + std::to_string(HeightMapTimer.elapsed()) + "s.");
+    // )
     
     
 //     for (auto y=0u; y<FLUID_GRID_SIZE_Y; ++y)
@@ -452,10 +453,10 @@ void ResourceStorage::initLandscape()
             Meshes_[int(GameObjectTypeE::LANDSCAPE)].push_back(std::move(Mesh));
         }
         
-        DBLK(
-            GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
-            GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(Shapes.ShapeDefs.back().size()), MessageHandler::DEBUG_L1);
-        )
+        // DBLK(
+        //     GlobalMessageHandler.reportDebug("Boundary octave count: " + std::to_string(OctaveCount), MessageHandler::DEBUG_L1);
+        //     GlobalMessageHandler.reportDebug("Boundary vertex count: " + std::to_string(Shapes.ShapeDefs.back().size()), MessageHandler::DEBUG_L1);
+        // )
     }
     {
         Boundary.SetFrequency(0.008);

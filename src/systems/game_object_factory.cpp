@@ -1,6 +1,5 @@
 #include "game_object_factory.hpp"
 
-#include "message_handler.h"
 #include "parent_component.hpp"
 
 void GameObjectFactory::create(entt::entity e, std::any _Parent, const GameObjectTypeE _GameObjectType,
@@ -189,24 +188,24 @@ DBLK(
     void GameObjectFactory::printInternalEntityLists() const
     {
         auto& Msg = Reg_.ctx().at<MessageHandler>();
-        Msg.reportDebugRaw("ID:      ", MessageHandler::DEBUG_L2);
+        Msg.reportRaw("ID:      ", MessageHandler::DEBUG_L2);
         for (auto i=0; i<EntityIDs.Count_; ++i)
         {
-            Msg.reportDebugRaw(std::to_string(EntityIDs.IDs_[i]) + " ", MessageHandler::DEBUG_L2);
+            Msg.reportRaw(std::to_string(EntityIDs.IDs_[i]) + " ", MessageHandler::DEBUG_L2);
         }
-        Msg.reportDebugRaw("\n", MessageHandler::DEBUG_L2);
-        Msg.reportDebugRaw("ID Map:  ", MessageHandler::DEBUG_L2);
+        Msg.reportRaw("\n", MessageHandler::DEBUG_L2);
+        Msg.reportRaw("ID Map:  ", MessageHandler::DEBUG_L2);
         for (auto i=0; i<EntityIDs.Count_; ++i)
         {
-            Msg.reportDebugRaw(std::to_string(EntityIDs.IDMap_[i]) + " ", MessageHandler::DEBUG_L2);
+            Msg.reportRaw(std::to_string(EntityIDs.IDMap_[i]) + " ", MessageHandler::DEBUG_L2);
         }
-        Msg.reportDebugRaw("\n", MessageHandler::DEBUG_L2);
-        Msg.reportDebugRaw("ID Free: ", MessageHandler::DEBUG_L2);
+        Msg.reportRaw("\n", MessageHandler::DEBUG_L2);
+        Msg.reportRaw("ID Free: ", MessageHandler::DEBUG_L2);
         for (auto i=0; i<EntityIDs.CountFree_; ++i)
         {
-            Msg.reportDebugRaw(std::to_string(EntityIDs.FreeIDs_[i]) + " ", MessageHandler::DEBUG_L2);
+            Msg.reportRaw(std::to_string(EntityIDs.FreeIDs_[i]) + " ", MessageHandler::DEBUG_L2);
         }
-        Msg.reportDebugRaw("\n", MessageHandler::DEBUG_L2);
+        Msg.reportRaw("\n", MessageHandler::DEBUG_L2);
     }
 )
 

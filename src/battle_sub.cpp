@@ -29,6 +29,7 @@
 #include "fluid_source_component_config_gui_adapter.hpp"
 #include "global_resources.h"
 #include "lua_manager.hpp"
+#include "message_handler.hpp"
 #include "status_component_config_gui_adapter.hpp"
 #include "submarine.h"
 #include "world_def.h"
@@ -269,11 +270,6 @@ void BattleSub::drawEvent()
                                                             Pos.y+Cam2MoveAheadY_.Value()));
                 }
             }
-        }
-        
-        if (GlobalErrorHandler.checkError() == true)
-        {
-            IsExitTriggered_ = true;
         }
         
         // Draw the scene
@@ -730,6 +726,13 @@ void BattleSub::updateWorld()
 
 void BattleSub::setupECS()
 {
+    Reg_.ctx().emplace<MessageHandler>();
+    Reg_.ctx().at<MessageHandler>().setLevel(MessageHandler::DEBUG_L1);
+
+    Reg_.ctx().at<MessageHandler>().registerSource("bds", "BDS");
+    Reg_.ctx().at<MessageHandler>().registerSource("lua", "LUA");
+    Reg_.ctx().at<MessageHandler>().registerSource("sub", "SUB");
+
     Reg_.ctx().emplace<LuaManager>(Reg_);
     Reg_.ctx().emplace<ContactListener>(Reg_);
     Reg_.ctx().emplace<DebugRenderSystem>(Reg_);
@@ -737,9 +740,6 @@ void BattleSub::setupECS()
     Reg_.ctx().emplace<FluidGrid>(Reg_);
     Reg_.ctx().emplace<FluidInteractionSystem>(Reg_);
     Reg_.ctx().emplace<GameObjectFactory>(Reg_);
-    Reg_.ctx().emplace<MessageHandler>();
-    Reg_.ctx().at<MessageHandler>().setLevel(MessageHandler::DEBUG_L1);
-    Reg_.ctx().emplace<ErrorHandler>();
     Reg_.ctx().emplace<BoidSystem>(Reg_);
 }
 

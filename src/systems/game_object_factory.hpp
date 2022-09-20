@@ -9,6 +9,7 @@
 
 #include "drawable_generic.h"
 #include "global_resources.h"
+#include "message_handler.hpp"
 #include "physics_component.hpp"
 #include "status_component.hpp"
 #include "visuals_component.hpp"

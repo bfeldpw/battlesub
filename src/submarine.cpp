@@ -3,6 +3,7 @@
 #include "fluid_interaction_system.hpp"
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
+#include "message_handler.hpp"
 
 void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY, const float Angle)
 {
@@ -19,8 +20,8 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         _Reg.ctx().at<GameObjectFactory>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, 5, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDef);
         DBLK(
-            _Reg.ctx().at<MessageHandler>().reportDebug("created submarine hull");
-            _Reg.ctx().at<MessageHandler>().reportDebug("  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Hull).Body_->GetMass()));
+            _Reg.ctx().at<MessageHandler>().report("sub", "created submarine hull", MessageHandler::DEBUG_L1);
+            _Reg.ctx().at<MessageHandler>().report("sub", "  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Hull).Body_->GetMass()), MessageHandler::DEBUG_L1);
         )
 
         auto& FldProbesComp = _Reg.emplace<FluidProbesComponent<8>>(Hull);
@@ -47,8 +48,8 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         _Reg.ctx().at<GameObjectFactory>().create(Rudder, this, GameObjectTypeE::SUBMARINE_RUDDER, 5, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDefRudder);
         DBLK(
-            _Reg.ctx().at<MessageHandler>().reportDebug("created submarine rudder");
-            _Reg.ctx().at<MessageHandler>().reportDebug("  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Rudder).Body_->GetMass()));
+            _Reg.ctx().at<MessageHandler>().report("sub", "created submarine rudder", MessageHandler::DEBUG_L1);
+            _Reg.ctx().at<MessageHandler>().report("sub", "  - mass: "+std::to_string(_Reg.get<PhysicsComponent>(Rudder).Body_->GetMass()), MessageHandler::DEBUG_L1);
         )
         auto& FldProbesCompRudder = _Reg.emplace<FluidProbesComponent<8>>(Rudder);
         _Reg.ctx().at<FluidInteractionSystem>().addFluidProbe<8>(FldProbesCompRudder, 2, 50.0f, 0, -0.1f, -1.0f, -1.0f, 0.0f);
