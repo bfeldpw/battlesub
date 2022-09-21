@@ -1,29 +1,11 @@
-#ifndef PHYSICS_COMPONENT
-#define PHYSICS_COMPONENT
+#ifndef PHYSICS_COMPONENT_HPP
+#define PHYSICS_COMPONENT_HPP
 
 #include <box2d.h>
 
-enum class ShapeEnumType : int
-{
-    CIRCLE,
-    CHAIN,
-    POLYGON
-};
-
-typedef std::vector<b2Vec2>     ShapeType;
-typedef struct
-{
-    std::vector<ShapeType>    ShapeDefs;
-    std::vector<b2FixtureDef> FixtureDefs;
-    ShapeEnumType             Type = ShapeEnumType::POLYGON;
-    
-} ShapesType;
-
 struct PhysicsComponent
 {
-    b2Body*     Body_   = nullptr;
-    b2World*    World_  = nullptr;
-    ShapesType* Shapes_ = nullptr;
+    b2Body*      Body_   = nullptr;
 };
 
-#endif // PHYSICS_COMPONENT
+#endif // PHYSICS_COMPONENT_HPP

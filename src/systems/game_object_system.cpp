@@ -14,11 +14,7 @@ void GameObjectSystem::create(entt::entity e, std::any _Parent, const GameObject
 
     Parent.Parent_ = _Parent;
 
-    Physics.World_  = GlobalResources::Get.getWorld();
-    Physics.Shapes_ = GlobalResources::Get.getShapes(_GameObjectType);
-    assert(Physics.World_ != nullptr);
-    assert(Physics.Shapes_ != nullptr);
-    Physics.Body_   = Physics.World_->CreateBody(&_BodyDef);
+    Physics.Body_   = GlobalResources::Get.getWorld()->CreateBody(&_BodyDef);
 
     if (EntityIDs.CountFree_ > 0)
     {
@@ -37,7 +33,7 @@ void GameObjectSystem::create(entt::entity e, std::any _Parent, const GameObject
 
     DBLK(printInternalEntityLists();)
 
-    this->createShapes(Physics.Body_, Physics.Shapes_);
+    this->createShapes(Physics.Body_, GlobalResources::Get.getShapes(_GameObjectType));
 
     Status.Age_.restart();
     Status.AgeMax_ = _AgeMax;
@@ -147,7 +143,7 @@ void GameObjectSystem::updateStatus()
         if (_StatusComp.IsToBeDeleted_)
         {
             // Destroy physics data, Box2D will handle everything from here
-            _PhysComp.World_->DestroyBody(_PhysComp.Body_);
+            GlobalResources::Get.getWorld()->DestroyBody(_PhysComp.Body_);
 
             // Destroy graphics data, Magnum will handle everything from here
             // (including drawables)

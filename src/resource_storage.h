@@ -22,6 +22,22 @@ enum class DrawableGroupsTypeE : int
     DEFAULT
 };
 
+enum class ShapeEnumType : int
+{
+    CIRCLE,
+    CHAIN,
+    POLYGON
+};
+
+typedef std::vector<b2Vec2>     ShapeType;
+typedef struct
+{
+    std::vector<ShapeType>    ShapeDefs;
+    std::vector<b2FixtureDef> FixtureDefs;
+    ShapeEnumType             Type = ShapeEnumType::POLYGON;
+
+} ShapesType;
+
 class ResourceStorage
 {
     public:
