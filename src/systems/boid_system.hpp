@@ -33,7 +33,7 @@ class BoidSystem
                 auto Boid = Reg_.create();
                 Reg_.emplace<BoidComponent>(Boid);
             }
-            Reg_.ctx().at<MessageHandler>().report("bds", "Created "+std::to_string(Conf_.n)+" boids", MessageHandler::DEBUG_L1);
+            Reg_.ctx().at<MessageHandler>().report("bds", "Populated world with "+std::to_string(Conf_.n)+" fish", MessageHandler::INFO);
         }
 
         void update()

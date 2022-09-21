@@ -73,6 +73,8 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
             jointDef.collideConnected = false;
             RudderJoint = static_cast<b2RevoluteJoint*>(GlobalResources::Get.getWorld()->CreateJoint(&jointDef));
         }
+
+        _Reg.ctx().at<MessageHandler>().report("sub", "Created submarine. ", MessageHandler::INFO);
     }
 }
 
