@@ -458,8 +458,8 @@ void BattleSub::updateGameObjects()
          .addVelocity(-10.0, -10.0, 20.0, 0.0,
                            -10.0+20.0*double(VelocitySourceBackprojection_), -10.0, 100.0, 0.0);
 
-    Reg_.ctx().at<GameObjectFactory>().updateVisuals();
-    Reg_.ctx().at<GameObjectFactory>().updateStatus();
+    Reg_.ctx().at<GameObjectSystem>().updateVisuals();
+    Reg_.ctx().at<GameObjectSystem>().updateStatus();
     Reg_.ctx().at<EmitterSystem>().emit();
     Reg_.ctx().at<FluidInteractionSystem>().addSources();
     Reg_.ctx().at<FluidInteractionSystem>().applyForces();
@@ -739,7 +739,7 @@ void BattleSub::setupECS()
     Reg_.ctx().emplace<EmitterSystem>(Reg_);
     Reg_.ctx().emplace<FluidGrid>(Reg_);
     Reg_.ctx().emplace<FluidInteractionSystem>(Reg_);
-    Reg_.ctx().emplace<GameObjectFactory>(Reg_);
+    Reg_.ctx().emplace<GameObjectSystem>(Reg_);
     Reg_.ctx().emplace<BoidSystem>(Reg_);
 }
 
@@ -875,8 +875,8 @@ void BattleSub::setupGameObjects()
     BodyDef.type = b2_staticBody;
     BodyDef.enabled = true;
     BodyDef.position.Set(0.0f, 0.0f);
-    Reg_.ctx().at<GameObjectFactory>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE, 5,
-                                         DrawableGroupsTypeE::DEFAULT, {0.5f, 0.5f, 1.0f, 1.0f}, BodyDef);
+    Reg_.ctx().at<GameObjectSystem>().create(CanyonBoundary, nullptr, GameObjectTypeE::LANDSCAPE, 5,
+                  DrawableGroupsTypeE::DEFAULT, {0.5f, 0.5f, 1.0f, 1.0f}, BodyDef);
 }
 
 void BattleSub::showTooltip(const std::string& Tooltip)

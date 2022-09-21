@@ -13,7 +13,7 @@
 #include "common.h"
 #include "contact_listener.h"
 #include "fluid_grid.h"
-#include "game_object_factory.hpp"
+#include "game_object_system.hpp"
 #include "main_display_shader.h"
 #include "submarine.h"
 #include "timer.h"

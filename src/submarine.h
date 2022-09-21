@@ -6,7 +6,7 @@
 #include <entt/entity/registry.hpp>
 
 #include "fluid_source_component_lua.hpp"
-#include "game_object_factory.hpp"
+#include "game_object_system.hpp"
 #include "status_component_lua.hpp"
 #include "timer.h"
 

@@ -1,11 +1,11 @@
-#include "game_object_factory.hpp"
+#include "game_object_system.hpp"
 
 #include "parent_component.hpp"
 
-void GameObjectFactory::create(entt::entity e, std::any _Parent, const GameObjectTypeE _GameObjectType,
-                               const int _AgeMax,
-                                const DrawableGroupsTypeE _DrawableGroupsType, Color4 _Col,
-                                const b2BodyDef& _BodyDef)
+void GameObjectSystem::create(entt::entity e, std::any _Parent, const GameObjectTypeE _GameObjectType,
+                              const int _AgeMax,
+                              const DrawableGroupsTypeE _DrawableGroupsType, Color4 _Col,
+                              const b2BodyDef& _BodyDef)
 {
     auto& Parent  = Reg_.emplace<ParentComponent>(e);
     auto& Physics = Reg_.emplace<PhysicsComponent>(e);
@@ -65,7 +65,7 @@ void GameObjectFactory::create(entt::entity e, std::any _Parent, const GameObjec
     }
 }
 
-void GameObjectFactory::createShapes(b2Body* Body, ShapesType* Shapes)
+void GameObjectSystem::createShapes(b2Body* Body, ShapesType* Shapes)
 {
     for (auto i=0u; i<Shapes->ShapeDefs.size(); ++i)
     {
@@ -102,7 +102,7 @@ void GameObjectFactory::createShapes(b2Body* Body, ShapesType* Shapes)
     }
 }
 
-void GameObjectFactory::updateStatus()
+void GameObjectSystem::updateStatus()
 {
     Reg_.view<PhysicsComponent, StatusComponent, VisualsComponent>().each(
         [this](auto& _PhysComp, auto& _StatusComp, auto& _VisComp)
@@ -168,7 +168,7 @@ void GameObjectFactory::updateStatus()
     });
 }
 
-void GameObjectFactory::updateVisuals()
+void GameObjectSystem::updateVisuals()
 {
     Reg_.view<PhysicsComponent, VisualsComponent>().each([](auto& _PhysComp, auto& _VisComp)
     {
@@ -185,7 +185,7 @@ void GameObjectFactory::updateVisuals()
 
 
 DBLK(
-    void GameObjectFactory::printInternalEntityLists() const
+    void GameObjectSystem::printInternalEntityLists() const
     {
         auto& Msg = Reg_.ctx().at<MessageHandler>();
         Msg.reportRaw("ID:      ", MessageHandler::DEBUG_L2);

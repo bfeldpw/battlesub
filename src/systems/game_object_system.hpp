@@ -1,5 +1,5 @@
-#ifndef GAME_OBJECT_FACTORY_HPP
-#define GAME_OBJECT_FACTORY_HPP
+#ifndef GAME_OBJECT_SYSTEM_HPP
+#define GAME_OBJECT_SYSTEM_HPP
 
 #include <any>
 
@@ -15,12 +15,12 @@
 #include "visuals_component.hpp"
 
 
-class GameObjectFactory
+class GameObjectSystem
 {
     public:
 
-        explicit GameObjectFactory(entt::registry& Reg) : Reg_(Reg) {}
-        GameObjectFactory() = delete;
+        explicit GameObjectSystem(entt::registry& Reg) : Reg_(Reg) {}
+        GameObjectSystem() = delete;
 
         void create(entt::entity e, std::any _Parent, const GameObjectTypeE _GameObjectType,
                     const int _AgeMax,

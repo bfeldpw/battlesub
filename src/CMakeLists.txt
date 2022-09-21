@@ -26,18 +26,17 @@ set(HEADERS
         systems/debug_render_system.hpp
         systems/emitter_system.hpp
         systems/fluid_interaction_system.hpp
-        systems/game_object_factory.hpp
+        systems/game_object_system.hpp
         battle_sub.h
         camera_dynamics.h
         common.h
         contact_listener.h
         drawable_generic.h
-        error_handler.h
         fluid_grid.h
         global_resources.h
         lua_manager.hpp
         lua_path.hpp
-        message_handler.h
+        message_handler.hpp
         resource_storage.h
         shader_path.h
         submarine.h
@@ -56,7 +55,7 @@ set(SOURCES
         systems/debug_render_system.cpp
         systems/emitter_system.cpp
         systems/fluid_interaction_system.cpp
-        systems/game_object_factory.cpp
+        systems/game_object_system.cpp
         battle_sub.cpp
         camera_dynamics.cpp
         contact_listener.cpp

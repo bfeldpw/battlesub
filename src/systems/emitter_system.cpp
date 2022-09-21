@@ -9,7 +9,7 @@
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
 
-#include "game_object_factory.hpp"
+#include "game_object_system.hpp"
 #include "status_component.hpp"
 
 void EmitterSystem::emit()
@@ -43,7 +43,7 @@ void EmitterSystem::emit()
                                         std::sin(DistAngle(_EmComp.Generator_))*
                                         (_EmComp.Velocity_+_EmComp.VelocityStdDev_));
             BodyDef.angularVelocity = 0.5f*DistAngle(_EmComp.Generator_);
-            Reg_.ctx().at<GameObjectFactory>().create(Debris, this, _EmComp.Type_, StatusCompLua_.get().AgeMax_,
+            Reg_.ctx().at<GameObjectSystem>().create(Debris, this, _EmComp.Type_, StatusCompLua_.get().AgeMax_,
                                                       DrawableGroupsTypeE::WEAPON, Col, BodyDef);
 
             auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Debris);

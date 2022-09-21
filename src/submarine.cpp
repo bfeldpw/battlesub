@@ -17,7 +17,7 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         BodyDef.linearDamping = 0.0f;
 
         Hull = _Reg.create();
-        _Reg.ctx().at<GameObjectFactory>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, 5, DrawableGroupsTypeE::DEFAULT,
+        _Reg.ctx().at<GameObjectSystem>().create(Hull, this, GameObjectTypeE::SUBMARINE_HULL, 5, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDef);
         DBLK(
             _Reg.ctx().at<MessageHandler>().report("sub", "created submarine hull", MessageHandler::DEBUG_L1);
@@ -45,7 +45,7 @@ void Submarine::create(entt::registry& _Reg, const float PosX, const float PosY,
         BodyDefRudder.linearDamping = 0.0f;
 
         Rudder = _Reg.create();
-        _Reg.ctx().at<GameObjectFactory>().create(Rudder, this, GameObjectTypeE::SUBMARINE_RUDDER, 5, DrawableGroupsTypeE::DEFAULT,
+        _Reg.ctx().at<GameObjectSystem>().create(Rudder, this, GameObjectTypeE::SUBMARINE_RUDDER, 5, DrawableGroupsTypeE::DEFAULT,
                                              {0.1f, 0.1f, 0.2f, 1.0f}, BodyDefRudder);
         DBLK(
             _Reg.ctx().at<MessageHandler>().report("sub", "created submarine rudder", MessageHandler::DEBUG_L1);
@@ -100,7 +100,7 @@ void Submarine::fire(entt::registry& _Reg)
         BodyDef.angularDamping = 5.0f;
         BodyDef.linearDamping = 0.0f;
         BodyDef.bullet = true;
-        _Reg.ctx().at<GameObjectFactory>().create(Bullet, this, GameObjectTypeE::PROJECTILE,
+        _Reg.ctx().at<GameObjectSystem>().create(Bullet, this, GameObjectTypeE::PROJECTILE,
                                                   StatusCompLua_.get().AgeMax_, DrawableGroupsTypeE::WEAPON,
                                                   {0.7f, 0.5f, 0.3f, 1.0f}, BodyDef);
 
