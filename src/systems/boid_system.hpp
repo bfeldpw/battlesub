@@ -53,8 +53,8 @@ class BoidSystem
 
 
                 auto& Vis = Reg_.get<VisualsComponent>(Boid);
-                Vis.Scale_ = 1.0f+DistPos(Generator_)*0.025f;
-                Vis.Visuals_->setScaling({Vis.Scale_, Vis.Scale_});
+                auto Scale = 1.0f+DistPos(Generator_)*0.025f;
+                Vis.Visuals_->setScaling({Scale, Scale});
             }
             Reg_.ctx().at<MessageHandler>().report("bds", "Populated world with "+std::to_string(Conf_.n)+" fish", MessageHandler::INFO);
         }

@@ -39,7 +39,6 @@ void GameObjectSystem::create(entt::entity e, std::any _Parent, const GameObject
     Status.AgeMax_ = _AgeMax;
     Status.Type_ = _GameObjectType;
 
-    Visuals.Color_       = _Col;
     Visuals.DrawableGrp_ = GlobalResources::Get.getDrawables(_DrawableGroupsType);
     Visuals.Meshes_      = GlobalResources::Get.getMeshes(_GameObjectType);
     Visuals.Scene_       = GlobalResources::Get.getScene();
@@ -56,7 +55,7 @@ void GameObjectSystem::create(entt::entity e, std::any _Parent, const GameObject
     for (auto i=0u; i<Visuals.Meshes_->size(); ++i)
     {
         Visuals.Drawable_ = new DrawableGeneric(Visuals.Visuals_, &((*Visuals.Meshes_)[i]),
-                            Visuals.Shader_, Visuals.Color_,
+                            Visuals.Shader_, _Col,
                             Visuals.DrawableGrp_);
     }
 }
@@ -116,14 +115,8 @@ void GameObjectSystem::updateStatus()
             }
             if (_StatusComp.IsSinking_)
             {
-                auto Scale = 1.0f/(1.0f+float(_StatusComp.Age_.time())*0.001f);
-                _VisComp.Scale_ *= Scale;
+                auto Scale = 1.0f/(1.0f+float(_StatusComp.Age_.time())*0.01f);
                 _VisComp.Visuals_->scale({Scale, Scale});
-                _VisComp.Color_.r() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0003f);
-                _VisComp.Color_.g() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0002f);
-                _VisComp.Color_.b() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0001f);
-                _VisComp.Color_.a() *= 1.0f/(1.0f+_StatusComp.Age_.time()*0.0005f);
-                _VisComp.Drawable_->setColor(_VisComp.Color_);
 
                 if (_StatusComp.Age_.time() > _StatusComp.SinkDuration_)
                 {
@@ -133,7 +126,7 @@ void GameObjectSystem::updateStatus()
                 {
                     _PhysComp.Body_->SetEnabled(false);
                 }
-                if (_StatusComp.IsSunk_ && _VisComp.Scale_ < 0.1f)
+                if (_StatusComp.IsSunk_ && _VisComp.Visuals_->scaling().x() < 1.0f)
                 {
                     _StatusComp.IsToBeDeleted_=true;
                 }

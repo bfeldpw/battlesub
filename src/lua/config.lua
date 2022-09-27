@@ -16,7 +16,7 @@ debris = {
 
   status_component = {
     age_max = 20,
-    sink_duration = 10
+    sink_duration = 5
   },
 
   fluid_source_component = {
