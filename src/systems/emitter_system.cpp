@@ -60,9 +60,8 @@ void EmitterSystem::emit()
             StatusComp.SinkDuration_ = StatusCompLua_.get().SinkDuration_;
 
             b2Filter Filter;
-            // Filter.categoryBits = 0x0002;
-            // Filter.maskBits = 0xFFF9;
-            Filter.categoryBits = 0x0004;
+            Filter.categoryBits = 0x0002;
+            Filter.maskBits = 0xFFF9;
             PhysComp.Body_->GetFixtureList()->SetFilterData(Filter);
 
             //--- Adjust visuals for varying size ---//

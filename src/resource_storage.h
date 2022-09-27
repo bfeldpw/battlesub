@@ -41,7 +41,9 @@ typedef struct
 class ResourceStorage
 {
     public:
-        
+
+        ~ResourceStorage() {this->release();}
+
         void init();
         void release();
         
@@ -58,6 +60,7 @@ class ResourceStorage
 
     private:
 
+        void initBoids();
         void initDebris();
         void initHeightMap();
         void initLandscape();

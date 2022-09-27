@@ -5,6 +5,7 @@
 
 enum class GameObjectTypeE : int
 {
+    BOID,
     DEBRIS_LANDSCAPE,
     DEBRIS_SUBMARINE,
     LANDSCAPE,

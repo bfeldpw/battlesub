@@ -6,7 +6,6 @@
 
 #include "drawable_generic.h"
 
-// TODO Replace vector, no dynamic allocations within components
 typedef std::vector<GL::Mesh>   MeshesType;
 
 struct VisualsComponent
