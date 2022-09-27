@@ -329,6 +329,7 @@ void BattleSub::drawEvent()
         GL::Renderer::enable(GL::Renderer::Feature::Blending);
         if (FluidBuffer_ != FluidBufferE::BOUNDARIES)
         {
+            CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::BOIDS));
             CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
             CameraCurrentPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 
@@ -359,6 +360,7 @@ void BattleSub::drawEvent()
 
             if (FluidBuffer_ != FluidBufferE::BOUNDARIES)
             {
+                CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::BOIDS));
                 CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::WEAPON));
                 CameraOtherPlayer_->draw(*GlobalResources::Get.getDrawables(DrawableGroupsTypeE::DEFAULT));
 

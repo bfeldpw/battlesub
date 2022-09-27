@@ -18,8 +18,9 @@
 
 enum class DrawableGroupsTypeE : int
 {
-    WEAPON,
-    DEFAULT
+    BOIDS=0,
+    WEAPON=1,
+    DEFAULT=2
 };
 
 enum class ShapeEnumType : int
@@ -74,7 +75,9 @@ class ResourceStorage
         Scene2D* Scene_ = new Scene2D;
         Shaders::Flat2D* Shader_ = nullptr;
 
-        std::array<SceneGraph::DrawableGroup2D*, int(DrawableGroupsTypeE::DEFAULT)+1> Drawables_{new SceneGraph::DrawableGroup2D, new SceneGraph::DrawableGroup2D};
+        std::array<SceneGraph::DrawableGroup2D*, int(DrawableGroupsTypeE::DEFAULT)+1> Drawables_{new SceneGraph::DrawableGroup2D,
+                                                                                                 new SceneGraph::DrawableGroup2D,
+                                                                                                 new SceneGraph::DrawableGroup2D};
         std::array<MeshesType, int(GameObjectTypeE::DEFAULT)+1> Meshes_;
         std::array<ShapesType, int(GameObjectTypeE::DEFAULT)+1> Shapes_;
         

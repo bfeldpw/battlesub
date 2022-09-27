@@ -41,7 +41,7 @@ class BoidSystem
             for (auto i=0; i < Conf_.n; ++i)
             {
                 auto Boid = Reg_.create();
-                Magnum::Math::Color3 Col = {0.7f, 0.7f, 0.3f};
+                Magnum::Math::Color3 Col = {0.3f, 0.3f, 0.1f};
                 b2BodyDef BodyDef;
                 BodyDef.type = b2_dynamicBody;
                 BodyDef.enabled = true;
@@ -49,7 +49,7 @@ class BoidSystem
                 BodyDef.linearDamping = 0.0f;
                 BodyDef.position.Set(200.f+DistPos(Generator_), 20.f+DistPos(Generator_));
                 Reg_.ctx().at<GameObjectSystem>().create(Boid, this, GameObjectTypeE::BOID, -1,
-                                                      DrawableGroupsTypeE::WEAPON, Col, BodyDef);
+                                                      DrawableGroupsTypeE::BOIDS, Col, BodyDef);
                 Reg_.emplace<BoidComponent>(Boid);
                 Reg_.emplace<FluidSourceComponent>(Boid);
 
@@ -58,7 +58,7 @@ class BoidSystem
 
 
                 auto& Vis = Reg_.get<VisualsComponent>(Boid);
-                auto Scale = 1.0f+DistPos(Generator_)*0.025f;
+                auto Scale = 0.5f+DistPos(Generator_)*0.01f;
                 Vis.Visuals_->setScaling({Scale, Scale});
             }
             Reg_.ctx().at<MessageHandler>().report("bds", "Populated world with "+std::to_string(Conf_.n)+" fish", MessageHandler::INFO);
