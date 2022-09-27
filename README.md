@@ -14,6 +14,9 @@ Ofcourse, there is a backup, but given BattleSubs current state and popularity, 
 So now, since the history is gone, lets just add a little changelog here, beginning today (2022-05-13):
 
 ### Change Log
+**Upcoming: Let's go fishing...**
+Teaser
+![alt text](screenshots/boids_teaser.png?raw=true)
 
 **2022-09-12: Colorful densities**\
 The density implementation was changed from 1 to 3 channels (RGB32 float textures) to enable color selection for densities. The configuration was partly (proof of concept) exported to Lua following a more flexible binding structure.
