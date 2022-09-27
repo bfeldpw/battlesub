@@ -11,7 +11,6 @@ void FluidInteractionSystem::addFluidProbe(FluidProbeComponent& _Probe, const fl
     _Probe.Y_ = _Y;
 }
 
-
 void FluidInteractionSystem::addSources()
 {
     auto& Fluid = Reg_.ctx().at<FluidGrid>();

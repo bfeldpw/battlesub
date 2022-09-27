@@ -6,6 +6,8 @@
 
 #include <entt/entity/registry.hpp>
 
+#include "fluid_interaction_system.hpp"
+#include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
 #include "game_object_system.hpp"
 #include "message_handler.hpp"
@@ -51,6 +53,9 @@ class BoidSystem
                 Reg_.emplace<BoidComponent>(Boid);
                 Reg_.emplace<FluidSourceComponent>(Boid);
 
+                auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Boid);
+                Reg_.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.001f, 0.0f, 0.0f);
+
 
                 auto& Vis = Reg_.get<VisualsComponent>(Boid);
                 auto Scale = 1.0f+DistPos(Generator_)*0.025f;
@@ -61,14 +66,14 @@ class BoidSystem
 
         void update()
         {
-            std::normal_distribution<float> DistPos(0.0, 0.01);
+            std::normal_distribution<float> DistPos(0.0, 0.05);
 
             // Update cells
             Reg_.view<BoidComponent, PhysicsComponent>().each(
                 [&,this](auto _e, auto& _BoidComp, auto& _PhysComp)
                 {
                     _PhysComp.Body_->ApplyTorque(DistPos(Generator_), true);
-                    _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, 0.1f})}, true);
+                    _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, 0.5f})}, true);
                     auto p = _PhysComp.Body_->GetPosition();
                     // std::cout << (int(p.x+256.f) / 16 + int(p.y+128.f) / 16 * 16) << std::endl;
                     // Cells_.insert({22, _e});
