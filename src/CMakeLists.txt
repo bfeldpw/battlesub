@@ -52,6 +52,7 @@ set(LIB_NOISE_LIBRARY
 set(SOURCES
         ${ImGui_INCLUDE_DIR}/imgui.cpp
         components/emitter_component.cpp
+        systems/boid_system.cpp
         systems/debug_render_system.cpp
         systems/emitter_system.cpp
         systems/fluid_interaction_system.cpp

@@ -3,6 +3,7 @@
 
 #include <array>
 #include <random>
+#include <vector>
 
 #include <entt/entity/registry.hpp>
 
@@ -14,17 +15,27 @@
 #include "status_component.hpp"
 #include "physics_component.hpp"
 #include "visuals_component.hpp"
+#include "world_def.h"
+
+typedef std::array<int,9> NeighbourArrayType;
 
 struct BoidComponent
 {
-    float Test_;
+    // Keep arrays constant size to support ECS performance
+    static constexpr int NEIGHBOURS_MAX{32};
+
+    uint32_t Neighbours[NEIGHBOURS_MAX];
+    uint32_t NrOfNeighbours{0};
+
+    float NeighbourPosAvgX{0.f};
+    float NeighbourPosAvgY{0.f};
 };
 
 struct BoidSystemConfig
 {
-    int n{999};
-    int CellGridX{32};
-    int CellGridY{16};
+    int n{512};
+    int GridSizeX{256};
+    int GridSizeY{128};
 };
 
 class BoidSystem
@@ -34,51 +45,8 @@ class BoidSystem
         explicit BoidSystem(entt::registry& Reg) : Reg_(Reg) {}
         BoidSystem() = delete;
 
-        void init()
-        {
-            std::normal_distribution<float> DistPos(0.0, 10.0f);
-
-            for (auto i=0; i < Conf_.n; ++i)
-            {
-                auto Boid = Reg_.create();
-                Magnum::Math::Color3 Col = {0.3f, 0.3f, 0.1f};
-                b2BodyDef BodyDef;
-                BodyDef.type = b2_dynamicBody;
-                BodyDef.enabled = true;
-                BodyDef.angularDamping = 1.0f;
-                BodyDef.linearDamping = 0.0f;
-                BodyDef.position.Set(200.f+DistPos(Generator_), 20.f+DistPos(Generator_));
-                Reg_.ctx().at<GameObjectSystem>().create(Boid, this, GameObjectTypeE::BOID, -1,
-                                                      DrawableGroupsTypeE::BOIDS, Col, BodyDef);
-                Reg_.emplace<BoidComponent>(Boid);
-                Reg_.emplace<FluidSourceComponent>(Boid);
-
-                auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Boid);
-                Reg_.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.001f, 0.0f, 0.0f);
-
-
-                auto& Vis = Reg_.get<VisualsComponent>(Boid);
-                auto Scale = 0.5f+DistPos(Generator_)*0.01f;
-                Vis.Visuals_->setScaling({Scale, Scale});
-            }
-            Reg_.ctx().at<MessageHandler>().report("bds", "Populated world with "+std::to_string(Conf_.n)+" fish", MessageHandler::INFO);
-        }
-
-        void update()
-        {
-            std::normal_distribution<float> DistPos(0.0, 0.05);
-
-            // Update cells
-            Reg_.view<BoidComponent, PhysicsComponent>().each(
-                [&,this](auto _e, auto& _BoidComp, auto& _PhysComp)
-                {
-                    _PhysComp.Body_->ApplyTorque(DistPos(Generator_), true);
-                    _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, 0.5f})}, true);
-                    auto p = _PhysComp.Body_->GetPosition();
-                    // std::cout << (int(p.x+256.f) / 16 + int(p.y+128.f) / 16 * 16) << std::endl;
-                    // Cells_.insert({22, _e});
-                });
-        }
+        void init();
+        void update();
 
     private:
 
@@ -88,11 +56,19 @@ class BoidSystem
 
         std::mt19937 Generator_;
 
-        // Definition of a spatial grid for boids behaviour. A rough
-        // approximation should be enough, so the number of boids per
-        // cell is restricted. This simplifies the data structure and
-        // shouldn't have too much of an impact for the algorithm.
-        std::array<entt::entity, 64*32*10> Grid_;
+        std::vector<uint32_t> GridEntities_;
+        std::vector<int> GridCount_;
+
+        int getGridIndexFromFloatPosition(float _x, float _y);
+        NeighbourArrayType& getGridNeighbourIndecesFromIndex(int _i);
+        void updateGrid();
+        void updateNeighbours();
+
+        // Visual boid debugging
+        bool IsBoidDebugActive_{true};
+        entt::entity EntityDebug_;
+
+        void resetBoidDebug();
 };
 
 #endif // BOID_SYSTEM_HPP
