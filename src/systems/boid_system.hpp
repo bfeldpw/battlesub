@@ -63,6 +63,10 @@ class BoidSystem
         NeighbourArrayType& getGridNeighbourIndecesFromIndex(int _i);
         void updateGrid();
         void updateNeighbours();
+        void updateLocalFeatures();
+        void applySeparation();
+        void applyAlignment();
+        void applyCohesion();
 
         // Visual boid debugging
         bool IsBoidDebugActive_{true};

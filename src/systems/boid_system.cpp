@@ -60,43 +60,24 @@ void BoidSystem::update()
 {
     static std::normal_distribution<float> DistPos(0.0, 0.05);
 
+    // First, assign all entities to their respective grid cell
     this->updateGrid();
-    if (IsBoidDebugActive_) this->resetBoidDebug();
+    // Reset visual information from debug
+    // (some boids are coloured differently in debug visualisation)
+    if (IsBoidDebugActive_)
+        this->resetBoidDebug();
+    // Gather neighbouring entities for each entity
+    // This information is stored in the boid component
     this->updateNeighbours();
+    // Gather all information needed for boid rules
+    // This might be average positions, orientation, etc.
+    this->updateLocalFeatures();
 
-    Reg_.view<BoidComponent, PhysicsComponent>().each(
-        [&,this](auto _e, auto& _BoidComp, auto& _PhysComp)
-        {
-            b2Vec2 Sum;
-            for (auto i=0; i<_BoidComp.NrOfNeighbours; ++i)
-            {
-                Sum += Reg_.get<PhysicsComponent>(entt::entity(_BoidComp.Neighbours[i])).Body_->GetPosition();
-            }
-            if (_BoidComp.NrOfNeighbours > 0)
-            {
-                _BoidComp.NeighbourPosAvgX = Sum.x / _BoidComp.NrOfNeighbours;
-                _BoidComp.NeighbourPosAvgY = Sum.y / _BoidComp.NrOfNeighbours;
-            }
-            else
-            {
-                _BoidComp.NeighbourPosAvgX = 0.0f;
-                _BoidComp.NeighbourPosAvgY = 0.0f;
-            }
-            // _PhysComp.Body_->ApplyTorque(DistPos(Generator_), true);
-            // _PhysComp.Body_->ApplyForceToCenter(0.001f*Sum, true);
-            // _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, 0.5f})}, true);
-        });
-    Reg_.view<BoidComponent, PhysicsComponent>().each(
-        [&,this](auto _e, auto& _BoidComp, auto& _PhysComp)
-        {
-            b2Vec2 Vec = b2Vec2(_BoidComp.NeighbourPosAvgX, _BoidComp.NeighbourPosAvgY) -
-                        _PhysComp.Body_->GetPosition();
-            if (Vec.Length() != 0.0f && _PhysComp.Body_->GetLinearVelocity().Length() < 2.0f)
-                _PhysComp.Body_->ApplyForceToCenter(10.f/Vec.Length()*Vec, true);
+    // Now apply all rules
+    this->applySeparation();
+    this->applyAlignment();
+    this->applyCohesion();
 
-            // _PhysComp.Body_->ApplyTorque(DistPos(Generator_), true);
-            // _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, 0.5f})}, true);
-        });
 }
 
 int BoidSystem::getGridIndexFromFloatPosition(float _x, float _y)
@@ -189,6 +170,54 @@ void BoidSystem::updateNeighbours()
                 auto& VisDeb = Reg_.get<VisualsComponent>(_e);
                 VisDeb.Drawable_->setColor({1.0f, 0.0f, 0.0f, 1.0f});
             }
+        });
+}
+
+void BoidSystem::updateLocalFeatures()
+{
+    Reg_.view<BoidComponent>().each(
+        [&,this](auto& _BoidComp)
+        {
+            b2Vec2 Sum;
+            for (auto i=0; i<_BoidComp.NrOfNeighbours; ++i)
+            {
+                Sum += Reg_.get<PhysicsComponent>(entt::entity(_BoidComp.Neighbours[i])).Body_->GetPosition();
+            }
+            if (_BoidComp.NrOfNeighbours > 0)
+            {
+                _BoidComp.NeighbourPosAvgX = Sum.x / _BoidComp.NrOfNeighbours;
+                _BoidComp.NeighbourPosAvgY = Sum.y / _BoidComp.NrOfNeighbours;
+            }
+            else
+            {
+                _BoidComp.NeighbourPosAvgX = 0.0f;
+                _BoidComp.NeighbourPosAvgY = 0.0f;
+            }
+        });
+}
+
+void BoidSystem::applySeparation()
+{
+
+}
+
+void BoidSystem::applyAlignment()
+{
+
+}
+
+void BoidSystem::applyCohesion()
+{
+    Reg_.view<BoidComponent, PhysicsComponent>().each(
+        [&](auto& _BoidComp, auto& _PhysComp)
+        {
+            b2Vec2 Vec = b2Vec2(_BoidComp.NeighbourPosAvgX, _BoidComp.NeighbourPosAvgY) -
+                        _PhysComp.Body_->GetPosition();
+            if (Vec.Length() != 0.0f && _PhysComp.Body_->GetLinearVelocity().Length() < 2.0f)
+                _PhysComp.Body_->ApplyForceToCenter(10.f/Vec.Length()*Vec, true);
+
+            // _PhysComp.Body_->ApplyTorque(DistPos(Generator_), true);
+            // _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, 0.5f})}, true);
         });
 }
 
