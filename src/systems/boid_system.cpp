@@ -1,20 +1,25 @@
 #include "boid_system.hpp"
 
 #include "b2_math.h"
+#include "boid_component.hpp"
+#include "boid_system_config.hpp"
 #include "message_handler.hpp"
 #include "physics_component.hpp"
 #include "visuals_component.hpp"
 #include "world_def.h"
+#include <cmath>
 #include <entt/entity/entity.hpp>
+#include <random>
 
 void BoidSystem::init()
 {
     Reg_.ctx().at<MessageHandler>().report("bds", "Initialising boid system for fish", MessageHandler::INFO);
 
-    std::normal_distribution<float> DistPos(0.0, 10.0f);
+    std::uniform_real_distribution<float> DistPos(0.0, 40.0f);
+    std::uniform_real_distribution<float> DistAngle(-3.1416f, 3.1416f);
 
-    auto ResX = WORLD_SIZE_DEFAULT_X / Conf_.GridSizeX;
-    auto ResY = WORLD_SIZE_DEFAULT_Y / Conf_.GridSizeY;
+    auto ResX = WORLD_SIZE_DEFAULT_X / Conf_.get().GridSizeX;
+    auto ResY = WORLD_SIZE_DEFAULT_Y / Conf_.get().GridSizeY;
 
     DBLK(
         std::ostringstream Str;
@@ -22,10 +27,12 @@ void BoidSystem::init()
         Reg_.ctx().at<MessageHandler>().report("bds", Str.str(),MessageHandler::DEBUG_L1);
     )
 
-    GridCount_.resize(Conf_.GridSizeX*Conf_.GridSizeY);
-    GridEntities_.resize(Conf_.GridSizeX*Conf_.GridSizeY*Conf_.n);
+    // Setup vectors, enlargen grid for neighbour operations
+    auto GridIndexMax = (Conf_.get().GridSizeX+2) * (Conf_.get().GridSizeY+2);
+    GridCount_.resize(GridIndexMax);
+    GridEntities_.resize(GridIndexMax*Conf_.get().n);
 
-    for (auto i=0; i < Conf_.n; ++i)
+    for (auto i=0; i < Conf_.get().n; ++i)
     {
         auto Boid = Reg_.create();
         Magnum::Math::Color3 Col = {0.3f, 0.3f, 0.1f};
@@ -35,8 +42,9 @@ void BoidSystem::init()
         BodyDef.angularDamping = 1.0f;
         BodyDef.linearDamping = 0.0f;
         BodyDef.position.Set(100.f+DistPos(Generator_), 20.f+DistPos(Generator_));
+        BodyDef.angle = DistAngle(Generator_);
         Reg_.ctx().at<GameObjectSystem>().create(Boid, this, GameObjectTypeE::BOID, -1,
-                                                DrawableGroupsTypeE::BOIDS, Col, BodyDef);
+                                                 DrawableGroupsTypeE::BOIDS, Col, BodyDef);
         Reg_.emplace<BoidComponent>(Boid);
         Reg_.emplace<FluidSourceComponent>(Boid);
 
@@ -53,18 +61,21 @@ void BoidSystem::init()
             EntityDebug_ = Boid;
         }
     }
-    Reg_.ctx().at<MessageHandler>().report("bds", "Populated world with "+std::to_string(Conf_.n)+" fish", MessageHandler::INFO);
+    Reg_.ctx().at<MessageHandler>().report("bds", "Populated world with "+std::to_string(Conf_.get().n)+" fish", MessageHandler::INFO);
+}
+
+void BoidSystem::loadConfig()
+{
+    Conf_.read("boid_system");
 }
 
 void BoidSystem::update()
 {
-    static std::normal_distribution<float> DistPos(0.0, 0.05);
-
     // First, assign all entities to their respective grid cell
     this->updateGrid();
     // Reset visual information from debug
     // (some boids are coloured differently in debug visualisation)
-    if (IsBoidDebugActive_)
+    if (Conf_.get().IsBoidDebugActive)
         this->resetBoidDebug();
     // Gather neighbouring entities for each entity
     // This information is stored in the boid component
@@ -82,13 +93,17 @@ void BoidSystem::update()
 
 int BoidSystem::getGridIndexFromFloatPosition(float _x, float _y)
 {
-    auto f_x = float(Conf_.GridSizeX) / WORLD_SIZE_DEFAULT_X;
-    auto f_y = float(Conf_.GridSizeY) / WORLD_SIZE_DEFAULT_Y;
+    auto f_x = float(Conf_.get().GridSizeX) / WORLD_SIZE_DEFAULT_X;
+    auto f_y = float(Conf_.get().GridSizeY) / WORLD_SIZE_DEFAULT_Y;
 
-    auto x = int((_x + WORLD_SIZE_DEFAULT_X*0.5f) * f_x);
-    auto y = int((_y + WORLD_SIZE_DEFAULT_Y*0.5f) * f_y);
+    // Grid is slightly larger to make neighbour calculations easier
+    auto x = int((_x + WORLD_SIZE_DEFAULT_X*0.5f) * f_x)+1;
+    auto y = int((_y + WORLD_SIZE_DEFAULT_Y*0.5f) * f_y)+1;
 
-    return y*Conf_.GridSizeX + x;
+    // std::cout << _x << "," << _y << " -> " <<
+    //               x << ", " << y << std::endl;
+
+    return y*Conf_.get().GridSizeX + x;
 }
 
 NeighbourArrayType& BoidSystem::getGridNeighbourIndecesFromIndex(int _i)
@@ -96,19 +111,19 @@ NeighbourArrayType& BoidSystem::getGridNeighbourIndecesFromIndex(int _i)
     static NeighbourArrayType r;
 
     DBLK(
-        if (_i < 1 || _i > Conf_.GridSizeX*Conf_.GridSizeY-1)
+        if (_i < 1 || _i > (Conf_.get().GridSizeX+2)*(Conf_.get().GridSizeY+2)-1)
             Reg_.ctx().at<MessageHandler>().report("bds", "Neighbour index out of bounds.");
     )
 
-    r[0] = _i - Conf_.GridSizeX-1;
-    r[1] = _i - Conf_.GridSizeX;
-    r[2] = _i - Conf_.GridSizeX+1;
+    r[0] = _i - Conf_.get().GridSizeX-1;
+    r[1] = _i - Conf_.get().GridSizeX;
+    r[2] = _i - Conf_.get().GridSizeX+1;
     r[3] = _i - 1;
     r[4] = _i;
     r[5] = _i + 1;
-    r[6] = _i + Conf_.GridSizeX-1;
-    r[7] = _i + Conf_.GridSizeX;
-    r[8] = _i + Conf_.GridSizeX+1;
+    r[6] = _i + Conf_.get().GridSizeX-1;
+    r[7] = _i + Conf_.get().GridSizeX;
+    r[8] = _i + Conf_.get().GridSizeX+1;
 
     return r;
 }
@@ -125,7 +140,7 @@ void BoidSystem::updateGrid()
             auto i = this->getGridIndexFromFloatPosition(p.x, p.y);
 
             GridCount_[i]++;
-            GridEntities_[i*Conf_.n+GridCount_[i]-1] = entt::to_integral(_e);
+            GridEntities_[i*Conf_.get().n+GridCount_[i]-1] = entt::to_integral(_e);
         });
 }
 
@@ -147,20 +162,19 @@ void BoidSystem::updateNeighbours()
                 // Gather entities per cell
                 for (auto k=0; k<GridCount_[j]; ++k)
                 {
-                    if (_BoidComp.NrOfNeighbours < BoidComponent::NEIGHBOURS_MAX-1)
+                    if (_BoidComp.NrOfNeighbours < Conf_.get().NeighboursMax)
                     {
-                        auto e = GridEntities_[j*Conf_.n+k];
+                        auto e = GridEntities_[j*Conf_.get().n+k];
                         if (e != entt::to_integral(_e)) _BoidComp.Neighbours[_BoidComp.NrOfNeighbours++] = e;
                     }
                     else
                     {
-                        // Reg_.ctx().at<MessageHandler>().report("bds", "Too many neighbours to register "+std::to_string(GridCount_[i]), MessageHandler::WARNING);
                         break;
                     }
                 }
             }
 
-            if (IsBoidDebugActive_ && _e == EntityDebug_)
+            if (Conf_.get().IsBoidDebugActive && _e == EntityDebug_)
             {
                 for (auto i=0; i<_BoidComp.NrOfNeighbours; ++i)
                 {
@@ -178,7 +192,7 @@ void BoidSystem::updateLocalFeatures()
     Reg_.view<BoidComponent>().each(
         [&,this](auto& _BoidComp)
         {
-            b2Vec2 Sum;
+            b2Vec2 Sum{0.f, 0.f};
             for (auto i=0; i<_BoidComp.NrOfNeighbours; ++i)
             {
                 Sum += Reg_.get<PhysicsComponent>(entt::entity(_BoidComp.Neighbours[i])).Body_->GetPosition();
@@ -208,16 +222,22 @@ void BoidSystem::applyAlignment()
 
 void BoidSystem::applyCohesion()
 {
+    float Force  = Conf_.get().BoidForce;
+    float Torque = Conf_.get().BoidTorqueMax / 3.1416f;
+    float VelMax = Conf_.get().BoidVelMax;
     Reg_.view<BoidComponent, PhysicsComponent>().each(
         [&](auto& _BoidComp, auto& _PhysComp)
         {
             b2Vec2 Vec = b2Vec2(_BoidComp.NeighbourPosAvgX, _BoidComp.NeighbourPosAvgY) -
                         _PhysComp.Body_->GetPosition();
-            if (Vec.Length() != 0.0f && _PhysComp.Body_->GetLinearVelocity().Length() < 2.0f)
-                _PhysComp.Body_->ApplyForceToCenter(10.f/Vec.Length()*Vec, true);
+            auto Angle = std::atan2(Vec.y, Vec.x) -
+                std::atan2(_PhysComp.Body_->GetWorldVector({0.f, 1.f}).y, _PhysComp.Body_->GetWorldVector({0.f, 1.f}).x);
+            if (Angle >  3.1416f) Angle -= 6.282f;
+            if (Angle < -3.1416f) Angle += 6.282f;
+            _PhysComp.Body_->ApplyTorque(Torque*Angle, true);
 
-            // _PhysComp.Body_->ApplyTorque(DistPos(Generator_), true);
-            // _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, 0.5f})}, true);
+            if (_PhysComp.Body_->GetLinearVelocity().Length() < VelMax)
+                _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, Force})}, true);
         });
 }
 

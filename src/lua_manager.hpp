@@ -7,6 +7,8 @@
 #include "message_handler.hpp"
 
 #define SOL_ALL_SAFETIES_ON 1
+#define SOL_NO_EXCEPTIONS 1
+#define SOL_PRINT_ERRORS 0
 #include <limits> // Needed for sol, seemed to be forgotten
 #include "sol.hpp"
 

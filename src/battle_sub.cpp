@@ -19,6 +19,7 @@
 #include "battle_sub.h"
 #include "bindings/fluid_source_component_lua.hpp"
 #include "boid_system.hpp"
+#include "boid_system_config_gui_adapter.hpp"
 #include "common.h"
 #include "debug_render_system.hpp"
 #include "emitter_system.hpp"
@@ -40,27 +41,34 @@ BattleSub::BattleSub(const Arguments& arguments): Platform::Application{argument
 {
     this->setupWindow();
     this->setupECS();
-    this->setupLua("config.lua");
-    this->setupFrameBuffersMainScreen();
-    this->setupMainDisplayMesh();
 
-    GlobalResources::Get.init();
-    
-    this->setupCameras();
-    
-    Reg_.ctx().at<FluidGrid>().setDensityBase(GlobalResources::Get.getHeightMap())
-              .init();
-    this->setupGameObjects();
+    if (this->setupLua("config.lua"))
+    {
+        this->setupFrameBuffersMainScreen();
+        this->setupMainDisplayMesh();
 
-    Reg_.ctx().at<BoidSystem>().init();
-    
-    GlobalResources::Get.getWorld()->SetContactListener(&Reg_.ctx().at<ContactListener>());
-    
-    // if (!setSwapInterval(1))
-    setSwapInterval(0);
-    setMinimalLoopPeriod(1.0f/Frequency_ * 1000.0f);
+        GlobalResources::Get.init();
 
-    SimTime_.start();
+        this->setupCameras();
+
+        Reg_.ctx().at<FluidGrid>().setDensityBase(GlobalResources::Get.getHeightMap())
+                .init();
+        this->setupGameObjects();
+
+        Reg_.ctx().at<BoidSystem>().init();
+
+        GlobalResources::Get.getWorld()->SetContactListener(&Reg_.ctx().at<ContactListener>());
+
+        // if (!setSwapInterval(1))
+        setSwapInterval(0);
+        setMinimalLoopPeriod(1.0f/Frequency_ * 1000.0f);
+
+        SimTime_.start();
+    }
+    else
+    {
+        IsExitTriggered_ = true;
+    }
 }
 
 BattleSub::~BattleSub()
@@ -499,9 +507,11 @@ void BattleSub::updateGameObjects()
 
 void BattleSub::updateUI(const double _GPUTime)
 {
+    static BoidSystemConfigGuiAdapter ConfigBoidSystem("Boids");
     static FluidSourceComponentConfigGuiAdapter ConfigDebrisFluidSource("Debris");
     static FluidSourceComponentConfigGuiAdapter ConfigProjectileFluidSource("Projectile");
     static StatusComponentConfigGuiAdapter ConfigDebrisStatus("Debris");
+    ConfigBoidSystem.set(Reg_.ctx().at<BoidSystem>().getConfig());
     ConfigDebrisFluidSource.set(Reg_.ctx().at<EmitterSystem>().getConfigDebrisFluidSource());
     ConfigDebrisStatus.set(Reg_.ctx().at<EmitterSystem>().getConfigDebrisStatus());
 
@@ -555,7 +565,11 @@ void BattleSub::updateUI(const double _GPUTime)
                 FluidBuffer_ = static_cast<FluidBufferE>(Buffer);
 
                 ImGui::NewLine();
+                ImGui::TextColored(ImVec4(1,1,0,1), "Gui Adapters");
+                ImGui::NewLine();
                 ImGui::Indent();
+                    if (ConfigBoidSystem.place())
+                        Reg_.ctx().at<BoidSystem>().setConfig(ConfigBoidSystem.get());
                     if (ConfigDebrisStatus.place())
                         Reg_.ctx().at<EmitterSystem>().setConfigDebrisStatus(ConfigDebrisStatus.get());
                     if (ConfigDebrisFluidSource.place())
@@ -729,9 +743,10 @@ void BattleSub::updateWorld()
 void BattleSub::setupECS()
 {
     Reg_.ctx().emplace<MessageHandler>();
-    Reg_.ctx().at<MessageHandler>().setLevel(MessageHandler::DEBUG_L1);
+    Reg_.ctx().at<MessageHandler>().setLevel(MessageHandler::DEBUG_L2);
 
     Reg_.ctx().at<MessageHandler>().registerSource("bds", "BDS");
+    Reg_.ctx().at<MessageHandler>().registerSource("gos", "GOS");
     Reg_.ctx().at<MessageHandler>().registerSource("lua", "LUA");
     Reg_.ctx().at<MessageHandler>().registerSource("sub", "SUB");
 
@@ -745,11 +760,20 @@ void BattleSub::setupECS()
     Reg_.ctx().emplace<BoidSystem>(Reg_);
 }
 
-void BattleSub::setupLua(const std::string& _f)
+bool BattleSub::setupLua(const std::string& _f)
 {
-    Reg_.ctx().at<LuaManager>().loadFile(_f);
-    Reg_.ctx().at<FluidGrid>().loadConfig();
-    Reg_.ctx().at<EmitterSystem>().loadConfigDebris();
+    if (Reg_.ctx().at<LuaManager>().loadFile(_f))
+    {
+        Reg_.ctx().at<BoidSystem>().loadConfig();
+        if (Reg_.ctx().at<MessageHandler>().checkError()) return false;
+        Reg_.ctx().at<FluidGrid>().loadConfig();
+        Reg_.ctx().at<EmitterSystem>().loadConfigDebris();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void BattleSub::setupWindow()

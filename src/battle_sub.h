@@ -48,7 +48,7 @@ class BattleSub : public Platform::Application
         void updateWorld();
 
         void setupECS();
-        void setupLua(const std::string& _f);
+        bool setupLua(const std::string& _f);
         void setupWindow();
         void setupFrameBuffersMainScreen();
         void setupMainDisplayMesh();
@@ -81,7 +81,7 @@ class BattleSub : public Platform::Application
         bool IsDebugDisplayed_ = false;
         bool IsExitTriggered_ = false;
         bool IsMainMenuDisplayed_ = false;
-        bool IsPaused_ = false;
+        bool IsPaused_ = true;
         bool IsStepForward_ = false;
         bool IsSplitscreen_ = false;
         bool IsTooltipsEnabled_ = true;

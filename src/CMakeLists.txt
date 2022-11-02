@@ -1,6 +1,8 @@
 set(HEADERS
+        bindings/boid_system_config_lua.hpp
         bindings/fluid_source_component_lua.hpp
         bindings/status_component_lua.hpp
+        components/boid_component.hpp
         components/emitter_component.hpp
         components/fluid_probes_component.hpp
         components/fluid_source_component.hpp
@@ -8,6 +10,7 @@ set(HEADERS
         components/physics_component.hpp
         components/status_component.hpp
         components/visuals_component.hpp
+        gui_adapter/boid_system_config_gui_adapter.hpp
         gui_adapter/fluid_source_component_config_gui_adapter.hpp
         gui_adapter/status_component_config_gui_adapter.hpp
         shaders/advect_shader.h
@@ -23,6 +26,7 @@ set(HEADERS
         shaders/velocity_gradient_substraction_shader.h
         shaders/velocity_sources_shader.h
         systems/boid_system.hpp
+        systems/boid_system_config.hpp
         systems/debug_render_system.hpp
         systems/emitter_system.hpp
         systems/fluid_interaction_system.hpp

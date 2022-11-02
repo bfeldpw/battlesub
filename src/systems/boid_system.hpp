@@ -7,6 +7,8 @@
 
 #include <entt/entity/registry.hpp>
 
+#include "boid_system_config.hpp"
+#include "boid_system_config_lua.hpp"
 #include "fluid_interaction_system.hpp"
 #include "fluid_probes_component.hpp"
 #include "fluid_source_component.hpp"
@@ -19,40 +21,25 @@
 
 typedef std::array<int,9> NeighbourArrayType;
 
-struct BoidComponent
-{
-    // Keep arrays constant size to support ECS performance
-    static constexpr int NEIGHBOURS_MAX{32};
-
-    uint32_t Neighbours[NEIGHBOURS_MAX];
-    uint32_t NrOfNeighbours{0};
-
-    float NeighbourPosAvgX{0.f};
-    float NeighbourPosAvgY{0.f};
-};
-
-struct BoidSystemConfig
-{
-    int n{512};
-    int GridSizeX{256};
-    int GridSizeY{128};
-};
-
 class BoidSystem
 {
     public:
 
-        explicit BoidSystem(entt::registry& Reg) : Reg_(Reg) {}
+        explicit BoidSystem(entt::registry& Reg) : Reg_(Reg), Conf_(Reg) {}
         BoidSystem() = delete;
 
+        const BoidSystemConfig& getConfig() const {return Conf_.get();}
+        void setConfig(const BoidSystemConfig& _Conf) {Conf_.set(_Conf); this->resetBoidDebug();}
+
         void init();
+        void loadConfig();
         void update();
 
     private:
 
         entt::registry& Reg_;
 
-        BoidSystemConfig Conf_;
+        BoidSystemConfigLua Conf_;
 
         std::mt19937 Generator_;
 
@@ -69,7 +56,6 @@ class BoidSystem
         void applyCohesion();
 
         // Visual boid debugging
-        bool IsBoidDebugActive_{true};
         entt::entity EntityDebug_;
 
         void resetBoidDebug();
