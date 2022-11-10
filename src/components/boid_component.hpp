@@ -13,6 +13,7 @@ struct BoidComponent
 
     float NeighbourPosAvgX{0.f};
     float NeighbourPosAvgY{0.f};
+    float NeighbourAngle{0.f};
 };
 
 #endif // BOID_COMPONENT_HPP

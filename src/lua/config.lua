@@ -13,12 +13,12 @@ display = {
 
 -- Configuration of boids
 boid_system = {
-  n = 512,
+  n = 2048,
   neighbours_max = 128;
   grid_size_x = 128,
   grid_size_y = 64,
-  boid_force = 1.0,
-  boid_torque_max = 0.1,
+  boid_force = 10.0,
+  boid_torque_max = 0.01,
   boid_vel_max = 5.0,
   boid_debug = true
 }

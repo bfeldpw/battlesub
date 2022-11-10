@@ -18,10 +18,9 @@ void BoidSystem::init()
     std::uniform_real_distribution<float> DistPos(0.0, 40.0f);
     std::uniform_real_distribution<float> DistAngle(-3.1416f, 3.1416f);
 
-    auto ResX = WORLD_SIZE_DEFAULT_X / Conf_.get().GridSizeX;
-    auto ResY = WORLD_SIZE_DEFAULT_Y / Conf_.get().GridSizeY;
-
     DBLK(
+        auto ResX = WORLD_SIZE_DEFAULT_X / Conf_.get().GridSizeX;
+        auto ResY = WORLD_SIZE_DEFAULT_Y / Conf_.get().GridSizeY;
         std::ostringstream Str;
         Str << "Grid cell size: " << ResX << "x" << ResY << "m²";
         Reg_.ctx().at<MessageHandler>().report("bds", Str.str(),MessageHandler::DEBUG_L1);
@@ -49,10 +48,9 @@ void BoidSystem::init()
         Reg_.emplace<FluidSourceComponent>(Boid);
 
         auto& FldProbesComp = Reg_.emplace<FluidProbeComponent>(Boid);
-        Reg_.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.001f, 0.0f, 0.0f);
+        Reg_.ctx().at<FluidInteractionSystem>().addFluidProbe(FldProbesComp, 0.1f, 0.0f, 0.0f);
 
         auto& Vis = Reg_.get<VisualsComponent>(Boid);
-        // auto Scale = 0.5f+DistPos(Generator_)*0.01f;
         auto Scale = 1.0f;
         Vis.Visuals_->setScaling({Scale, Scale});
 
@@ -88,7 +86,7 @@ void BoidSystem::update()
     this->applySeparation();
     this->applyAlignment();
     this->applyCohesion();
-
+    this->applyConfinement();
 }
 
 int BoidSystem::getGridIndexFromFloatPosition(float _x, float _y)
@@ -192,32 +190,63 @@ void BoidSystem::updateLocalFeatures()
     Reg_.view<BoidComponent>().each(
         [&,this](auto& _BoidComp)
         {
-            b2Vec2 Sum{0.f, 0.f};
+            b2Vec2 Pos{0.f, 0.f};
+            float Angle{0.f};
             for (auto i=0; i<_BoidComp.NrOfNeighbours; ++i)
             {
-                Sum += Reg_.get<PhysicsComponent>(entt::entity(_BoidComp.Neighbours[i])).Body_->GetPosition();
+                Pos   += Reg_.get<PhysicsComponent>(entt::entity(_BoidComp.Neighbours[i])).Body_->GetPosition();
+                Angle += Reg_.get<PhysicsComponent>(entt::entity(_BoidComp.Neighbours[i])).Body_->GetAngle();
             }
             if (_BoidComp.NrOfNeighbours > 0)
             {
-                _BoidComp.NeighbourPosAvgX = Sum.x / _BoidComp.NrOfNeighbours;
-                _BoidComp.NeighbourPosAvgY = Sum.y / _BoidComp.NrOfNeighbours;
+                _BoidComp.NeighbourPosAvgX = Pos.x / _BoidComp.NrOfNeighbours;
+                _BoidComp.NeighbourPosAvgY = Pos.y / _BoidComp.NrOfNeighbours;
+                _BoidComp.NeighbourAngle = Angle / _BoidComp.NrOfNeighbours;
             }
             else
             {
                 _BoidComp.NeighbourPosAvgX = 0.0f;
                 _BoidComp.NeighbourPosAvgY = 0.0f;
+                _BoidComp.NeighbourAngle = 0.0f;
             }
         });
 }
 
 void BoidSystem::applySeparation()
 {
+    // Get nearest neighbour
+    Reg_.view<BoidComponent, PhysicsComponent>().each(
+        [&](auto& _BoidComp, auto& _PhysComp)
+        {
+            b2Vec2 p = _PhysComp.Body_->GetPosition();
+            b2Vec2 d_v{WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y};
+            auto d = d_v.LengthSquared();
+            int n{0};
+            for (auto i=0; i<_BoidComp.NrOfNeighbours; ++i)
+            {
+                auto p_i = Reg_.get<PhysicsComponent>(entt::entity(_BoidComp.Neighbours[i])).Body_->GetPosition();
+                auto d_i = (p-p_i).LengthSquared();
+                if (d_i < d)
+                {
+                    d = d_i;
+                    n = i;
+                }
+            }
+        });
 
 }
 
 void BoidSystem::applyAlignment()
 {
-
+    float Torque = Conf_.get().BoidTorqueMax / 3.1416f;
+    Reg_.view<BoidComponent, PhysicsComponent>().each(
+        [&](auto& _BoidComp, auto& _PhysComp)
+        {
+            auto Angle = _BoidComp.NeighbourAngle - _PhysComp.Body_->GetAngle();
+            if (Angle >  3.1416f) Angle -= 6.282f;
+            if (Angle < -3.1416f) Angle += 6.282f;
+            _PhysComp.Body_->ApplyTorque(Torque*Angle, true);
+        });
 }
 
 void BoidSystem::applyCohesion()
@@ -234,10 +263,36 @@ void BoidSystem::applyCohesion()
                 std::atan2(_PhysComp.Body_->GetWorldVector({0.f, 1.f}).y, _PhysComp.Body_->GetWorldVector({0.f, 1.f}).x);
             if (Angle >  3.1416f) Angle -= 6.282f;
             if (Angle < -3.1416f) Angle += 6.282f;
-            _PhysComp.Body_->ApplyTorque(Torque*Angle, true);
+            _PhysComp.Body_->ApplyTorque(Torque*0.2f*Angle, true);
 
             if (_PhysComp.Body_->GetLinearVelocity().Length() < VelMax)
                 _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, Force})}, true);
+        });
+}
+
+void BoidSystem::applyConfinement()
+{
+    float BoundaryMinX{80.f};
+    float BoundaryMaxX{160.f};
+    float BoundaryMinY{0.f};
+    float BoundaryMaxY{80.f};
+    float Torque = Conf_.get().BoidTorqueMax / 3.1416f;
+    Reg_.view<BoidComponent, PhysicsComponent>().each(
+        [&](auto& _BoidComp, auto& _PhysComp)
+        {
+            auto Pos = _PhysComp.Body_->GetPosition();
+            if (Pos.x < BoundaryMinX || Pos.x > BoundaryMaxX ||
+                Pos.y < BoundaryMinY || Pos.y > BoundaryMaxY)
+            {
+                b2Vec2 Vec = b2Vec2((BoundaryMaxX+BoundaryMinX) * 0.5f,
+                                    (BoundaryMaxY+BoundaryMinY) * 0.5f) -
+                             Pos;
+                auto Angle = std::atan2(Vec.y, Vec.x) -
+                    std::atan2(_PhysComp.Body_->GetWorldVector({0.f, 1.f}).y, _PhysComp.Body_->GetWorldVector({0.f, 1.f}).x);
+                if (Angle >  3.1416f) Angle -= 6.282f;
+                if (Angle < -3.1416f) Angle += 6.282f;
+                _PhysComp.Body_->ApplyTorque(Torque*5.0f*Angle, true);
+            }
         });
 }
 
