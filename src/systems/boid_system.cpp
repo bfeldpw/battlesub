@@ -3,20 +3,22 @@
 #include "b2_math.h"
 #include "boid_component.hpp"
 #include "boid_system_config.hpp"
+#include "math_helper.hpp"
 #include "message_handler.hpp"
 #include "physics_component.hpp"
 #include "visuals_component.hpp"
 #include "world_def.h"
-#include <cmath>
 #include <entt/entity/entity.hpp>
 #include <random>
+
+using namespace bfe::mh;
 
 void BoidSystem::init()
 {
     Reg_.ctx().at<MessageHandler>().report("bds", "Initialising boid system for fish", MessageHandler::INFO);
 
     std::uniform_real_distribution<float> DistPos(0.0, 40.0f);
-    std::uniform_real_distribution<float> DistAngle(-3.1416f, 3.1416f);
+    std::uniform_real_distribution<float> DistAngle(-MATH_PI_F, MATH_PI_F);
 
     DBLK(
         auto ResX = WORLD_SIZE_DEFAULT_X / Conf_.get().GridSizeX;
@@ -87,6 +89,7 @@ void BoidSystem::update()
     this->applyAlignment();
     this->applyCohesion();
     this->applyConfinement();
+    this->applyDynamics();
 }
 
 int BoidSystem::getGridIndexFromFloatPosition(float _x, float _y)
@@ -97,9 +100,6 @@ int BoidSystem::getGridIndexFromFloatPosition(float _x, float _y)
     // Grid is slightly larger to make neighbour calculations easier
     auto x = int((_x + WORLD_SIZE_DEFAULT_X*0.5f) * f_x)+1;
     auto y = int((_y + WORLD_SIZE_DEFAULT_Y*0.5f) * f_y)+1;
-
-    // std::cout << _x << "," << _y << " -> " <<
-    //               x << ", " << y << std::endl;
 
     return y*Conf_.get().GridSizeX + x;
 }
@@ -214,46 +214,56 @@ void BoidSystem::updateLocalFeatures()
 
 void BoidSystem::applySeparation()
 {
-    // Get nearest neighbour
     Reg_.view<BoidComponent, PhysicsComponent>().each(
-        [&](auto& _BoidComp, auto& _PhysComp)
+        [&](const auto _e, auto& _BoidComp, auto& _PhysComp)
         {
             b2Vec2 p = _PhysComp.Body_->GetPosition();
             b2Vec2 d_v{WORLD_SIZE_DEFAULT_X, WORLD_SIZE_DEFAULT_Y};
             auto d = d_v.LengthSquared();
             int n{0};
+
+            // Get nearest neighbour
             for (auto i=0; i<_BoidComp.NrOfNeighbours; ++i)
             {
                 auto p_i = Reg_.get<PhysicsComponent>(entt::entity(_BoidComp.Neighbours[i])).Body_->GetPosition();
                 auto d_i = (p-p_i).LengthSquared();
                 if (d_i < d)
                 {
+                    d_v = p_i-p;
                     d = d_i;
                     n = i;
                 }
             }
-        });
 
+            // Turn away
+            float Torque = Conf_.get().BoidTorqueMax / MATH_PI_F;
+            auto AngSelf = _PhysComp.Body_->GetAngle() + MATH_PI_F*0.5f;
+            AngSelf = constrainAngle(AngSelf);
+            auto Angle = -AngSelf + std::atan2(-d_v.y, -d_v.x);
+            Angle = constrainAngle(Angle);
+            if (std::abs(Angle) > MATH_PI_F * 0.8f)
+            {
+                _BoidComp.Torque += Torque*Angle;
+            }
+        });
 }
 
 void BoidSystem::applyAlignment()
 {
-    float Torque = Conf_.get().BoidTorqueMax / 3.1416f;
+    float Torque = Conf_.get().BoidTorqueMax / MATH_PI_F;
     Reg_.view<BoidComponent, PhysicsComponent>().each(
         [&](auto& _BoidComp, auto& _PhysComp)
         {
             auto Angle = _BoidComp.NeighbourAngle - _PhysComp.Body_->GetAngle();
-            if (Angle >  3.1416f) Angle -= 6.282f;
-            if (Angle < -3.1416f) Angle += 6.282f;
-            _PhysComp.Body_->ApplyTorque(Torque*Angle, true);
+            Angle = constrainAngle(Angle);
+            _BoidComp.Torque += Torque*Angle;
         });
 }
 
 void BoidSystem::applyCohesion()
 {
     float Force  = Conf_.get().BoidForce;
-    float Torque = Conf_.get().BoidTorqueMax / 3.1416f;
-    float VelMax = Conf_.get().BoidVelMax;
+    float Torque = Conf_.get().BoidTorqueMax / MATH_PI_F;
     Reg_.view<BoidComponent, PhysicsComponent>().each(
         [&](auto& _BoidComp, auto& _PhysComp)
         {
@@ -261,12 +271,9 @@ void BoidSystem::applyCohesion()
                         _PhysComp.Body_->GetPosition();
             auto Angle = std::atan2(Vec.y, Vec.x) -
                 std::atan2(_PhysComp.Body_->GetWorldVector({0.f, 1.f}).y, _PhysComp.Body_->GetWorldVector({0.f, 1.f}).x);
-            if (Angle >  3.1416f) Angle -= 6.282f;
-            if (Angle < -3.1416f) Angle += 6.282f;
-            _PhysComp.Body_->ApplyTorque(Torque*0.2f*Angle, true);
-
-            if (_PhysComp.Body_->GetLinearVelocity().Length() < VelMax)
-                _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, Force})}, true);
+            Angle = constrainAngle(Angle);
+            _BoidComp.Torque += Torque*0.5f*Angle;
+            _BoidComp.Force  += Force;
         });
 }
 
@@ -276,7 +283,7 @@ void BoidSystem::applyConfinement()
     float BoundaryMaxX{160.f};
     float BoundaryMinY{0.f};
     float BoundaryMaxY{80.f};
-    float Torque = Conf_.get().BoidTorqueMax / 3.1416f;
+    float Torque = Conf_.get().BoidTorqueMax / MATH_PI_F;
     Reg_.view<BoidComponent, PhysicsComponent>().each(
         [&](auto& _BoidComp, auto& _PhysComp)
         {
@@ -289,17 +296,34 @@ void BoidSystem::applyConfinement()
                              Pos;
                 auto Angle = std::atan2(Vec.y, Vec.x) -
                     std::atan2(_PhysComp.Body_->GetWorldVector({0.f, 1.f}).y, _PhysComp.Body_->GetWorldVector({0.f, 1.f}).x);
-                if (Angle >  3.1416f) Angle -= 6.282f;
-                if (Angle < -3.1416f) Angle += 6.282f;
-                _PhysComp.Body_->ApplyTorque(Torque*5.0f*Angle, true);
+                Angle = constrainAngle(Angle);
+                _BoidComp.Torque += Torque*2.0f*Angle;
             }
+        });
+}
+
+void BoidSystem::applyDynamics()
+{
+    float VelMax = Conf_.get().BoidVelMax;
+    Reg_.view<BoidComponent, PhysicsComponent>().each(
+        [&](auto& _BoidComp, auto& _PhysComp)
+        {
+            if (std::abs(_PhysComp.Body_->GetAngularVelocity()) < MATH_PI_F)
+            {
+                _PhysComp.Body_->ApplyTorque(_BoidComp.Torque, true);
+            }
+            if (_PhysComp.Body_->GetLinearVelocity().Length() < VelMax)
+                // _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, _BoidComp.Force})}, true);
+                _PhysComp.Body_->ApplyForceToCenter({_PhysComp.Body_->GetWorldVector({0.f, Conf_.get().BoidForce})}, true);
+            _BoidComp.Force = 0.0f;
+            _BoidComp.Torque = 0.0f;
         });
 }
 
 void BoidSystem::resetBoidDebug()
 {
     Reg_.view<BoidComponent, VisualsComponent>().each(
-        [&,this](auto _e, auto& _BoidComp, auto& _VisComp)
+        [](auto& _BoidComp, auto& _VisComp)
         {
             _VisComp.Drawable_->setColor({0.3f, 0.3f, 0.1f, 1.0f});
         });

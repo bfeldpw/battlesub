@@ -40,6 +40,7 @@ set(HEADERS
         global_resources.h
         lua_manager.hpp
         lua_path.hpp
+        math_helper.hpp
         message_handler.hpp
         resource_storage.h
         shader_path.h

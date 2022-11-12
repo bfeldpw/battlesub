@@ -55,6 +55,7 @@ class BoidSystem
         void applyAlignment();
         void applyCohesion();
         void applyConfinement();
+        void applyDynamics();
 
         // Visual boid debugging
         entt::entity EntityDebug_;
