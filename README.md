@@ -16,7 +16,7 @@ So now, since the history is gone, lets just add a little changelog here, beginn
 ### Change Log
 **Upcoming: Let's go fishing...**
 Teaser
-![alt text](screenshots/boids_teaser.png?raw=true)
+![alt text](screenshots/boids_teaser.png?raw=true)\
 Update 2022-11-12: Boids implementation is going well. All rules have been implemented in a first version. The boids branch has been added to the github repo today. Final work on parameterisation and exposing parameters to Lua and the debug GUI are being done.
 
 **2022-09-12: Colorful densities**\
