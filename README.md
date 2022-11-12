@@ -17,6 +17,7 @@ So now, since the history is gone, lets just add a little changelog here, beginn
 **Upcoming: Let's go fishing...**
 Teaser
 ![alt text](screenshots/boids_teaser.png?raw=true)
+Update 2022-11-12: Boids implementation is going well. All rules have been implemented in a first version. The boids branch has been added to the github repo today. Final work on parameterisation and exposing parameters to Lua and the debug GUI are being done.
 
 **2022-09-12: Colorful densities**\
 The density implementation was changed from 1 to 3 channels (RGB32 float textures) to enable color selection for densities. The configuration was partly (proof of concept) exported to Lua following a more flexible binding structure.
